@@ -1,0 +1,11 @@
+*.o
+*.bak
+*.lst
+*.map
+forth
+t
+*.rom
+*.fc
+/platform.inc
+*.po
+romfs
