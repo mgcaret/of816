@@ -1374,8 +1374,9 @@ eword
 ; H: ( c-addr -- char ) fetch char from c-addr
 dword     CFETCH,"C@"
           jsr   _popwr
-          ldy   #$00
-          lda   [WR],y
+          sep   #SHORT_A
+          lda   [WR]
+          rep   #SHORT_A
           and   #$00FF
           jsr   _pusha
           NEXT
@@ -1384,23 +1385,17 @@ eword
 ; H: ( c-addr -- word ) fetch word from c-addr
 dword     WFETCH,"W@"
           jsr   _popwr
-          ldy   #$00
-          lda   [WR],y
+          lda   [WR]
           jsr   _pusha
           NEXT
 eword
 
 ; H: ( c-addr -- n ) fetch sign-extended word from c-addr
 dword     WFETCHS,"<W@"
-          jsr   _popwr
-          ldy   #$00
-          lda   [WR],y
-          tay
-          bmi   :+
-          lda   #$0000
-          bra   done
-:         lda   #$FFFF
-done:     NEXT
+          ENTER
+          .dword WFETCH
+          .dword WSX
+          EXIT
 eword
 
 .if unaligned_words
@@ -1445,9 +1440,8 @@ dword     CSTORE,"C!"
           jsr   _popwr
           jsr   _popay
           tya
-          ldy   #$00
           sep   #SHORT_A
-          sta   [WR],y
+          sta   [WR]
           rep   #SHORT_A
           NEXT
 eword
@@ -1457,8 +1451,7 @@ dword     WSTORE,"W!"
           jsr   _popwr
           jsr   _popay
           tya
-          ldy   #$00
-          sta   [WR],y
+          sta   [WR]
           NEXT
 eword
 
