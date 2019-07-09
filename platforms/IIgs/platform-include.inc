@@ -1,4 +1,6 @@
 ; System page 0 stuff; note, address absolute
+_BASL     = $28                   ; line base address (updated by firmware)
+; System varaibles, address absolute
 _CH       = $57B                  ; cursor horizontal position
 _CV       = $5FB                  ; cursor vertical position
 ; these don't seem to be respected by the Pascal 1.1 interface and keep

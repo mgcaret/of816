@@ -383,7 +383,7 @@ do_il:    lda   #23               ; start at line 23 and move toward CV
           lda   ZR
           asl
           tax
-          ldy   _scrn_tab,x       ; get dest line address TODO change back to LDY
+          ldy   _scrn_tab,x       ; get dest line address
           dec   ZR                ; next lower line
           lda   ZR
           asl
@@ -434,9 +434,38 @@ do_dl:    lda   _CV               ; start at CV and move toward line 23
           jsr   _copy_line
           bra   :--
 ; insert char
-ich:      rts                     ; unimplemented
+ich:      jsr   _80store_on
+          lda   a:_CH
+          and   #$00FF
+          tax
+:         jsr   _get_char
+          inx
+          jsr   _put_char
+          cpx   #79
+          bcc   :-
+          lda   a:_CH
+          and   #$00FF
+          tax
+          lda   #' '
+          jsr   _put_char
+          jsr   _80store_off
+          rts
 ; delete char
-dch:      rts                     ; unimplemented
+dch:      jsr   _80store_on
+          ldx   #79
+:         jsr   _get_char
+          dex
+          jsr   _put_char
+          txa
+          sep   #SHORT_I
+          cpx   a:_CH
+          rep   #SHORT_I
+          bne   :-
+          lda   #' '
+          ldx   #79
+          jsr   _put_char
+          jsr   _80store_off
+          rts
 ; set graphic rendition
 sgr:      lda   ESCACC
           cmp   #10
@@ -531,6 +560,50 @@ con_wr_n: sty   ESCNUM1
           plb
           rts
 .endproc
+
+; with base address in _BASL and column # in X, set ZR to base address (long pointer)
+; select appropriate text page, and set Y to byte offset of the column
+.proc     _scrn
+          lda   a:_BASL
+          sta   ZR
+          stz   ZR+2
+          txa
+          lsr
+          tay
+          bcs   :+
+          sep   #SHORT_A
+          sta   TXTPAGE2
+          rep   #SHORT_A
+:         rts
+.endproc
+
+
+; get char in A at pos X assuming BASL/H are the calculated base address
+; trashes Y, preserves X
+; assumes data bank is 0 because that's where we are supposed to be
+.proc     _get_char
+          jsr   _scrn
+          lda   [ZR],y
+          and   #$00FF
+          sep   #SHORT_A
+          sta   TXTPAGE1
+          rep   #SHORT_A
+          rts
+.endproc
+
+; put char from A at pos X assuming BASL/H are the calculated base address
+; assumes data bank is 0 because that's where we are supposed to be
+; trashes Y, preserves A and X
+.proc     _put_char
+          pha
+          jsr   _scrn
+          pla
+          sep   #SHORT_A
+          sta   [ZR],y
+          sta   TXTPAGE1
+          rep   #SHORT_A
+          rts
+.endproc          
 
 .proc     _80store_on
           sep   #SHORT_A
