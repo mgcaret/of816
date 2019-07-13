@@ -44,7 +44,7 @@ dword     dCPU_HZ,"$CPU_HZ"
           FCONSTANT cpu_clk
 eword
 
-.if include_fcode ; SXB stuff, should do different
+.if include_fcode && romloader_as_word ; SXB stuff, should do different
 dword     SXB_ROMLDR,"$SXB-ROMLDR"
           ENTER
           ONLIT :+

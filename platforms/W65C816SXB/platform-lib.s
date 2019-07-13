@@ -260,12 +260,28 @@ wait:     phx                   ; note 8-bit mode!
           jmp   _sf_success
 .endproc
 
-.proc     _sf_fcode             ; none for now
+.proc     _sf_fcode
+.if include_fcode
+          ldy   #.loword(list)
+          lda   #.hiword(list)
+.else
           lda   #$0000
           tay
+.endif
           plx
           jsr   _pushay
           jmp   _sf_success
+.if include_fcode
+list:
+  .if romloader_at_init
+          .dword romldr
+  .endif
+          .dword 0
+  .if romloader_at_init
+romldr:   PLATFORM_INCBIN "fcode/romloader.fc"
+  .endif
+.endif
+
 .endproc
 
 ; SXB really can't do this when ROM is banked out.  Maybe restart Forth instead?
