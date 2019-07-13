@@ -41,8 +41,8 @@
 ; $0004 ( -- char ) read a character from the console (blocking)
 ; $0005 ( -- addr ) return pointer to list of FCode modules to evaluate.  If pointer is
 ;       0, none are evaluated.  List should be 32-bit pointers ending in 0.
-;       this is never called if FCode support is not included.  When this is implemented
-;       the system will trust that there is FCode there and not look for a signature.
+;       this is never called if FCode support is not included.
+;       The system will trust that there is FCode there and not look for a signature.
 ; $0006 ( -- ) perform RESET-ALL, restart the system as if reset button was pushed
 
 cpu_clk   = 8000000

@@ -153,12 +153,12 @@ Recieve char from the console device, waiting for it to arrive.
 
 #### $0005 - FCode List Pointer ( -- address ) currently not used
 
-When the feature is implemented and FCode support is built assembled into the
-Forth system, this function should return the address of one or more cells
-containing the addresses of tokenized FCode to evaluate at initialization time,
-or zero if there are none.  The list should end with zeros.
+When FCode support is built into the Forth system, this function should return either
+zero, or the address of one or more cells containing the addresses of tokenized FCode 
+to evaluate at initialization time.  The list should end with a zero.
 
-For now, this should simply return 0.
+The system trusts that there is FCode at each address in the list and calls 1 BYTE-LOAD
+for each address in the list.
 
 #### $0006 - Reset-All ( -- ) reboot the system as if the power had been cycled
 
