@@ -398,6 +398,26 @@ hword     ddSYSINIT,"$$SYSINIT"
           .dword ALLOC            ; TODO: catch exception
           .dword dTIB
           .dword STORE
+          .if include_fcode
+          ONLIT SI_GET_FCODE      ; See if system wants us to evaluate FCode
+          .dword dSYSIF
+          .dword QDUP
+          .dword _IF
+          .dword no_fcode         ; apparently not
+lp:       .dword PtoR
+          .dword RCOPY
+          .dword FETCH
+          .dword QDUP
+          .dword _IF
+          .dword dn_fcode
+          .dword ONE
+          .dword BYTE_LOAD
+          .dword RtoP
+          .dword CELLPLUS
+          JUMP lp
+dn_fcode: .dword RDROP
+no_fcode:
+          .endif
           NLIT NOOP               ; set up STATUS defer.
           SLIT "STATUS"
           .dword dDEFER
