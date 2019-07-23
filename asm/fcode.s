@@ -1002,7 +1002,7 @@ exdword
 
 xdword    FCEND
           ENTER
-          ONLIT 1
+          .dword ONE
           .dword dFCODE_END
           .dword STORE
           EXIT
