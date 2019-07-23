@@ -18,12 +18,12 @@
 ; Almost all of the non-reserved & non-historical FCodes from table 0 are implemented
 ; to some degree.  Initially, INSTANCE is not supported but can be added later.
 .proc     fcrom0
-          FCIMM FCEND ; 0x00
-          FCIMM FERROR          ; 0x01-0x0F = prefixes for other tables
-          FCIMM FERROR          ; these wont normally be executed because an fcode 
-          FCIMM FERROR          ; fetch will never return one of thes
-          FCIMM FERROR          ; that being said, get-token *will* return these
-          FCIMM FERROR          ; entries
+          FCIMM FCEND             ; 0x00
+          FCIMM FERROR            ; 0x01-0x0F = prefixes for other tables
+          FCIMM FERROR            ; these wont normally be executed because an fcode 
+          FCIMM FERROR            ; fetch will never return one of thes
+          FCIMM FERROR            ; that being said, get-token *will* return these
+          FCIMM FERROR            ; entries
           FCIMM FERROR
           FCIMM FERROR
           FCIMM FERROR
@@ -34,23 +34,23 @@
           FCIMM FERROR
           FCIMM FERROR
           FCIMM FERROR
-          FCIMM B_LIT       ; 0x10 b(lit)
-          FCIMM B_TICK      ; b(')
-          FCIMM B_QUOTE     ; b(")
-          FCIMM BBRANCH     ; bbranch
-          FCIMM BQBRANCH    ; b?branch
-          FCIMM B_LOOP      ; b(loop)
-          FCIMM B_PLOOP     ; b(+loop)
-          FCIMM B_DO        ; b(do)
-          FCIMM B_QDO       ; b(?do)
+          FCIMM B_LIT             ; 0x10 b(lit)
+          FCIMM B_TICK            ; b(')
+          FCIMM B_QUOTE           ; b(")
+          FCIMM BBRANCH           ; bbranch
+          FCIMM BQBRANCH          ; b?branch
+          FCIMM B_LOOP            ; b(loop)
+          FCIMM B_PLOOP           ; b(+loop)
+          FCIMM B_DO              ; b(do)
+          FCIMM B_QDO             ; b(?do)
           .dword IX
           .dword JX
-          FCIMM B_LEAVE     ; b(leave)
-          FCIMM B_OF        ; b(of)
+          FCIMM B_LEAVE           ; b(leave)
+          FCIMM B_OF              ; b(of)
           .dword EXECUTE
           .dword PLUS
           .dword MINUS
-          .dword MULT                   ; 0x20
+          .dword MULT             ; 0x20
           .dword DIV
           .dword MOD
           .dword LAND
@@ -66,7 +66,7 @@
           .dword ABS
           .dword MIN
           .dword MAX
-          .dword PtoR                   ; 0x30
+          .dword PtoR             ; 0x30
           .dword RtoP
           .dword RCOPY
           .dword DEXIT
@@ -82,7 +82,7 @@
           .dword NOTEQUAL
           .dword UGT
           .dword ULTE
-          .dword ULT                    ; 0x40
+          .dword ULT              ; 0x40
           .dword UGTE
           .dword SGTE
           .dword SLTE
@@ -98,7 +98,7 @@
           .dword NIP
           .dword PICK
           .dword ROLL
-          .dword QDUP                   ; 0x50
+          .dword QDUP             ; 0x50
           .dword DEPTH
           .dword TWODROP
           .dword TWODUP
@@ -114,7 +114,7 @@
           .dword SCELL
           .dword CAPLUS
           .dword WAPLUS
-          .dword LAPLUS                 ; 0x60
+          .dword LAPLUS           ; 0x60
           .dword NAPLUS
           .dword CHARPLUS
           .dword WAINCR
@@ -130,7 +130,7 @@
           .dword FETCH
           .dword LFETCH
           .dword WFETCH
-          .dword WFETCHS                ; 0x70
+          .dword WFETCHS          ; 0x70
           .dword CFETCH
           .dword STORE
           .dword LSTORE
@@ -146,7 +146,7 @@
           .dword WLJOIN
           .dword LBSPLIT
           .dword BLJOIN
-          .dword WBFLIP                 ; 0x80
+          .dword WBFLIP           ; 0x80
           .dword UPC
           .dword LCC
           .dword PACK
@@ -162,7 +162,7 @@
           .dword KEYQ
           .dword KEY
           .dword EMIT
-          .dword TYPE                   ; 0x90
+          .dword TYPE             ; 0x90
           .dword pCR
           .dword CR
           .dword NOUT
@@ -178,8 +178,8 @@
           .dword DOT
           .dword DOTR
           .dword DOTS
-          .dword BASE                   ; 0xA0
-          FCIMM FERROR                ; historical CONVERT
+          .dword BASE             ; 0xA0
+          FCIMM FERROR            ; historical CONVERT
           .dword dNUMBER
           .dword DIGIT
           .dword MINUSONE
@@ -194,29 +194,29 @@
           .dword HERE
           .dword ALIGNED
           .dword WBSPLIT
-          .dword BWJOIN                 ; 0xB0
-          FCIMM B_MARK      ; b(<mark)
-          FCIMM B_RESOLVE   ; b(>resolve)
-          FCIMM FERROR                ; obsolete set-token-table
-          FCIMM FERROR                ; obsolete set-table
+          .dword BWJOIN           ; 0xB0
+          FCIMM B_MARK            ; b(<mark)
+          FCIMM B_RESOLVE         ; b(>resolve)
+          FCIMM FERROR            ; obsolete set-token-table
+          FCIMM FERROR            ; obsolete set-table
           .dword NEW_TOKEN
           .dword NAMED_TOKEN
           FCIMM B_COLON
-          FCIMM pVALUE      ; subject to INSTANCE
-          FCIMM pVARIABLE   ; subject to INSTANCE
-          FCIMM B_CONSTANT  ; b(constant)
-          FCIMM pCREATE     ; b(create) -> pCREATE
-          FCIMM pDEFER      ; subject to INSTANCE
-          FCIMM pBUFFER     ; subject to INSTANCE
-          FCIMM B_FIELD     ; b(field)
-          FCIMM FERROR                ; obsolete b(code) (re-use OK for native words?)
-          FCIMM FERROR                ; INSTANCE    ; 0xC0
-          FCIMM FERROR                ; reserved
-          FCIMM SEMI        ; B_SEMI, same as SEMI for now
+          FCIMM pVALUE            ; subject to INSTANCE
+          FCIMM pVARIABLE         ; subject to INSTANCE
+          FCIMM B_CONSTANT        ; b(constant)
+          FCIMM pCREATE           ; b(create) -> pCREATE
+          FCIMM pDEFER            ; subject to INSTANCE
+          FCIMM pBUFFER           ; subject to INSTANCE
+          FCIMM B_FIELD           ; b(field)
+          FCIMM FERROR            ; obsolete b(code) (re-use OK for native words?)
+          FCIMM FERROR            ; INSTANCE    ; 0xC0
+          FCIMM FERROR            ; reserved
+          FCIMM SEMI              ; B_SEMI, same as SEMI for now
           FCIMM B_TO
-          FCIMM B_CASE      ; b(case)
-          FCIMM B_ENDCASE   ; b(endcase)
-          FCIMM B_ENDOF     ; b(endof)
+          FCIMM B_CASE            ; b(case)
+          FCIMM B_ENDCASE         ; b(endcase)
+          FCIMM B_ENDOF           ; b(endof)
           .dword PNUM
           .dword PNUMS
           .dword PDONE
@@ -226,7 +226,7 @@
           .dword EVALUATE
           FCIMM FERROR
           FCIMM FERROR
-          .dword CCOMMA                 ; 0xD0
+          .dword CCOMMA           ; 0xD0
           .dword WCOMMA
           .dword LCOMMA
           .dword COMMA
@@ -241,8 +241,8 @@
           .dword STATE
           .dword COMPILECOMMA
           .dword BEHAVIOR
-          FCIMM FERROR                ; 0xDF-0xEF reserved
-          FCIMM FERROR                ; 0xE0
+          FCIMM FERROR            ; 0xDF-0xEF reserved
+          FCIMM FERROR            ; 0xE0
           FCIMM FERROR
           FCIMM FERROR
           FCIMM FERROR
@@ -258,11 +258,11 @@
           FCIMM FERROR
           FCIMM FERROR
           FCIMM FERROR
-          .dword START0                 ; 0xF0
+          .dword START0           ; 0xF0
           .dword START1
           .dword START2
           .dword START4
-          FCIMM FERROR                ; 0xF4-0xFB reserved
+          FCIMM FERROR            ; 0xF4-0xFB reserved
           FCIMM FERROR
           FCIMM FERROR
           FCIMM FERROR
@@ -270,46 +270,46 @@
           FCIMM FERROR
           FCIMM FERROR
           FCIMM FERROR
-          FCIMM FERROR                ; 0xFC explicitly FERROR
+          FCIMM FERROR            ; 0xFC explicitly FERROR
           .dword VERSION1
-          FCIMM FERROR                ; obsolete 4-byte-id
-          .dword FCEND                  ; 0xFF
+          FCIMM FERROR            ; obsolete 4-byte-id
+          .dword FCEND            ; 0xFF
 .endproc
 
 .proc     fcrom2
-          FCIMM FERROR                ; 0x200
-          FCIMM FERROR                ; device-name
-          FCIMM FERROR                ; my-args
-          FCIMM FERROR                ; my-self
-          FCIMM FERROR                ; find-package
-          FCIMM FERROR                ; open-package
-          FCIMM FERROR                ; close-package
-          FCIMM FERROR                ; find-method
-          FCIMM FERROR                ; call-package
-          FCIMM FERROR                ; $call-parent
-          FCIMM FERROR                ; my-parent
-          FCIMM FERROR                ; ihandle>phandle
-          FCIMM FERROR                ; reserved
-          FCIMM FERROR                ; my-unit
-          FCIMM FERROR                ; $call-method
-          FCIMM FERROR                ; $open-package
-          FCIMM FERROR                ; 0x210 historical processor-type
-          FCIMM FERROR                ; historical firmware-version
-          FCIMM FERROR                ; historical fcode-version
-          FCIMM FERROR                ; alarm
-          .dword IS_USER_WORD           ; (is-user-word)
-          .dword NOOP                   ; suspend-fcode, to be optionally replaced
+          FCIMM FERROR            ; 0x200
+          FCIMM FERROR            ; device-name
+          FCIMM FERROR            ; my-args
+          FCIMM FERROR            ; my-self
+          FCIMM FERROR            ; find-package
+          FCIMM FERROR            ; open-package
+          FCIMM FERROR            ; close-package
+          FCIMM FERROR            ; find-method
+          FCIMM FERROR            ; call-package
+          FCIMM FERROR            ; $call-parent
+          FCIMM FERROR            ; my-parent
+          FCIMM FERROR            ; ihandle>phandle
+          FCIMM FERROR            ; reserved
+          FCIMM FERROR            ; my-unit
+          FCIMM FERROR            ; $call-method
+          FCIMM FERROR            ; $open-package
+          FCIMM FERROR            ; 0x210 historical processor-type
+          FCIMM FERROR            ; historical firmware-version
+          FCIMM FERROR            ; historical fcode-version
+          FCIMM FERROR            ; alarm
+          .dword IS_USER_WORD     ; (is-user-word)
+          .dword NOOP             ; suspend-fcode, to be optionally replaced
           .dword ABORT
           .dword CATCH
           .dword THROW
-          FCIMM FERROR                ; user-abort
-          FCIMM FERROR                ; get-my-property
-          FCIMM FERROR ; DECODE_INT
-          FCIMM FERROR ; DECODE_STRING
-          FCIMM FERROR                ; get-inherited-property
-          FCIMM FERROR                ; delete-property
-          FCIMM FERROR                ; get-package-property
-          .dword CPEEK                  ; 0x220
+          FCIMM FERROR            ; user-abort
+          FCIMM FERROR            ; get-my-property
+          FCIMM FERROR            ; DECODE_INT
+          FCIMM FERROR            ; DECODE_STRING
+          FCIMM FERROR            ; get-inherited-property
+          FCIMM FERROR            ; delete-property
+          FCIMM FERROR            ; get-package-property
+          .dword CPEEK            ; 0x220
           .dword WPEEK
           .dword LPEEK
           .dword CPOKE
@@ -318,7 +318,7 @@
           .dword WBFLIP
           .dword LBFLIP
           .dword LBFLIPS
-          FCIMM FERROR                ; historical adr-mask
+          FCIMM FERROR            ; historical adr-mask
           FCIMM FERROR
           FCIMM FERROR
           FCIMM FERROR
@@ -333,30 +333,30 @@
           .dword dRLSTORE
           .dword WBFLIPS
           .dword LWFLIPS
-          FCIMM FERROR                ; probe
-          FCIMM FERROR                ; probe-virtual
-          FCIMM FERROR                ; reserved
-          FCIMM FERROR                ; child
-          FCIMM FERROR                ; peer
-          FCIMM FERROR                ; next-property
+          FCIMM FERROR            ; probe
+          FCIMM FERROR            ; probe-virtual
+          FCIMM FERROR            ; reserved
+          FCIMM FERROR            ; child
+          FCIMM FERROR            ; peer
+          FCIMM FERROR            ; next-property
           .dword BYTE_LOAD
-          FCIMM FERROR                ; set-args
+          FCIMM FERROR            ; set-args
           .dword LEFT_PARSE_STRING
           .repeat $aa
-          FCIMM FERROR                ; remaining are reserved
+          FCIMM FERROR            ; remaining are reserved
           .endrepeat
           ; the last 15 XTs overlap with fcrom1 to save space
 .endproc
 
 .proc     fcrom1
-          FCIMM FERROR                ; 0x100 reserved
-          FCIMM FERROR                ; dma-alloc
-          FCIMM FERROR                ; my-address
-          FCIMM FERROR                ; my-space
-          FCIMM FERROR                ; historical memmap
-          FCIMM FERROR                ; free-virtual
-          FCIMM FERROR                ; historical >physical
-          FCIMM FERROR                ; 0x107-0x10E reserved
+          FCIMM FERROR            ; 0x100 reserved
+          FCIMM FERROR            ; dma-alloc
+          FCIMM FERROR            ; my-address
+          FCIMM FERROR            ; my-space
+          FCIMM FERROR            ; historical memmap
+          FCIMM FERROR            ; free-virtual
+          FCIMM FERROR            ; historical >physical
+          FCIMM FERROR            ; 0x107-0x10E reserved
           FCIMM FERROR
           FCIMM FERROR
           FCIMM FERROR
@@ -364,19 +364,19 @@
           FCIMM FERROR
           FCIMM FERROR
           FCIMM FERROR
-          FCIMM FERROR                ; my-params
-          FCIMM FERROR ; PROPERTY               ; 0x110
-          FCIMM FERROR ; ENCODE_INT
-          FCIMM FERROR ; ENCODEPLUS
-          FCIMM FERROR ; ENCODE_PHYS
-          FCIMM FERROR ; ENCODE_STRING
-          FCIMM FERROR ; ENCODE_BYTES
-          FCIMM FERROR                ; reg
-          FCIMM FERROR                ; obsoluete intr
-          FCIMM FERROR                ; driver
-          FCIMM FERROR                ; model
-          FCIMM FERROR                ; device-type
-          .dword PARSE_2INT             ; 0x11b
+          FCIMM FERROR            ; my-params
+          FCIMM FERROR            ; 0x110 PROPERTY
+          FCIMM FERROR            ; ENCODE_INT
+          FCIMM FERROR            ; ENCODEPLUS
+          FCIMM FERROR            ; ENCODE_PHYS
+          FCIMM FERROR            ; ENCODE_STRING
+          FCIMM FERROR            ; ENCODE_BYTES
+          FCIMM FERROR            ; reg
+          FCIMM FERROR            ; obsoluete intr
+          FCIMM FERROR            ; driver
+          FCIMM FERROR            ; model
+          FCIMM FERROR            ; device-type
+          .dword PARSE_2INT       ; 0x11b
           ; the rest are unimplemented in the ROM, need to be installed later
           ; and overlap with fcromnone
 .endproc
@@ -386,12 +386,12 @@
           FCIMM FERROR
           .endrepeat
 .endproc
-fcrom3  = fcromnone                ; reserved
-fcrom4  = fcromnone                ; reserved
-fcrom5  = fcromnone                ; reserved
-fcrom6  = fcromnone                ; vendor
-fcrom7  = fcromnone                ; vendor
-fcrom8  = fcromnone                ; local codes table 8-f
+fcrom3  = fcromnone               ; reserved
+fcrom4  = fcromnone               ; reserved
+fcrom5  = fcromnone               ; reserved
+fcrom6  = fcromnone               ; vendor
+fcrom7  = fcromnone               ; vendor
+fcrom8  = fcromnone               ; local codes table 8-f
 fcrom9  = fcromnone
 fcroma  = fcromnone
 fcromb  = fcromnone
