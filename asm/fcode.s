@@ -1170,6 +1170,8 @@ xdword    B_FIELD
           jml dFIELD::dofield
 exdword
 
+.if 0
+; Inspired by SLOF, unused for now
 xdword    DEST_ON_TOP
           ENTER
           ;.dword DOTS
@@ -1193,6 +1195,7 @@ e2:       .dword DROP
           ;.dword DOTS
           EXIT
 exdword
+.endif
 
 ; Branch FCode while interpreting
 ; ( fcode-offset -- )
