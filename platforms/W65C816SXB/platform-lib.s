@@ -300,17 +300,13 @@ romldr:   PLATFORM_INCBIN "fcode/romloader.fc"
           .a8
           lda   VIA2+VIA::PCR   ; save existing PCR
           pha
-          lda   WR+3            ; get bank #
-          ror
-          php
-          ror
           lda   #$00
-          bcs   :+
-          ora   #%11000000
-:         plp
-          bcs   :+
-          ora   #%00001100
-:         sta   VIA2+VIA::PCR
+          xba
+          lda   WR+3
+          and   #%00000011
+          tay
+          lda   banktab,y
+          sta   VIA2+VIA::PCR
           ldy   XR
 lp:       dey
           bmi   done
@@ -322,4 +318,8 @@ done:     pla
           plp                   ; restore register size & interrupt state
           .a16
           rtl                   ; note long return
+banktab:  .byte %11001100
+          .byte %11000000
+          .byte %00001100
+          .byte %00000000
 .endproc
