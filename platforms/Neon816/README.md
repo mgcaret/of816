@@ -1,4 +1,4 @@
-# Nein816
+# Neon816
 
 This is a port to Lenore Byron's [Neon816](https://hackaday.io/project/164325-neon816)
 system.  The Neon816 Developer Edition ships with a small 16-bit Forth.
