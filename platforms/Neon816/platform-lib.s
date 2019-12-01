@@ -3,6 +3,11 @@
 
 cpu_clk   = 14000000
 
+; Serial Port Hardware
+ser_stat  = $100009             ; read: b0 set if data waiting, b3 set if still sending data
+ser_io    = $100008             ; read: receive data. write: send data
+
+
 .proc     _system_interface
           ;wdm 3
           phx
@@ -48,14 +53,29 @@ table:    .addr _sf_pre_init
           plx                   ; get forth SP
           jsr   _popay          ; grab the top item
           phx                   ; and save new SP
-          ; TODO: interact with the hardware here
+          sep   #SHORT_A
+          .a8
+          tya
+          sta   f:ser_io
+:         lda   f:ser_stat
+          bit   #$08
+          bne   :-
+          rep   #SHORT_A
+          .a16
           plx
           jmp   _sf_success
 .endproc
 
 .proc     _sf_keyq
           ldy   #$0000          ; anticipate false
-          ; TODO: interact with the hardware here, set y to FFFF if char available
+          sep   #SHORT_A
+          .a8
+          lda   f:ser_stat      ; b0=1 if data ready
+          ror
+          bcc   :+
+          iny
+:         rep   #SHORT_A
+          .a16
           tya
           plx
           jsr   _pushay
@@ -63,7 +83,16 @@ table:    .addr _sf_pre_init
 .endproc
 
 .proc     _sf_key
-          ; TODO: interact with hardware, wait for char, get it into Y
+          sep   #SHORT_A
+          .a8
+:         lda   f:ser_stat
+          ror
+          bcc   :-
+          lda   f:ser_io
+          rep   #SHORT_A
+          .a16
+          and   #$00FF
+          tay
           lda   #$0000
           plx
           jsr   _pushay
