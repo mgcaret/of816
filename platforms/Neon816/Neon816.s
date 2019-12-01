@@ -2,6 +2,7 @@
 .a16
 .i16
 .include  "macros.inc"
+.include  "./Neon816-hw.inc"
 .import   _Forth_initialize
 .import   _Forth_ui
 .import   _system_interface
@@ -34,7 +35,7 @@
           ; MMU setup, maybe.  Found at page $FF in Neon bank 0
           ldx   #$001C
           lda   #$8000
-:         sta   f:$080000,x
+:         sta   f:NeonMMU,x
           dex
           dex
           bpl   :-
@@ -42,11 +43,11 @@
           sep   #SHORT_A          ; not necessary unless we were already native & long
           .a8
           lda   #$8D
-          sta   f:$10000A
+          sta   f:SERctrlA
           lda   #$06
-          sta   f:$10000B
+          sta   f:SERctrlB
           lda   #$00
-          sta   f:$10000C
+          sta   f:SERctrlC
           rep   #SHORT_A|SHORT_I
           .a16
           .i16

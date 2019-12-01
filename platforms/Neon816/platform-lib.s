@@ -1,12 +1,6 @@
 ; Platform support library for Neon816
 ; 
-
-cpu_clk   = 14000000
-
-; Serial Port Hardware
-ser_stat  = $100009             ; read: b0 set if data waiting, b3 set if still sending data
-ser_io    = $100008             ; read: receive data. write: send data
-
+.include  "./Neon816-hw.inc"
 
 .proc     _system_interface
           ;wdm 3
@@ -56,8 +50,8 @@ table:    .addr _sf_pre_init
           sep   #SHORT_A
           .a8
           tya
-          sta   f:ser_io
-:         lda   f:ser_stat
+          sta   f:SERio
+:         lda   f:SERstat
           bit   #$08
           bne   :-
           rep   #SHORT_A
@@ -70,7 +64,7 @@ table:    .addr _sf_pre_init
           ldy   #$0000          ; anticipate false
           sep   #SHORT_A
           .a8
-          lda   f:ser_stat      ; b0=1 if data ready
+          lda   f:SERstat       ; b0=1 if data ready
           ror
           bcc   :+
           iny
@@ -85,10 +79,10 @@ table:    .addr _sf_pre_init
 .proc     _sf_key
           sep   #SHORT_A
           .a8
-:         lda   f:ser_stat
+:         lda   f:SERstat
           ror
           bcc   :-
-          lda   f:ser_io
+          lda   f:SERio
           rep   #SHORT_A
           .a16
           and   #$00FF
