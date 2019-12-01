@@ -1,9 +1,9 @@
 FEATURES {
-	STARTADDRESS: default = $8000;
+	STARTADDRESS: default = $0000;
 }
 
 MEMORY {
-	ROM: start = $8000, size = $7800, file = %O;
+	ROM: start = $0000, size = $10000, file = %O;
 	ZP: start = $0000, size = $100;
 }
 
