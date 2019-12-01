@@ -9,3 +9,5 @@ t
 /platform.inc
 *.po
 romfs
+.DS_Store
+
