@@ -1,5 +1,30 @@
 
+; Bank Map from FB posting by Lenore:
+; 00 Bank Mapper (16 blocks of 4k each, configured via MMU)
+; 08-0F Bus Controller Peripherals
+; - 08 0000-003F MMU
+; -- 00: 0-3 Unused, 4-7: Upper RAM bits
+; -- 01: Bank
+; - 09 FDC
+; 10-1F Internal Bus Bridge
+; 20-27 Flash ROM
+; 28-3F Reserved for Flash
+; 30-3F Reserved for Expansion Flash
+; 40-47 Video RAM
+; 48-7F Reserved for VRAM
+; 80-87 RAM 1
+; 88-8F RAM 2
+; 90-FF Reserved for RAM
+
 cpu_clk   = 14000000
+
+; *****************
+; Memory regions
+; *****************
+Neon_ROM  = $200000
+Neon_VRAM = $400000
+Neon_RAM1 = $800000
+Neon_RAM2 = $880000
 
 ; *****************
 ; MMU

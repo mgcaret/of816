@@ -7,7 +7,7 @@
           phx
           asl
           tax
-          jmp   (table,x)
+          jmp   (.loword(table),x)
 table:    .addr _sf_pre_init
           .addr _sf_post_init
           .addr _sf_emit
@@ -34,8 +34,19 @@ table:    .addr _sf_pre_init
 
 
 .proc     _sf_pre_init
+          ; NeonFORTH does this, presumably to initialize the serial port
+          sep   #SHORT_A
+          .a8
+          lda   #$8D
+          sta   f:SERctrlA
+          lda   #$06
+          sta   f:SERctrlB
+          lda   #$00
+          sta   f:SERctrlC
+          rep   #SHORT_A
+          .a16
           plx
-          jmp   _sf_success     ; we'll see what we need to do
+          jmp   _sf_success
 .endproc
 
 .proc     _sf_post_init

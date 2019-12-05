@@ -10,4 +10,6 @@ t
 *.po
 romfs
 .DS_Store
+*.hex
+of816-neon.bin
 
