@@ -10,7 +10,7 @@ potential (and groundwork has been done) for it to become one.
 
 Among its many features are:
   * Mostly platform-independent.  OF816 can be ported easily to new systems.
-    * Ports currently exist for the W65C816SXB and the Apple IIgs.
+    * Ports currently exist for the W65C816SXB, Neon816, and the Apple IIgs.
     * New ports require the implementation of a handful of routines.
     * Simple instantiation of one or more Forths in a system.
   * 32-bit cells.

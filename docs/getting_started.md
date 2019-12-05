@@ -36,6 +36,7 @@ additonal FCode.
 ### Included Ports
 
   * [W65C816SXB](https://wdc65xx.com/boards/w65c816sxb-engineering-development-system/).
+  * [Neon816](https://hackaday.io/project/164325-neon816).
   * Apple IIgs.
 
 See the README files in each port's directory under /platforms for build & 
