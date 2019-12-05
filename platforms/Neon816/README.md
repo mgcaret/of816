@@ -63,4 +63,4 @@ Once the backup has finished (it will take a while), you can proceed to the inst
 
 ## Restoring the Original NeonFORTH Firmware
 
-Since the Neon (at the time of this writing) only ships with the first bank of flash occupied, first, split your backup with ``split backup.bin``.  This will output two files, ``xaa`` and ``xab`` that are bank $20 and bank $21, respectively.  Then run ``hex2bin xaa > neonforth.hex``.  You can then flash this with neonprog using ``flash neonforth.hex``.   Once it's done, reset your Neon and you should see the original firmware running.
+Since the Neon (at the time of this writing) only ships with the first bank of flash occupied, first, split your backup with ``split backup.bin``.  This will output two files, ``xaa`` and ``xab`` that are bank $20 and bank $21, respectively.  Then run ``bin2hex xaa > neonforth.hex``.  You can then flash this with neonprog using ``flash neonforth.hex``.   Once it's done, reset your Neon and you should see the original firmware running.
