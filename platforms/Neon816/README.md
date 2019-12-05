@@ -17,11 +17,11 @@ Forth.  See the [Neon816 Manual](https://cdn.hackaday.io/files/1643257030480800/
 
 ## Installation
 
-**THIS WILL OVERWRITE THE NEON'S ORIGINAL FIRMWARE.**
+**THIS WILL OVERWRITE THE NEON'S ORIGINAL FIRMWARE!**
 
-**IT IS STRONGLY RECOMMENDED YOU BACK UP THE ORIGINAL FIRMWARE**
+**IT IS STRONGLY RECOMMENDED YOU BACK UP THE ORIGINAL FIRMWARE!** (see below)
 
-**READ _ALL_ OF THE FOLLOWING BEFORE PROCEEDING AND DO NOT PROCEED IF ANY OF THIS MAKES YOU UNCOMFORTABLE**
+**READ _ALL_ OF THE FOLLOWING BEFORE PROCEEDING AND DO NOT PROCEED IF ANY OF THIS MAKES YOU UNCOMFORTABLE!**
 
 After building the firmware image, the image must be converted to Intel Hex format.  I like the bin2hex tool found [here](https://grumpf.hope-2000.org) (page is in German). Build the ``bin2hex`` binary and execute:  ``bin2hex of816-neon.bin > of816-neon.hex`` 
 
@@ -55,7 +55,7 @@ To back up the original firmware, you will need to add an additional command rou
     }
 ```
 
-then start neonprog with ``neonprog /dev/ttyUSBx`` (replace device with actual serial device for FTDI cable.
+build neonprog then start it with ``neonprog /dev/ttyUSBx`` (replace device with actual serial device for FTDI cable.
 
 From within neonprog, execute ``dumprom backup.bin`` to save an image of both ROM banks to ``backup.bin``.
 
