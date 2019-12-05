@@ -35,6 +35,7 @@ table:    .addr _sf_pre_init
 
 .proc     _sf_pre_init
           ; NeonFORTH does this, presumably to initialize the serial port
+          ; The code from here to the EOC commment was adapted from code written by Lenore Byron
           sep   #SHORT_A
           .a8
           lda   #$8D
@@ -45,6 +46,7 @@ table:    .addr _sf_pre_init
           sta   f:SERctrlC
           rep   #SHORT_A
           .a16
+          ; EOC
           plx
           jmp   _sf_success
 .endproc
@@ -58,6 +60,7 @@ table:    .addr _sf_pre_init
           plx                   ; get forth SP
           jsr   _popay          ; grab the top item
           phx                   ; and save new SP
+          ; The code from here to the EOC commment was adapted from code written by Lenore Byron
           sep   #SHORT_A
           .a8
           tya
@@ -67,12 +70,14 @@ table:    .addr _sf_pre_init
           bne   :-
           rep   #SHORT_A
           .a16
+          ; EOC
           plx
           jmp   _sf_success
 .endproc
 
 .proc     _sf_keyq
           ldy   #$0000          ; anticipate false
+          ; The code from here to the EOC commment was adapted from code written by Lenore Byron
           sep   #SHORT_A
           .a8
           lda   f:SERstat       ; b0=1 if data ready
@@ -81,6 +86,7 @@ table:    .addr _sf_pre_init
           iny
 :         rep   #SHORT_A
           .a16
+          ; EOC
           tya
           plx
           jsr   _pushay
@@ -88,6 +94,7 @@ table:    .addr _sf_pre_init
 .endproc
 
 .proc     _sf_key
+          ; The code from here to the EOC commment was adapted from code written by Lenore Byron
           sep   #SHORT_A
           .a8
 :         lda   f:SERstat
@@ -96,6 +103,7 @@ table:    .addr _sf_pre_init
           lda   f:SERio
           rep   #SHORT_A
           .a16
+          ; EOC
           and   #$00FF
           tay
           lda   #$0000
