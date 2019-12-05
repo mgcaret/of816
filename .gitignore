@@ -9,3 +9,7 @@ t
 /platform.inc
 *.po
 romfs
+.DS_Store
+*.hex
+of816-neon.bin
+
