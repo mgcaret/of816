@@ -6407,7 +6407,7 @@ eword
 dword     VOCABULARY,"VOCABULARY"
           ENTER
           .dword CREATE
-          .dword _COMP_LIT
+dovocab:  .dword _COMP_LIT
           .dword H_FORTH          ; root of all dictionaries
           .dword LAST
           .dword drXT             ; XT of the just-created word
@@ -6419,6 +6419,15 @@ dword     VOCABULARY,"VOCABULARY"
           .dword INCR
           .dword TOP_OF_ORDER
           EXIT
+eword
+
+; H: ( c-addr u -- ) create a new named wordlist definition as per VOCABULARY
+; H: meant for adding more builtin dictionaries (e.g. platform specific dictionaries)
+; H: which are expected to adjust the root to the new wordlist
+hword    dVOCAB,"$VOCAB"
+         ENTER
+         .dword dCREATE
+         JUMP VOCABULARY::dovocab
 eword
 
 .endif
