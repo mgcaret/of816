@@ -47,6 +47,18 @@ PIA1      = $7FA0
 VIA1      = $7FC0
 VIA2      = $7FE0
 
+dstart "gosxb"
+dchain H_FORTH                   ; Make branch off the word FORTH
+
+dword     GOSXB_TEST,"TEST"
+          ENTER
+          SLIT "Success?"
+          .dword TYPE
+          EXIT
+eword
+
+dend
+
 .proc     _system_interface
           ;wdm 3
           phx
@@ -127,6 +139,17 @@ wait:     phx                   ; note 8-bit mode!
 
 .proc     _sf_post_init
           plx
+          ; Here we make a vocabulary definition for the gosxb dictionary
+          ; that we defined at the beginning of this file.
+          ENTER
+          ONLIT  LAST_gosxb
+          SLIT   "GOSXB"
+          .dword dVOCAB
+          .dword LAST           ; now set the head of the vocabulary to the
+          .dword drXT           ; last word defined in the neon816 dictionary
+          .dword rBODY
+          .dword STORE
+          CODE
           jmp   _sf_success
 .endproc
 
