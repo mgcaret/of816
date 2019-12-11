@@ -16,7 +16,7 @@
 ; 88-8F RAM 2
 ; 90-FF Reserved for RAM
 
-cpu_clk   = 14000000
+cpu_clk   = 12000000
 
 ; *****************
 ; Memory regions
