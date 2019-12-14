@@ -75,7 +75,7 @@ RTCday    = $100108               ; 2 bytes
 ; *****************
 
 I2C2io    = $100014
-I2C2ctrl  = $100015               ; read: b3 = busy; write: $01 = start, $02 = stop, $04 = receive, $08 = send, $44 = receive/ack
+I2C2ctrl  = $100015               ; read: b7 = busy; write: $01 = start, $02 = stop, $04 = receive, $08 = send, $44 = receive/ack
 
 ; *****************
 ; SPI

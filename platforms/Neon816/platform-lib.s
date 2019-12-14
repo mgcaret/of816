@@ -141,6 +141,75 @@ dword     GETRTC,"GETRTC"
           EXIT
 eword
 
+; NOTE: sets short accumulator and leaves it that way on exit!
+.proc     I2C2_busy_wait
+          sep   #SHORT_A
+nosep:
+          .a8
+:         lda   f:I2C2ctrl
+          rol
+          bcs   :-
+          rts
+          .a16
+.endproc
+
+dword     I2C2START,"I2C2START"
+          jsr   I2C2_busy_wait
+          .a8
+          lda   #$01
+          sta   f:I2C2ctrl
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     I2C2STOP,"I2C2STOP"
+          jsr   I2C2_busy_wait
+          .a8
+          lda   #$02
+          sta   f:I2C2ctrl
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     I2C2_STORE,"I2C2!"
+          jsr   _popay
+          jsr   I2C2_busy_wait
+          .a8
+          tya
+          sta   f:I2C2io
+          lda   #$08
+          sta   f:I2C2ctrl
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     I2C2_FETCH_ACK,"I2C2@+"
+          jsr   I2C2_busy_wait
+          .a8
+          lda   #$44
+dofetch:  sta   f:I2C2ctrl
+          jsr   I2C2_busy_wait::nosep
+          lda   f:I2C2io
+          rep   #SHORT_A
+          .a16
+          and   #$00FF
+          tay
+          lda   #$0000
+          PUSHNEXT
+eword
+
+dword     I2C2_FETCH,"I2C2@+"
+          jsr   I2C2_busy_wait
+          .a8
+          lda   #$04
+          bra   I2C2_FETCH_ACK::dofetch
+          .a16
+eword
+
+
 dend
 
 ; and now for the system interface
