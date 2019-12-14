@@ -209,6 +209,54 @@ dword     I2C2_FETCH,"I2C2@+"
           .a16
 eword
 
+dword     VDC_C_STORE,"VDCC!"
+          jsr   _popay            ; pop offset
+          phy                     ; save low word
+          jsr   _popay            ; pop value to write
+          pla                     ; get offset back
+          phx                     ; save SP
+          tax                     ; offset to x reg
+          sep   #SHORT_A          ; whew! that was fun!
+          .a8
+          tya                     ; value to A
+          sta   f:VDCbase,x
+          rep   #SHORT_A
+          .a16
+          plx                     ; restore SP
+          NEXT
+eword
+
+dword     VDC_C_FETCH,"VDCC@"
+          jsr   _popay            ; pop offet
+          phx                     ; save SP
+          tya
+          tax
+          sep   #SHORT_A          ; whew! that was fun!
+          .a8
+          lda   f:VDCbase,x
+          rep   #SHORT_A
+          .a16
+          plx                     ; restore SP
+          and   #$00FF
+          tay
+          lda   #$0000
+          PUSHNEXT
+eword
+
+dword     VDC_STORE,"VDC!"
+          jsr   _popay            ; again! again! again!
+          phy
+          jsr   _popay
+          pla
+          phx
+          tax
+          tya
+          sta   f:VDCbase,x
+          rep   #SHORT_A
+          .a16
+          plx                     ; restore SP
+          NEXT
+eword
 
 dend
 

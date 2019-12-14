@@ -91,7 +91,7 @@ SPI2ctrl3 = $10001F               ; init = $05
 ; VDC
 ; *****************
 
-VDCio     = $100120               ; read: 1 byte, write: 1 or 2 bytes
+VDCbase   = $100120               ; base address, there are $20 registers
 
 ; *****************
 ; FDC
