@@ -99,6 +99,13 @@ dword     PS2M_FETCH,"PS2M@"
           PUSHNEXT
 eword
 
+dword     dKBDRESET,"$KBDRESET"
+          ENTER
+          ONLIT $FF
+          .dword PS2K_STORE
+          EXIT
+eword
+
 ; this probably isn't fast enough to reliably set micro and milliseconds
 dword     SETRTC,"SETRTC"
           ENTER
@@ -199,6 +206,8 @@ table:    .addr _sf_pre_init
           .dword drXT           ; last word defined in the neon816 dictionary
           .dword rBODY
           .dword STORE
+          .dword GETRTC         ; start the clock
+          .dword CLEAR
           CODE
           jmp   _sf_success
 .endproc
