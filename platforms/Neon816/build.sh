@@ -7,7 +7,7 @@ ca65 -I ../../inc romboot.s -l romboot.lst
 ld65 -vm -C Neon816.l Neon816.o ../../forth.o ./romboot.o -m forth.map -o of816-neon.bin
 ls -l of816-neon.bin
 if which -s bin2hex; then
-  hex2bin of816-neon.bin > of816-neon.hex
+  bin2hex of816-neon.bin > of816-neon.hex
   ls -l of816-neon.hex
 fi
 
