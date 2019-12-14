@@ -81,7 +81,7 @@ From within neonprog, execute ``dumprom backup.bin`` to save an image of both RO
 Once the backup has finished (it will take a while), you can proceed to the installation of OF816 with 
 ``flash of816-neon.hex``.  This will also take a while.  When it is done, reset your Neon and OF816 should start.
 
-## Restoring the Original NeonFORTH Firmware
+### Restoring the Original NeonFORTH Firmware
 
 Since the Neon (at the time of this writing) only ships with the first bank of flash occupied, first, split your backup
 with ``split -b 65536 backup.bin``.  This will output two files, ``xaa`` and ``xab`` that are bank $20 and bank $21,
