@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e -x
+cd $(dirname $0)
 ca65 -I ../../inc Neon816.s -l Neon816.lst
 ca65 -I ../../inc romboot.s -l romboot.lst
 ../../build.sh Neon816

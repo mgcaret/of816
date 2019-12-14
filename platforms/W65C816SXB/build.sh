@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e -x
+cd $(dirname $0)
 toke fcode/romloader.fs
 ruby mkromfs.rb romfs fs/*
 ca65 -I ../../inc W65C816SXB.s -l W65C816SXB.lst
