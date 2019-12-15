@@ -42,7 +42,6 @@ dword     PS2K_QUERY,"PS2K?"
 eword
 
 dword     PS2K_FETCH,"PS2K@"
-          lda   #$0000
           sep   #SHORT_A
           .a8
 :         lda   f:PS2Kstat
@@ -51,9 +50,9 @@ dword     PS2K_FETCH,"PS2K@"
           lda   f:PS2Kio
           rep   #SHORT_A
           .a16
-          tay
-          lda   #$0000
-          PUSHNEXT
+          and   #$00FF
+          jsr   _pusha
+          NEXT
 eword
 
 dword     PS2M_STORE,"PS2M!"
@@ -85,7 +84,6 @@ dword     PS2M_QUERY,"PS2M?"
 eword
 
 dword     PS2M_FETCH,"PS2M@"
-          lda   #$0000
           sep   #SHORT_A
           .a8
 :         lda   f:PS2Mstat
@@ -94,9 +92,9 @@ dword     PS2M_FETCH,"PS2M@"
           lda   f:PS2Mio
           rep   #SHORT_A
           .a16
-          tay
-          lda   #$0000
-          PUSHNEXT
+          and   #$00FF
+          jsr   _pusha
+          NEXT
 eword
 
 dword     dKBDRESET,"$KBDRESET"
@@ -196,9 +194,8 @@ dofetch:  sta   f:I2C2ctrl
           rep   #SHORT_A
           .a16
           and   #$00FF
-          tay
-          lda   #$0000
-          PUSHNEXT
+          jsr   _pusha
+          NEXT
 eword
 
 dword     I2C2_FETCH,"I2C2@+"
@@ -238,9 +235,8 @@ dword     VDC_C_FETCH,"VDCC@"
           .a16
           plx                     ; restore SP
           and   #$00FF
-          tay
-          lda   #$0000
-          PUSHNEXT
+          jsr   _pusha
+          NEXT
 eword
 
 dword     VDC_STORE,"VDC!"
@@ -284,7 +280,7 @@ dword     VIDSTART,"VIDSTART"
           ONLIT $0272
           ONLIT $1E
           .dword VDC_STORE
-          ONLIT $92
+vid_on:   ONLIT $92
 :         .dword ZERO
           .dword VDC_C_STORE
           .dword ZERO
@@ -300,6 +296,37 @@ dword     VIDSTART,"VIDSTART"
           .dword I2C2_STORE
           .dword I2C2STOP
           EXIT
+eword
+
+dword     VMODELINE,"VMODELINE"
+          ENTER
+          .dword TWO
+          .dword MINUS
+          ONLIT  $1E
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $1C
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $1A
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $18
+          .dword VDC_STORE
+          .dword TWO
+          .dword MINUS
+          ONLIT  $16
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $14
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $12
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $10
+          .dword VDC_STORE
+          JUMP   VIDSTART::vid_on
 eword
 
 dword     VIDSTOP,"VIDSTOP"
@@ -351,6 +378,80 @@ dump_size = $0100
           ONLIT  dump_size
           .dword FREE
           EXIT
+eword
+
+dword     SPI2INIT,"SPI2INIT"
+          sep   #SHORT_A
+          .a8
+          lda   #$00
+          sta   f:SPI2ctrl
+          sta   f:SPI2ctrl2
+          lda   #$05
+          sta   f:SPI2ctrl3
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     SPI2START,"SPI2START"
+          sep   #SHORT_A
+          .a8
+          lda   #$01
+          sta   f:SPI2ctrl
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     SPI2STOP,"SPI2STOP"
+          sep   #SHORT_A
+          .a8
+:         lda   f:SPI2ctrl
+          and   #$40
+          bne   :-
+          sta   f:SPI2ctrl        ; note A=0
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+; NOTE: sets short accumulator and leaves it that way on exit!
+.proc     SPI2_busy_wait
+          sep   #SHORT_A
+nosep:
+          .a8
+:         lda   f:SPI2ctrl
+          rol
+          bcs   :-
+          rts
+          .a16
+.endproc
+
+dword     SPI2_STORE,"SPI2!"
+          jsr   _popay
+          jsr   SPI2_busy_wait
+          .a8
+          tya
+          sta   f:SPI2io
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     SPI2_FETCH,"SPI2@"
+          jsr   SPI2_busy_wait
+          .a8
+          lda   #$00
+          sta   f:SPI2io
+:         lda   f:SPI2ctrl
+          bit   #$40
+          bne   :-
+          lda   f:SPI2io
+          rep   #SHORT_A
+          .a16
+          and   #$00FF
+          jsr   _pusha
+          NEXT
 eword
 
 dend
