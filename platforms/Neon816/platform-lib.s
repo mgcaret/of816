@@ -258,6 +258,101 @@ dword     VDC_STORE,"VDC!"
           NEXT
 eword
 
+dword     VIDSTART,"VIDSTART"
+          ENTER
+          ONLIT $0799
+          ONLIT $10
+          .dword VDC_STORE
+          ONLIT $0839
+          ONLIT $12
+          .dword VDC_STORE
+          ONLIT $03C7
+          ONLIT $14
+          .dword VDC_STORE
+          ONLIT $041E
+          ONLIT $16
+          .dword VDC_STORE
+          ONLIT $0257
+          ONLIT $18
+          .dword VDC_STORE
+          ONLIT $0258
+          ONLIT $1A
+          .dword VDC_STORE
+          ONLIT $025C
+          ONLIT $1C
+          .dword VDC_STORE
+          ONLIT $0272
+          ONLIT $1E
+          .dword VDC_STORE
+          ONLIT $92
+:         .dword ZERO
+          .dword VDC_C_STORE
+          .dword ZERO
+          .dword VDC_C_FETCH
+          .dword IF
+          .dword :-               ; branch if false
+          .dword I2C2START
+          ONLIT $70
+          .dword I2C2_STORE
+          ONLIT $08
+          .dword I2C2_STORE
+          ONLIT $B9
+          .dword I2C2_STORE
+          .dword I2C2STOP
+          EXIT
+eword
+
+dword     VIDSTOP,"VIDSTOP"
+          ENTER
+          .dword I2C2START
+          ONLIT $70
+          .dword I2C2_STORE
+          ONLIT $08
+          .dword I2C2_STORE
+          ONLIT $FE
+          .dword I2C2_STORE
+          .dword I2C2STOP
+          .dword ZERO
+          .dword ZERO
+          .dword VDC_C_STORE
+          EXIT
+eword
+
+dword     DUMPEDID,"DUMPEDID"
+dump_size = $0100
+          ENTER
+          ONLIT dump_size
+          .dword ALLOC            ; buffer for downloaded EDID data
+          .dword I2C2START
+          ONLIT  $A0
+          .dword I2C2_STORE
+          .dword ZERO
+          .dword I2C2_STORE
+          .dword I2C2START
+          ONLIT  $A1
+          .dword I2C2_STORE
+          ONLIT  dump_size
+          .dword ZERO
+          .dword _DO
+:         .dword I2C2_FETCH_ACK
+          .dword OVER
+          .dword IX
+          .dword PLUS
+          .dword CSTORE
+          .dword ONE
+          .dword _PLOOP
+          .dword :-
+          .dword UNLOOP
+          .dword I2C2_FETCH       ; NeonFORTH displays this
+          .dword I2C2STOP
+          .dword DUP
+          ONLIT  dump_size
+          .dword DUMP
+          ONLIT  dump_size
+          .dword FREE
+          EXIT
+eword
+
 dend
 
 ; and now for the system interface
