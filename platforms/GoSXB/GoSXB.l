@@ -13,4 +13,3 @@ SEGMENTS {
 	FCode: load=ROM, type=ro, optional=yes;
 	ZEROPAGE: load=ZP, type=bss;
 }
-

@@ -91,7 +91,7 @@ table:    .addr _sf_pre_init
 
 
 .proc     _sf_pre_init
-.if 1
+.if 0
           plx
           jmp   _sf_success     ; assume WDC monitor already did it
 .else
@@ -101,25 +101,24 @@ table:    .addr _sf_pre_init
           .a8
           .i8
           lda   #$00
-          sta   VIA2+VIA::ACR
-          lda   #$00
-          sta   VIA2+VIA::PCR
+          sta   f:VIA2+VIA::ACR
+          sta   f:VIA2+VIA::PCR
           lda   #%00011000      ; b3 = TUSB_RDB; b4 = ???
-          sta   VIA2+VIA::ORB
+          sta   f:VIA2+VIA::ORB
           lda   #%00011100      ; set PB2, PB3, PB4 as outputs
-          sta   VIA2+VIA::DDRB
+          sta   f:VIA2+VIA::DDRB
           lda   #$00
           sta   VIA2+VIA::DDRA
           lda   VIA2+VIA::IRB
           pha
           and   #%11101111      ; b4 = ???
-          sta   VIA2+VIA::ORB
+          sta   f:VIA2+VIA::ORB
           ldx   #$5d
           jsr   wait
           pla
-          sta   VIA2+VIA::ORB
-          lda   #%00100000      ; b5 = TUSB_PWRENB
-:         bit   VIA2+VIA::IRB   ; wait for USB configuration
+          sta   f:VIA2+VIA::ORB
+:         lda   f:VIA2+VIA::IRB   ; wait for USB configuration
+          bit   #%00100000      ; b5 = TUSB_PWRENB
           bne   :-
           plp
           plx
@@ -179,7 +178,7 @@ wait:     phx                   ; note 8-bit mode!
           txa
           sta   f:VIA2+VIA::ORB ; strobe FT245RL WR low
           lda   VIA2+VIA::IRA   ; get output byte back (we don't really need it)
-	  xba
+	      xba
           lda   #$00
           sta   f:VIA2+VIA::DDRA  ; switch DDR A back to input
           xba

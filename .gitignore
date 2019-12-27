@@ -12,4 +12,5 @@ romfs
 .DS_Store
 *.hex
 of816-neon.bin
+platforms/GoSXB/rom
 
