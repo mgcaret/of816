@@ -42,7 +42,6 @@ dword     PS2K_QUERY,"PS2K?"
 eword
 
 dword     PS2K_FETCH,"PS2K@"
-          lda   #$0000
           sep   #SHORT_A
           .a8
 :         lda   f:PS2Kstat
@@ -51,9 +50,9 @@ dword     PS2K_FETCH,"PS2K@"
           lda   f:PS2Kio
           rep   #SHORT_A
           .a16
-          tay
-          lda   #$0000
-          PUSHNEXT
+          and   #$00FF
+          jsr   _pusha
+          NEXT
 eword
 
 dword     PS2M_STORE,"PS2M!"
@@ -85,7 +84,6 @@ dword     PS2M_QUERY,"PS2M?"
 eword
 
 dword     PS2M_FETCH,"PS2M@"
-          lda   #$0000
           sep   #SHORT_A
           .a8
 :         lda   f:PS2Mstat
@@ -94,9 +92,16 @@ dword     PS2M_FETCH,"PS2M@"
           lda   f:PS2Mio
           rep   #SHORT_A
           .a16
-          tay
-          lda   #$0000
-          PUSHNEXT
+          and   #$00FF
+          jsr   _pusha
+          NEXT
+eword
+
+dword     dKBDRESET,"$KBDRESET"
+          ENTER
+          ONLIT $FF
+          .dword PS2K_STORE
+          EXIT
 eword
 
 ; this probably isn't fast enough to reliably set micro and milliseconds
@@ -132,6 +137,321 @@ dword     GETRTC,"GETRTC"
           ONLIT  RTCus
           .dword WFETCH
           EXIT
+eword
+
+; NOTE: sets short accumulator and leaves it that way on exit!
+.proc     I2C2_busy_wait
+          sep   #SHORT_A
+nosep:
+          .a8
+:         lda   f:I2C2ctrl
+          rol
+          bcs   :-
+          rts
+          .a16
+.endproc
+
+dword     I2C2START,"I2C2START"
+          jsr   I2C2_busy_wait
+          .a8
+          lda   #$01
+          sta   f:I2C2ctrl
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     I2C2STOP,"I2C2STOP"
+          jsr   I2C2_busy_wait
+          .a8
+          lda   #$02
+          sta   f:I2C2ctrl
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     I2C2_STORE,"I2C2!"
+          jsr   _popay
+          jsr   I2C2_busy_wait
+          .a8
+          tya
+          sta   f:I2C2io
+          lda   #$08
+          sta   f:I2C2ctrl
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     I2C2_FETCH_ACK,"I2C2@+"
+          jsr   I2C2_busy_wait
+          .a8
+          lda   #$44
+dofetch:  sta   f:I2C2ctrl
+          jsr   I2C2_busy_wait::nosep
+          lda   f:I2C2io
+          rep   #SHORT_A
+          .a16
+          and   #$00FF
+          jsr   _pusha
+          NEXT
+eword
+
+dword     I2C2_FETCH,"I2C2@+"
+          jsr   I2C2_busy_wait
+          .a8
+          lda   #$04
+          bra   I2C2_FETCH_ACK::dofetch
+          .a16
+eword
+
+dword     VDC_C_STORE,"VDCC!"
+          jsr   _popay            ; pop offset
+          phy                     ; save low word
+          jsr   _popay            ; pop value to write
+          pla                     ; get offset back
+          phx                     ; save SP
+          tax                     ; offset to x reg
+          sep   #SHORT_A          ; whew! that was fun!
+          .a8
+          tya                     ; value to A
+          sta   f:VDCbase,x
+          rep   #SHORT_A
+          .a16
+          plx                     ; restore SP
+          NEXT
+eword
+
+dword     VDC_C_FETCH,"VDCC@"
+          jsr   _popay            ; pop offet
+          phx                     ; save SP
+          tya
+          tax
+          sep   #SHORT_A          ; whew! that was fun!
+          .a8
+          lda   f:VDCbase,x
+          rep   #SHORT_A
+          .a16
+          plx                     ; restore SP
+          and   #$00FF
+          jsr   _pusha
+          NEXT
+eword
+
+dword     VDC_STORE,"VDC!"
+          jsr   _popay            ; again! again! again!
+          phy
+          jsr   _popay
+          pla
+          phx
+          tax
+          tya
+          sta   f:VDCbase,x
+          rep   #SHORT_A
+          .a16
+          plx                     ; restore SP
+          NEXT
+eword
+
+dword     VIDSTART,"VIDSTART"
+          ENTER
+          ONLIT $0799
+          ONLIT $10
+          .dword VDC_STORE
+          ONLIT $0839
+          ONLIT $12
+          .dword VDC_STORE
+          ONLIT $03C7
+          ONLIT $14
+          .dword VDC_STORE
+          ONLIT $041E
+          ONLIT $16
+          .dword VDC_STORE
+          ONLIT $0257
+          ONLIT $18
+          .dword VDC_STORE
+          ONLIT $0258
+          ONLIT $1A
+          .dword VDC_STORE
+          ONLIT $025C
+          ONLIT $1C
+          .dword VDC_STORE
+          ONLIT $0272
+          ONLIT $1E
+          .dword VDC_STORE
+vid_on:   ONLIT $92
+:         .dword ZERO
+          .dword VDC_C_STORE
+          .dword ZERO
+          .dword VDC_C_FETCH
+          .dword IF
+          .dword :-               ; branch if false
+          .dword I2C2START
+          ONLIT $70
+          .dword I2C2_STORE
+          ONLIT $08
+          .dword I2C2_STORE
+          ONLIT $B9
+          .dword I2C2_STORE
+          .dword I2C2STOP
+          EXIT
+eword
+
+dword     VMODELINE,"VMODELINE"
+          ENTER
+          .dword TWO
+          .dword MINUS
+          ONLIT  $1E
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $1C
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $1A
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $18
+          .dword VDC_STORE
+          .dword TWO
+          .dword MINUS
+          ONLIT  $16
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $14
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $12
+          .dword VDC_STORE
+          .dword DECR
+          ONLIT  $10
+          .dword VDC_STORE
+          JUMP   VIDSTART::vid_on
+eword
+
+dword     VIDSTOP,"VIDSTOP"
+          ENTER
+          .dword I2C2START
+          ONLIT $70
+          .dword I2C2_STORE
+          ONLIT $08
+          .dword I2C2_STORE
+          ONLIT $FE
+          .dword I2C2_STORE
+          .dword I2C2STOP
+          .dword ZERO
+          .dword ZERO
+          .dword VDC_C_STORE
+          EXIT
+eword
+
+dword     DUMPEDID,"DUMPEDID"
+dump_size = $0100
+          ENTER
+          ONLIT dump_size
+          .dword ALLOC            ; buffer for downloaded EDID data
+          .dword I2C2START
+          ONLIT  $A0
+          .dword I2C2_STORE
+          .dword ZERO
+          .dword I2C2_STORE
+          .dword I2C2START
+          ONLIT  $A1
+          .dword I2C2_STORE
+          ONLIT  dump_size
+          .dword ZERO
+          .dword _DO
+:         .dword I2C2_FETCH_ACK
+          .dword OVER
+          .dword IX
+          .dword PLUS
+          .dword CSTORE
+          .dword ONE
+          .dword _PLOOP
+          .dword :-
+          .dword UNLOOP
+          .dword I2C2_FETCH       ; NeonFORTH displays this
+          .dword I2C2STOP
+          .dword DUP
+          ONLIT  dump_size
+          .dword DUMP
+          ONLIT  dump_size
+          .dword FREE
+          EXIT
+eword
+
+dword     SPI2INIT,"SPI2INIT"
+          sep   #SHORT_A
+          .a8
+          lda   #$00
+          sta   f:SPI2ctrl
+          sta   f:SPI2ctrl2
+          lda   #$05
+          sta   f:SPI2ctrl3
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     SPI2START,"SPI2START"
+          sep   #SHORT_A
+          .a8
+          lda   #$01
+          sta   f:SPI2ctrl
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     SPI2STOP,"SPI2STOP"
+          sep   #SHORT_A
+          .a8
+:         lda   f:SPI2ctrl
+          and   #$40
+          bne   :-
+          sta   f:SPI2ctrl        ; note A=0
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+; NOTE: sets short accumulator and leaves it that way on exit!
+.proc     SPI2_busy_wait
+          sep   #SHORT_A
+nosep:
+          .a8
+:         lda   f:SPI2ctrl
+          rol
+          bcs   :-
+          rts
+          .a16
+.endproc
+
+dword     SPI2_STORE,"SPI2!"
+          jsr   _popay
+          jsr   SPI2_busy_wait
+          .a8
+          tya
+          sta   f:SPI2io
+          rep   #SHORT_A
+          .a16
+          NEXT
+eword
+
+dword     SPI2_FETCH,"SPI2@"
+          jsr   SPI2_busy_wait
+          .a8
+          lda   #$00
+          sta   f:SPI2io
+:         lda   f:SPI2ctrl
+          bit   #$40
+          bne   :-
+          lda   f:SPI2io
+          rep   #SHORT_A
+          .a16
+          and   #$00FF
+          jsr   _pusha
+          NEXT
 eword
 
 dend
@@ -199,6 +519,8 @@ table:    .addr _sf_pre_init
           .dword drXT           ; last word defined in the neon816 dictionary
           .dword rBODY
           .dword STORE
+          .dword GETRTC         ; start the clock
+          .dword CLEAR
           CODE
           jmp   _sf_success
 .endproc

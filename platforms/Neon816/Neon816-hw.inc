@@ -75,7 +75,7 @@ RTCday    = $100108               ; 2 bytes
 ; *****************
 
 I2C2io    = $100014
-I2C2ctrl  = $100015               ; read: b3 = busy; write: $01 = start, $02 = stop, $04 = receive, $08 = send, $44 = receive/ack
+I2C2ctrl  = $100015               ; read: b7 = busy; write: $01 = start, $02 = stop, $04 = receive, $08 = send, $44 = receive/ack
 
 ; *****************
 ; SPI
@@ -91,7 +91,7 @@ SPI2ctrl3 = $10001F               ; init = $05
 ; VDC
 ; *****************
 
-VDCio     = $100120               ; read: 1 byte, write: 1 or 2 bytes
+VDCbase   = $100120               ; base address, there are $20 registers
 
 ; *****************
 ; FDC
