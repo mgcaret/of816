@@ -34,7 +34,7 @@
           pha
           jsl   _Forth_initialize
           jsl   _Forth_ui
-          brk
-          .byte $00
+          wdm   $FF               ; exit GoSXB
+          brk   $00
 .endproc
 .popseg
