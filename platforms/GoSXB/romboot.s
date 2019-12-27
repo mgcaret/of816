@@ -1,3 +1,9 @@
+; This is a stub ROM for the GoSXB emulator that will jump to $200000 upon
+; reset, NMI, or BRK.
+; For every other kind of interrupt, it causes GoSXB to exit.  If it happens
+; to be running on real hardware, it will hang instead of exit.
+; The purpose of this stub is to execute OF816 in ROM in bank $20.
+
 .p816
 .a16
 .i16
