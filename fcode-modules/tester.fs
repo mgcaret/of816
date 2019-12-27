@@ -31,8 +31,11 @@ VARIABLE VERBOSE
    FALSE VERBOSE !
 \   TRUE VERBOSE !
 
-: EMPTY-STACK   \ ( ... -- ) EMPTY STACK: HANDLES UNDERFLOWED STACK TOO.
-   DEPTH ?DUP IF DUP 0< IF NEGATE 0 DO 0 LOOP ELSE 0 DO DROP LOOP THEN THEN ;
+\ : EMPTY-STACK   \ ( ... -- ) EMPTY STACK: HANDLES UNDERFLOWED STACK TOO.
+\    DEPTH ?DUP IF DUP 0< IF NEGATE 0 DO 0 LOOP ELSE 0 DO DROP LOOP THEN THEN ;
+\ THE IEEE-1275 CLEAR word works the same but the standard does not define
+\ an FCode for it...
+defer EMPTY-STACK s" ' clear" eval to EMPTY-STACK
 
 VARIABLE #ERRORS 0 #ERRORS !
 
@@ -50,6 +53,8 @@ CREATE ACTUAL-RESULTS 20 CELLS ALLOT
 : T{      \ ( -- ) SYNTACTIC SUGAR.
    ;
 
+\ FCode tokenizer will issue a warning for this
+\ it can be ignored
 : ->      \ ( ... -- ) RECORD DEPTH AND CONTENT OF STACK.
    DEPTH DUP ACTUAL-DEPTH !      \ RECORD DEPTH
    ?DUP IF            \ IF THERE IS SOMETHING ON STACK
