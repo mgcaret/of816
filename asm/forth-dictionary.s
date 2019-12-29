@@ -852,7 +852,8 @@ dword     LBSPLIT,"LBSPLIT"
           tya
           xba
           and   #$FF
-          ldy   #$00
+          tay
+          lda   #$0000
           PUSHNEXT
 eword
 
