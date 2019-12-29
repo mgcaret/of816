@@ -1,0 +1,32 @@
+- name: 7.3.1 Stack functions
+  load:
+    - tester.fs
+    - 7.3.1.fs
+- name: 7.3.2.1 Arithmetic
+  load:
+    - tester.fs
+    - test-utils.fs
+    - 7.3.2.1.fs
+- name: 7.3.2.2 Arithmetic
+  load:
+    - tester.fs
+    - test-utils.fs
+    - 7.3.2.2.fs
+- name: 7.3.2.3 Arithmetic
+  load:
+    - tester.fs
+    - test-utils.fs
+    - 7.3.2.3.fs
+- name: 7.3.2.4 Arithmetic
+  load:
+    - tester.fs
+    - 7.3.2.4.fs
+- name: 7.3.2.5 Arithmetic
+  load:
+    - tester.fs
+    - 7.3.2.5.fs
+- name: 7.3.6 Comparison operators
+  load:
+    - tester.fs
+    - test-utils.fs
+    - 7.3.6.fs
