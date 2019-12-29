@@ -2150,7 +2150,7 @@ eword
 dword     MAX,"MAX"
           jsr   _scmpcom
           bcs   drop
-          jsr   _swap
+swap:     jsr   _swap
 drop:     inx
           inx
           inx
@@ -2161,13 +2161,8 @@ eword
 ; H: ( n1 n2 -- n1|n2 ) return the smaller of n1 or n2
 dword     MIN,"MIN"
           jsr   _scmpcom
-          bcc   drop
-          jsr   _swap
-drop:     inx
-          inx
-          inx
-          inx
-          NEXT          
+          bcc   MAX::drop
+          bra   MAX::swap
 eword
 
 ; common routine for unsigned comparisons
