@@ -1818,11 +1818,11 @@ eword
 ; H: ( n1 n2 n3 -- n1 n2 n3 n4 n5 n6 ) n4 = n1, n5 = n2, n6 = n3
 dword     THREEDUP,"3DUP"
           ENTER
-          ONLIT 3
+          ONLIT 2
           .dword PICK
-          ONLIT 3
+          ONLIT 2
           .dword PICK
-          ONLIT 3
+          ONLIT 2
           .dword PICK
           EXIT
 eword
