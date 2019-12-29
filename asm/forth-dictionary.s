@@ -2925,7 +2925,8 @@ dword     ARSHIFT,">>A"
           lda   #.hiword(shift-1)
           jsr   _iter_ay
           NEXT
-shift:    cmp   #$8000
+shift:    lda   STACKBASE+2,x
+          cmp   #$8000
           ror   STACKBASE+2,x
           ror   STACKBASE+0,x
           clc
