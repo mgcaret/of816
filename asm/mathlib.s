@@ -8,14 +8,13 @@
           lda   STACKBASE+6,x
           eor   STACKBASE+2,x
           bpl   samesign
-          lda   STACKBASE+4,x
-          cmp   STACKBASE+0,x
-          lda   STACKBASE+6,x
-          sbc   STACKBASE+2,x
-          bvs   :+
+          lda   STACKBASE+0,x
+          cmp   STACKBASE+4,x
+          lda   STACKBASE+2,x
+          sbc   STACKBASE+6,x
+          bvc   :+
           eor   #$8000
-:         sec
-          rol
+:         rol
           rts
 samesign: lda   STACKBASE+6,x
           cmp   STACKBASE+2,x
