@@ -1386,9 +1386,10 @@ eword
 ; H: ( c-addr -- n1 n2 ) fetch two consecutive cells from c-addr
 dword     TWOFETCH,"2@"
           jsr   _popwr
+          jsr   _wrplus4
           jsr   _wrfetchind
           jsr   _pushay
-          jsr   _wrplus4
+          jsr   _wrminus4
           bra   FETCH::fetch2
 eword
 
@@ -1449,10 +1450,9 @@ eword
 ; H: ( n1 n2 c-addr -- ) write consecutive cells n1 and n2 to c-addr
 dword     TWOSTORE,"2!"
           jsr   _popwr
-          jsr   _wrplus4
           jsr   _popay
           jsr   _wrstoreind
-          jsr   _wrminus4
+          jsr   _wrplus4
           bra   STORE::store2
 eword
 
