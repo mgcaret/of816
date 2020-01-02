@@ -2023,8 +2023,6 @@ eword
 dword     ZEROGTE,"0>="
           jsr   _zcmpcom
           bmi   _cmpstore2
-          ora   STACKBASE+0,x
-          bne   _cmpstore2
           dey
           bra   _cmpstore2
 eword
