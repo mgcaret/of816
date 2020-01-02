@@ -54,7 +54,18 @@ T{ 0 MIN-INT > -> <TRUE> }T
 T{ MAX-INT MIN-INT > -> <TRUE> }T
 T{ MAX-INT 0 > -> <TRUE> }T
 
-\ todo: >= between within
+t{ 0 0 >= -> <true> }t
+t{ 1 0 >= -> <true> }t
+t{ 2 0 >= -> <true> }t
+t{ -1 0 >= -> <false> }t
+t{ -1 1 >= -> <false> }t
+t{ 1 -1 >= -> <true> }t
+t{ min-int 0 >= -> <false> }t
+t{ max-int 0 >= -> <true> }t
+t{ min-int max-int >= -> <false> }t
+t{ max-int min-int >= -> <true> }t
+
+\ todo: between within
 
 T{ 0 0< -> <FALSE> }T
 T{ -1 0< -> <TRUE> }T
@@ -62,7 +73,20 @@ T{ MIN-INT 0< -> <TRUE> }T
 T{ 1 0< -> <FALSE> }T
 T{ MAX-INT 0< -> <FALSE> }T
 
-\ todo: 0<= 0<>
+t{ 0 0<= -> <true> }t
+t{ -1 0<= -> <true> }t
+t{ -2 0<= -> <true> }t
+t{ 1 0<= -> <false> }t
+t{ min-int 0<= -> <true> }t
+t{ max-int 0<= -> <false> }t
+
+t{ 0 0<> -> <false> }t
+t{ 1 0<> -> <true> }t
+t{ 2 0<> -> <true> }t
+t{ -1 0<> -> <true> }t
+t{ MAX-UINT 0<> -> <true> }t
+t{ MIN-INT 0<> -> <true> }t
+t{ MAX-INT 0<> -> <true> }t
 
 T{ 0 0= -> <TRUE> }T
 T{ 1 0= -> <FALSE> }T
@@ -72,7 +96,19 @@ T{ MAX-UINT 0= -> <FALSE> }T
 T{ MIN-INT 0= -> <FALSE> }T
 T{ MAX-INT 0= -> <FALSE> }T
 
-\ todo: 0> 0>=
+t{ 0 0> -> <false> }t
+t{ 1 0> -> <true> }t
+t{ 2 0> -> <true> }t
+t{ -1 0> -> <false> }t
+t{ min-int 0> -> <false> }t
+t{ max-int 0> -> <true> }t
+
+t{ 0 0>= -> <true> }t
+t{ 1 0>= -> <true> }t
+t{ 2 0>= -> <true> }t
+t{ -1 0>= -> <false> }t
+t{ min-int 0>= -> <false> }t
+t{ max-int 0>= -> <true> }t
 
 T{ 0 1 U< -> <TRUE> }T
 T{ 1 2 U< -> <TRUE> }T
