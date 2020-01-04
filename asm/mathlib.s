@@ -8,14 +8,9 @@
           lda   STACKBASE+6,x
           eor   STACKBASE+2,x
           bpl   samesign
-          lda   STACKBASE+4,x
-          cmp   STACKBASE+0,x
-          lda   STACKBASE+6,x
-          sbc   STACKBASE+2,x
-          bvs   :+
-          eor   #$8000
-:         sec                       ; make sure we don't set Z
-          rol                       ; move comparison into carry
+          lda   STACKBASE+2,x       ; Kelvin's excellent solution
+          sec
+          rol
           rts
 samesign: lda   STACKBASE+6,x
           cmp   STACKBASE+2,x
