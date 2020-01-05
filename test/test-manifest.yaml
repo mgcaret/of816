@@ -39,3 +39,7 @@
     - tester.fs
     - test-utils.fs
     - 7.3.6.fs
+- name: 7.3.7 Flag constants
+  load:
+    - tester.fs
+    - 7.3.7.fs
