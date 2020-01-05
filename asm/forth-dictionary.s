@@ -1315,7 +1315,6 @@ dword     LITERAL,"LITERAL",F_IMMED
           bra   COMMA::code       ; compile actual number
           .else
           lda   STACKBASE+2,x
-          ora   #$0000
           beq   COMMA::code       ; compile fast literal
           ldy   #.loword(_LIT)
           lda   #.hiword(_LIT)
@@ -1688,19 +1687,17 @@ dword     DROP,"DROP"
           NEXT
 eword
 
-; H: ( n1 n2 -- )
-dword     TWODROP,"2DROP"
+; H: ( n1 n2 n3 -- )
+dword     THREEDROP,"3DROP"
           jsr   _stackincr
+twodrop:  jsr   _stackincr
           jsr   _stackincr
           NEXT
 eword
 
-; H: ( n1 n2 n3 -- )
-dword     THREEDROP,"3DROP"
-          jsr   _stackincr
-          jsr   _stackincr
-          jsr   _stackincr
-          NEXT
+; H: ( n1 n2 -- )
+dword     TWODROP,"2DROP"
+          bra   THREEDROP::twodrop
 eword
 
 ; H: ( n1 ... nx -- ) empty stack
