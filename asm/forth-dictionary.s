@@ -3300,7 +3300,7 @@ eword
 
 ; H: ( d n1 -- n2 n3 ) floored divide d by n1, giving quotient n3 and remainder n2
 dword     FMDIVMOD,"FM/MOD"
-          .if 1 ; primitive, using math lib FM/MOD code based on SM/REM
+          .if 0 ; primitive, using math lib FM/MOD code based on SM/REM
           jsr   _3parm
           lda   STACKBASE+0,x
           ora   STACKBASE+2,x
