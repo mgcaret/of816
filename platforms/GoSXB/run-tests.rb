@@ -97,8 +97,6 @@ manifest.each do |suite|
     @total_errors += run_suite(suite)
 end
 
-puts "Tests complete, total errors: #{@total_errors}"
-
 if @total_errors > 0
     STDERR.puts "Tests complete, total errors: #{@total_errors}"
     exit 1
