@@ -3102,7 +3102,7 @@ getbuf:   lda   [SYSVARS],y         ; get buffer pointer
 setbuf1:  ldy   #SV_SBUF1         ; select buf 1
 setbuf:   pla                     ; update pointers
           sta   YR                ; in YR
-          sta   [SYSVARS],y         ; in the appropriate system var
+          sta   [SYSVARS],y       ; in the appropriate system var
           sta   STACKBASE+4,x     ; in the parameter stack
           iny
           iny
@@ -3110,7 +3110,8 @@ setbuf:   pla                     ; update pointers
           sta   YR+2
           sta   [SYSVARS],y
           sta   STACKBASE+6,x
-          jsr   _move
+          sec                     ; move down is faster
+          jsr   _memmove
           NEXT
 nomem:    ldy   #.loword(-18)
           lda   #.hiword(-18)
@@ -3779,7 +3780,7 @@ dword     MOVE,"MOVE"
           jsr   _popxr
           jsr   _popyr
           jsr   _popwr
-          jsr   _move
+          jsr   _memmove
           NEXT
 eword
 
@@ -3793,7 +3794,8 @@ dword     CMOVEUP,"CMOVE>"
           jsr   _popxr
           jsr   _popyr
           jsr   _popwr
-          jsr   _moveup
+          clc
+          jsr   _memmove_c
           NEXT
 eword
 
@@ -4483,7 +4485,8 @@ dword     PACK,"PACK"
           inc   YR
           bne   :+
           inc   YR+2
-:         jsr   _move
+:         sec                     ; move down is faster
+          jsr   _memmove_c
           NEXT
 bad:      ldy   #.loword(-18)
           lda   #.hiword(-18)
@@ -5396,7 +5399,8 @@ hword     SCONCAT,"SCONCAT"
           lda   XR+2
           adc   STACKBASE+2,x
           sta   STACKBASE+2,x
-          jsr   _move             ; move the string
+          sec                     ; move down is faster
+          jsr   _memmove_c        ; move the string
           NEXT
 eword
 

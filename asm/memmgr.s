@@ -419,17 +419,16 @@ loop:     jsr   _chk_himem
 done:     rts
 .endproc
 
-.if 1 ; include fast memory move routines
 ; Memory move routines
 ; move XR bytes of memory from [WR] to [YR]
 
-; Move appropriately based
+; Move appropriately based on source and destination
 .proc     _memmove
           lda   WR
           cmp   YR
           lda   WR+2
           sbc   YR+2
-          ; now carry is set if WR >= XR, move down in that case, otherwise move up
+          ; now carry is set if WR >= YR, move down in that case, otherwise move up
           ; fall-through
 .endproc
 
@@ -509,7 +508,7 @@ md6:      pha
           jsl   f:_callzr
           plb  
           pla  
-          eor   #$ffff            ; a xor $ffff = $ffff - a = -1 - a
+          eor   #$FFFF            ; a xor $FFFF = $FFFF - a = -1 - a
           adc   sizel
           sta   sizel             ; sizel = sizel - 1 - a
           sep   #$20
@@ -517,10 +516,9 @@ md6:      pha
           lda   sizeh             ; update high byte of size
           sbc   #$00
           bcs   md1
-          rep   #$30
+          plp
           .a16
           .i16
-          plp
           plx
           rts
 .endproc
@@ -533,11 +531,27 @@ tol       = YR
 sizeh     = XR+2
 sizel     = XR
 mu7       = ZR
+          ; first convert start addresses to end addresses
+          lda   WR
+          clc
+          adc   XR
+          sta   WR
+          lda   WR+2
+          adc   XR+2
+          sta   WR+2
+          lda   YR
+          clc
+          adc   XR
+          sta   YR
+          lda   YR+2
+          adc   XR+2
+          sta   YR+2
+          ; now start the move
           phx
           php
           lda   #$6B00            ; RTL
           sta   mu7+2
-          lda   #$0054            ; MVN
+          lda   #$0044            ; MVP
           sta   mu7
           sep   #$21              ; 8-bit accumulator, set carry
           .a8
@@ -557,25 +571,25 @@ mu7       = ZR
           cmp   froml
           bcs   mu3
           bra   mu4
-          .a8
+          .a8                     ; a is 8 bits when we branch to mu1!
 mu1:      sta   sizeh
-          eor   #$80   ; set v if size is zero, clear v otherwise
+          eor   #$80              ; set v if size is zero, clear v otherwise
           sbc   #$01
           cpx   #$FFFF
-          bne   mu2    ; if x is not $FFFF, then y must be
+          bne   mu2               ; if x is not $FFFF, then y must be
           dec   mu7+2
           rep   #$20
           .a16
           tya  
           cpy   #$FFFF
           bne   mu4
-          .a8
           sep   #$20
+          .a8
 mu2:      dec   mu7+1
           rep   #$20
           .a16
 mu3:      txa
-mu4:      bvc   mu5    ; branch if sizeh is nonzero
+mu4:      bvc   mu5               ; branch if sizeh is nonzero
           cmp   sizel
           bcc   mu6
           lda   sizel
@@ -585,18 +599,17 @@ mu6:      pha
           jsl   f:_callzr
           plb  
           pla  
-          eor   #$FFFF ; a xor $FFFF = $FFFF - a = -1 - a
+          eor   #$FFFF            ; a xor $FFFF = $FFFF - a = -1 - a
           adc   sizel
-          sta   sizel  ; sizel = sizel - 1 - a
+          sta   sizel             ; sizel = sizel - 1 - a
           sep   #$20
           .a8
-          lda   sizeh  ; update high byte of size
+          lda   sizeh             ; update high byte of size
           sbc   #$00
           bcs   mu1
-          rep   #$30
+          plp
           .a16
           .i16
-          plp
           plx
           rts
 .endproc
@@ -623,4 +636,3 @@ mu6:      pha
           pla                     ; ( 0 zrh zrl ah al -- 0 zrh zrl )
           rtl                     ; ( 0 zrh zrl -- )
 .endproc
-.endif

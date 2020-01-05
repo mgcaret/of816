@@ -20,6 +20,7 @@ samesign: lda   STACKBASE+6,x
           cmp   STACKBASE+0,x
 :         rts
 .endproc
+_test32   = _stest32::samesign
 
 .proc     _invertay
           pha
