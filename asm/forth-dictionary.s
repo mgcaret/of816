@@ -3772,26 +3772,31 @@ dword     DOTH,".H"
           JUMP DOTD::tmpbase
 eword
 
-; H: ( addr1 addr2 len -- ) move memory
-dword     MOVE,"MOVE"
+.proc     _popxryrwr
           jsr   _popxr
           jsr   _popyr
-          jsr   _popwr
+          jmp   _popwr
+.endproc
+
+; H: ( addr1 addr2 len -- ) move memory
+dword     MOVE,"MOVE"
+          jsr   _popxryrwr
           jsr   _memmove
           NEXT
 eword
 
-; H: ( addr1 addr2 len -- ) move memory
+; H: ( addr1 addr2 len -- ) move startomg from the bottom
 dword     CMOVE,"CMOVE"
-          bra   MOVE::code
+          jsr   _popxryrwr
+          clc
+          jsr   _memmove_c
+          NEXT
 eword
 
-; H: ( addr1 addr2 len -- ) move memory up
+; H: ( addr1 addr2 len -- ) move starting from the top
 dword     CMOVEUP,"CMOVE>"
-          jsr   _popxr
-          jsr   _popyr
-          jsr   _popwr
-          clc
+          jsr   _popxryrwr
+          sec
           jsr   _memmove_c
           NEXT
 eword
@@ -3800,9 +3805,7 @@ eword
 ; IEEE 1275
 dword     COMP,"COMP"
           stz   ZR                ; case sensitive
-docomp:   jsr   _popxr            ; length
-          jsr   _popyr            ; addr2
-          jsr   _popwr            ; addr1
+docomp:   jsr   _popxryrwr
           sep   #SHORT_A
           .a8
           ldy   #$0000
