@@ -1100,7 +1100,7 @@ eom:      .dword UDOT
 eword
 
 ; H: ( -- c-addr ) STATE variable, zero if interpreting
-dword     STATE,"STATE"
+dword     STATE,"STATE",F_IMMED
           SYSVAR SV_STATE
 eword
 
