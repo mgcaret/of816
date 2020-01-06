@@ -158,7 +158,7 @@ T{ 1 GD6 -> 1 }T
 T{ 2 GD6 -> 3 }T
 T{ 3 GD6 -> 4 1 2 }T
 
-testing 7.3.8.6 Other control flow commands
+testing 7.3.8.6 Error handling
 
 \ not really tested:
 t{ ' quit 0> -> true }t
