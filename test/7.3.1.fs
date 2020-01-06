@@ -28,7 +28,7 @@ t{ 1 2 swap -> 2 1 }t
 t{ 1 2 3 4 2swap -> 3 4 1 2 }t
 
 testing 7.3.1.4 Return stack
-t{ 1 2 >r drop >r -> 2 }t \ both >r and r>
+t{ 1 2 >r drop r> -> 2 }t \ both >r and r>
 t{ 1 >r r@ r> -> 1 1 }t
 
 testing 7.3.1.5 Stack depth

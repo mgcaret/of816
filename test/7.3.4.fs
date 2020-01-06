@@ -7,7 +7,7 @@ t{ >in @ 0> -> true }t
 t{ ascii / parse test/ swap 0> -> 4 true }t
 t{ parse-word test swap 0> -> 4 true }t
 t{ source 0> swap 0> -> true true }t
-t{ word test count swap 0> -> 4 true }t
+t{ bl word test count swap 0> -> 4 true }t
 
 testing 7.3.4.2 Console input
 \ not functionally tested
