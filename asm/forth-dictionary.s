@@ -6052,13 +6052,15 @@ dword     dTEMPCOLON,":TEMP"
 eword
 
 ; word to end temporary colon definition and run it
+; called whenever control-flow-ending words are executed
+; and a temporary definition is open
 ; ( xt xt' -- ) 
-hword     dTEMPSEMI,"$;TEMP",F_IMMED|F_CONLY
+hword     dTEMPSEMIQ,"$;TEMP?",F_IMMED|F_CONLY
           ENTER
           .dword dTMPDEF          ; ( -- a-addr )
-          .dword FETCH            ; ( a-addr -- c-addr ) 0 if not in temp def
-          .dword _IF              ; ( c-addr -- )
-          .dword csmm             ; something is wrong
+          .dword FETCH            ; ( a-addr -- x ) 0 if not in temp def
+          .dword _IF              ; ( x -- )
+          .dword notmp            ; if not in temp def
 dosemi:   .dword DEPTH            ; ( -- u1 )
           .dword dCSDEPTH         ; ( u1 -- u1 c-addr1 ) verify stack depth is what it should be
           .dword FETCH            ; ( u1 c-addr1 -- u1 u2 )
@@ -6066,7 +6068,7 @@ dosemi:   .dword DEPTH            ; ( -- u1 )
           .dword _IFFALSE         ; ( f -- )
           .dword tmpdone          ; true branch, finish up temp def
           .dword TWODROP
-          EXIT
+notmp:    EXIT
 tmpdone:  ;SLIT "Ending temp def... "
           ;.dword TYPE
           .dword DEPTH            ; ( -- u1 )
@@ -6102,16 +6104,6 @@ csmm:     .dword STATEI           ; ( -- )
           JUMP dofree
 eword
 
-; Maybe close temporary definition 
-hword     dTEMPSEMIQ,"$;TEMP?"
-          ENTER
-          .dword dTMPDEF
-          .dword FETCH
-          .dword _IFFALSE
-          .dword dTEMPSEMI::dosemi ; we are doing a temp def, maybe close and run
-          EXIT
-eword
-
 ; ( xt -- ) make definition at xt visible
 hword     UNSMUDGE,"UNSMUDGE"
           ENTER
@@ -6133,7 +6125,7 @@ dword     SEMI,";",F_IMMED|F_CONLY
           .dword FETCH
           .dword _IF
           .dword :+
-          .dword dTEMPSEMI        ; if it is, do that instead
+          .dword dTEMPSEMIQ       ; if it is, do that instead
           EXIT
 :         .dword _COMP_LIT        ; compile EXIT into current def
           EXIT                    ; NOTE: not really EXITing here
