@@ -6769,7 +6769,7 @@ eword
 ; first we will scan the dictionary to see if the word to be forgotten is below
 ; the protection bit, and if it is found before we match the XT, we don't allow the
 ; forget
-; ( xt -- )
+; H: ( xt -- ) forget word referenced by xt and subsequent words
 dword     dFORGET,"$FORGET"
           ENTER
           .dword DUP              ; ( xt -- xt xt' )
@@ -6817,8 +6817,8 @@ cant:     SLIT "Can't forget "    ; ( xt -- xt str len )
 eword
 
 ; H: ( "name"<> -- ) attempt to forget name and subsequent definitions in compiler
-; H: word list.  This may have unintended consequences if things like wordlists and such
-; H: were defined after name.
+; H: word list.  This may have unintended consequences if things like wordlists and
+; H: such were defined after name.
 dword     FORGET,"FORGET"
           ENTER
           .dword PARSEFIND
