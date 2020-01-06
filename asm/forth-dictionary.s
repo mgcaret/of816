@@ -4778,7 +4778,10 @@ eword
 
 ; H: ( [old-name<>] -- xt ) immediately parse old-name in input stream, return xt of word
 dword     CPARSEFIND,"[']",F_IMMED
-          bra PARSEFIND::code
+          ENTER
+          .dword PARSEFIND
+          .dword LITERAL
+          EXIT
 eword
 
 ; H: ( xt -- a-addr) return body of word at xt, if unable then throw exception -31
