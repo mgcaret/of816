@@ -5486,7 +5486,7 @@ done:     .dword RtoP             ; ( -- c-addr3' ) ( R: c-addr3' -- )
           EXIT
 eword
 
-; H: ( -- ) Compile code to compile the immediately following xt.  Better to use POSTPONE.
+; H: ( -- ) Compile code to compile the immediately following word.  Better to use POSTPONE.
 ; BTW don't use with numbers.
 dword     COMPILE,"COMPILE",F_IMMED|F_CONLY
           ENTER
@@ -5495,7 +5495,7 @@ dword     COMPILE,"COMPILE",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( "name"<> -- ) Compile name later.  Better to use postpone.
+; H: ( "name"<> -- ) Compile name now.  Better to use POSTPONE.
 dword     ICOMPILE,"[COMPILE]",F_IMMED
           ENTER
           .dword PARSEFIND
