@@ -628,7 +628,7 @@ hword     _ABORTQ,"_ABORT'"
           .dword TWODROP
           .dword _SKIP
 dotype:   .dword TYPE
-          .dword CLEAR
+          ;.dword CLEAR
           ONLIT -2
           .dword THROW
 noabort:  .dword TWODROP
