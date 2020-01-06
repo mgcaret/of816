@@ -4,28 +4,74 @@ require 'open3'
 require 'yaml'
 require 'stringio'
 require 'timeout'
+require 'optparse'
 
-TEST_DIR = '../../test'
+@opts = {
+    test_dir: '../../test',
+    suites: '*',
+    output_file: nil,
+    cov_file: nil,
+    verbose: $DEBUG,
+    list_only: false
+}
 
-@verbose = $DEBUG
+@coverage = Hash.new(0)
+
+OptionParser.new do |o|
+    o.banner = "Usage: #{$0} [options]"
+
+    o.on('-d', '--dir TEST_DIR', 'Specify test directory.') do |d|
+        @opts[:test_dir] = d
+    end
+
+    o.on('-s', '--suites PATTERN', 'Specify suites as shell glob.') do |p|
+        @opts[:suites] = p
+    end
+
+    o.on('-o', '--outfile FILENAME', 'Specify test output file (default none).') do |f|
+        @opts[:output_file] = f
+    end
+
+    o.on('-c', '--coverage FILENAME', 'Specify test coverage file (default none).') do |f|
+        @opts[:cov_file] = f
+    end
+
+    o.on('-l', '--list-suites', 'List available test suites.') do |d|
+        @opts[:list_only] = true
+    end
+
+    o.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+        @opts[:verbose] = v
+    end
+
+    o.on_tail("-h", "--help", "Show this message") do
+        puts o
+        exit
+    end
+end.parse!
+
 @total_errors = 0
 
-def run_suite(suite)
-    puts "Executing suite: #{suite['name']}"
+def verbose
+    @opts[:verbose]
+end
+
+def run_suite(suite, outfile = nil)
     errors = 0
     suite_text = []
     outbuf = StringIO.new
     errbuf = StringIO.new
     suite['load'].each do |file|
-        suite_text += File.readlines("#{TEST_DIR}/#{file}")
+        suite_text += File.readlines("#{@opts[:test_dir]}/#{file}")
     end
+    colons = {}
     suite_text << "\nbye\n"
     Open3.popen3('./gosxb-of816.sh') do |stdin, stdout, stderr, wait_thr|
         until [stdout, stderr].find {|f| !f.eof}.nil?
             readable, writable, errored = IO.select([stdout,stderr],[stdin],[],0)
             if writable.include?(stdin)
                 if line = suite_text.shift
-                    puts ">> #{line}" if @verbose
+                    puts ">> #{line}" if verbose
                     stdin.write(line)
                 else
                     puts "Lines complete."
@@ -40,18 +86,18 @@ def run_suite(suite)
                         rescue IO::EAGAINWaitReadable
                             # nothing
                         end
-                        puts outbuf.string unless @verbose
+                        puts outbuf.string unless verbose
                         STDERR.puts "Emulator did not exit on its own."
                         errors += 1
                     end
                     stdin.close
-                    puts outbuf.string if @verbose
+                    puts outbuf.string if verbose
                     break
                 end
             end
             if readable.include?(stdout)
                 text = stdout.readline
-                puts "<< #{text}" if @verbose
+                puts "<< #{text}" if verbose
                 outbuf.write(text)
             end
             if readable.include?(stderr)
@@ -66,6 +112,7 @@ def run_suite(suite)
             end
             break unless wait_thr.alive?
         end
+        outfile.write(outbuf.string) if outfile
         prevline = ""
         outbuf.string.lines.each do |line|
             case line
@@ -80,6 +127,19 @@ def run_suite(suite)
             when /TESTING/i
                 puts line unless line.start_with?(':')
             end
+            if line =~ /\s*:\s+(\S+)/
+                colons[$1.downcase] = true
+            end
+            if line =~ /\s*[tT]\{\s+:\s+(\S+)/
+                colons[$1.downcase] = true
+            end
+            if line =~ /T\{(.+) \}T/
+                words = $1.split
+                words.each do |word|
+                    next if word == '->'
+                    @coverage[word.downcase] += 1 unless colons[word.downcase]
+                end
+            end
             prevline = line
         end
         puts "Errors = #{errors}"
@@ -88,14 +148,31 @@ def run_suite(suite)
     return errors
 end
 
+outfile = nil
+begin
+    manifest = YAML.load(File.read("#{@opts[:test_dir]}/test-manifest.yaml"))
+    #puts manifest.inspect
 
-manifest = YAML.load(File.read("#{TEST_DIR}/test-manifest.yaml"))
+    unless @opts[:verbose]
+        outfile = File.open(@opts[:output_file], 'w') if @opts[:output_file]
+    end
 
-#puts manifest.inspect
-
-manifest.each do |suite|
-    @total_errors += run_suite(suite)
+    manifest.each do |suite|
+        if File.fnmatch(@opts[:suites], suite['name'])
+            print "Executing suite: " unless @opts[:list_only]
+            puts suite['name']
+            @total_errors += run_suite(suite, outfile) unless @opts[:list_only]
+        end
+    end
+rescue RuntimeError => e
+    STDERR.puts e.to_s
+ensure
+    outfile.close if outfile
 end
+
+exit 0 if @opts[:list_only]
+
+File.write(@opts[:cov_file], @coverage.to_yaml) if @opts[:cov_file]
 
 if @total_errors > 0
     STDERR.puts "Tests complete, total errors: #{@total_errors}"
