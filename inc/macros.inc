@@ -358,6 +358,7 @@ NUM_SYSVARS .set 0
 .macro dend
   .ident(.sprintf("LAST_%s",c_dict)) = l_dword
   .undef c_dict
+  .undef l_dword
 .endmacro
 
 ; outside-of-dictionary headerless words
