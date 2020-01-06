@@ -116,7 +116,7 @@ def run_suite(suite, outfile = nil)
         prevline = ""
         outbuf.string.lines.each do |line|
             case line
-            when /Exception/, /not found/
+            when /Exception/, /Def not found/, /Stack u/
                 STDERR.puts prevline, line
                 errors += 1
             when /WRONG/, /INCORRECT/
