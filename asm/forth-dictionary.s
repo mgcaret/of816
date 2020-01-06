@@ -2589,18 +2589,18 @@ eword
 
 ; H: ( -- n ) copy second-inner loop index to stack
 dword     JX,"J",F_CONLY
-          lda   13,s
+          lda   17,s
           tay
-          lda   15,s
+          lda   19,s
           PUSHNEXT
 eword
 
 .if 0
 ; H: ( -- n ) copy third-inner loop index to stack
 dword     KX,"K",F_CONLY
-          lda   21,s
+          lda   29,s
           tay
-          lda   23,s
+          lda   31,s
           PUSHNEXT
 eword
 .endif
