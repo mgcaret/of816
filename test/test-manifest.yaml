@@ -53,3 +53,7 @@
     - tester.fs
     - test-utils.fs
     - 7.3.8-i.fs
+- name: 7.3.9 Forth dictionary
+  load:
+    - tester.fs
+    - 7.3.9.fs
