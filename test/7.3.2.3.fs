@@ -45,7 +45,7 @@ t{ HI-2INT 1 s>d D+ -> 0 HI-INT 1+ }t
 T{ HI-2INT 2DUP D+ -> 1SD 1- MAX-INTD }T
 t{ MAX-2INT MIN-2INT D+ -> -1 s>d }t
 T{ MAX-2INT LO-2INT D+ -> HI-2INT }T
-t{ HI-2INT MIN-2INT D+ s>d D+ -> LO-2INT }t
+t{ HI-2INT MIN-2INT D+ 1 s>d D+ -> LO-2INT }t
 T{ LO-2INT 2DUP D+ -> MIN-2INT }T
 
 TESTING D- with small integers
