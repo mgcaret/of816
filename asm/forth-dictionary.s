@@ -2405,7 +2405,7 @@ eword
 
 ; ( limit start -- ) ( R: -- loop-sys )
 ; Run-time semantics for DO
-; loop-sys = ( leave-IP index limit )
+; loop-sys = ( -- leave-IP index limit )
 hword     _DO,"_DO"
           jsr   _2parm
           lda   IP+2              ; put IP on stack for LEAVE target
@@ -2541,7 +2541,7 @@ dword     PLOOP,"+LOOP",F_IMMED|F_CONLY
           .dword PLUS             ; ( loop-sys loop-sys' -- loop-sys loop-sys'' ) get target of loop jump
           .dword COMMA            ; ( loop-sys loop-sys'' -- loop-sys ) and compile as target of _PLOOP
           .dword HERE             ; ( loop-sys -- loop-sys t )
-          .dword SWAP             ; ( t -- loop-sys
+          .dword SWAP             ; ( loop-sys t -- t loop-sys )
           .dword _COMP_LIT        ; compile in an UNLOOP
           .dword UNLOOP
           ONLIT 4                 ; one cell
@@ -6048,7 +6048,7 @@ dword     dTEMPCOLON,":TEMP"
           .dword DEPTH            ; save stack depth (data stack is control stack)
           .dword dCSDEPTH
           .dword STORE
-          EXIT
+done:     EXIT
 eword
 
 ; word to end temporary colon definition and run it
@@ -6067,13 +6067,13 @@ dosemi:   .dword DEPTH            ; ( -- u1 )
           .dword ULTE             ; ( u1 u2 -- f ) is less than or equal to?
           .dword _IFFALSE         ; ( f -- )
           .dword tmpdone          ; true branch, finish up temp def
-          .dword TWODROP
 notmp:    EXIT
 tmpdone:  ;SLIT "Ending temp def... "
           ;.dword TYPE
           .dword DEPTH            ; ( -- u1 )
           .dword dCSDEPTH         ; ( u1 -- u1 c-addr1 ) verify stack depth is what it should be
           .dword FETCH            ; ( u1 c-addr1 -- u1 u2 )
+          ;.dword DOTS
           .dword EQUAL            ; ( u1 u2 -- f )
           .dword _IF              ; ( f -- )
           .dword csmm             ; if not, we have a problem
@@ -6091,17 +6091,17 @@ tmpdone:  ;SLIT "Ending temp def... "
           .dword DROP             ; ( xt xt -- xt ) now we worry about ( xt xt ) consume colon-sys
           .dword CATCH            ; ( xt -- * r ) execute the temporary definition within catch
           .dword RtoP             ; ( r -- r c-addr ) ( R: c-addr -- )
-dofree:    ONLIT max_tempdef       ; ( r c-addr -- r c-addr u )
+dofree:    ONLIT max_tempdef      ; ( r c-addr -- r c-addr u )
           .dword FREE             ; ( r c-addr u -- r )
           .dword THROW            ; ( r -- ) re-throw any error in temp def
-          EXIT
+          EXIT                    ; this really is an exit
 csmm:     .dword STATEI           ; ( -- )
           .dword dSAVEHERE        ; ( -- a-addr ) restore HERE
           .dword FETCH            ; ( a-addr -- c-addr )
           .dword toHERE           ; ( c-addr -- )
           ONLIT -22               ; ( -- -22 ) will be thrown
           .dword dTMPDEF          ; ( -22 -- -22 c-addr )
-          JUMP dofree
+          JUMP dofree             ; note that thrown error will clean up dTMPDEF
 eword
 
 ; ( xt -- ) make definition at xt visible
