@@ -1,5 +1,7 @@
 ; Platform support library for GoSXB
 
+.define platform_dict 1
+
 cpu_clk   = 8000000
 
 .enum     ACIA
@@ -47,6 +49,8 @@ PIA1      = $7FA0
 VIA1      = $7FC0
 VIA2      = $7FE0
 
+
+.if platform_dict
 dstart "gosxb"
 dchain H_FORTH                   ; Make branch off the word FORTH
 
@@ -58,6 +62,7 @@ dword     GOSXB_TEST,"TEST"
 eword
 
 dend
+.endif
 
 .proc     _system_interface
           ;wdm 3
@@ -138,6 +143,7 @@ wait:     phx                   ; note 8-bit mode!
 
 .proc     _sf_post_init
           plx
+          .if platform_dict
           ; Here we make a vocabulary definition for the gosxb dictionary
           ; that we defined at the beginning of this file.
           ENTER
@@ -149,6 +155,7 @@ wait:     phx                   ; note 8-bit mode!
           .dword rBODY
           .dword STORE
           CODE
+          .endif
           jmp   _sf_success
 .endproc
 
