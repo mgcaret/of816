@@ -2,26 +2,26 @@
   load:
     - tester.fs
     - 7.3.1.fs
-- name: 7.3.2.1 Arithmetic
+- name: 7.3.2.1 Arithmetic - Single-precision integer arithmetic
   load:
     - tester.fs
     - test-utils.fs
     - 7.3.2.1.fs
-- name: 7.3.2.2 Arithmetic
+- name: 7.3.2.2 Arithmetic - Bitwise logical operators
   load:
     - tester.fs
     - test-utils.fs
     - 7.3.2.2.fs
-- name: 7.3.2.3 Arithmetic
+- name: 7.3.2.3 Arithmetic - Double number arithmetic
   load:
     - tester.fs
     - test-utils.fs
     - 7.3.2.3.fs
-- name: 7.3.2.4 Arithmetic
+- name: 7.3.2.4 Arithmetic - Data type conversion
   load:
     - tester.fs
     - 7.3.2.4.fs
-- name: 7.3.2.5 Arithmetic
+- name: 7.3.2.5 Arithmetic - Address arithmetic
   load:
     - tester.fs
     - 7.3.2.5.fs
@@ -43,3 +43,8 @@
   load:
     - tester.fs
     - 7.3.7.fs
+- name: 7.3.8 Control-flow commands
+  load:
+    - tester.fs
+    - test-utils.fs
+    - 7.3.8.fs
