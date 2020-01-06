@@ -115,6 +115,7 @@ def run_suite(suite, outfile = nil)
         outfile.write(outbuf.string) if outfile
         prevline = ""
         outbuf.string.lines.each do |line|
+            cs_line = line.gsub(/\\.+$/,'')
             case line
             when /Exception/, /Def not found/, /Stack u/
                 STDERR.puts prevline, line
@@ -125,16 +126,16 @@ def run_suite(suite, outfile = nil)
                     errors += 1
                 end
             when /TESTING/i
-                puts line unless line.start_with?(':')
+                puts line unless line.start_with?(':') || line.start_with?('\\')
             end
-            if line =~ /\s*:\s+(\S+)/
+            if cs_line =~ /\s*:\s+(\S+)/
                 colons[$1.downcase] = true
             end
-            if line =~ /\s*[tT]\{\s+:\s+(\S+)/
+            if cs_line =~ /\s*[tT]\{\s+:\s+(\S+)/
                 colons[$1.downcase] = true
             end
-            if line =~ /T\{(.+) \}T/
-                words = $1.split
+            if cs_line =~ /T\{\s+(.+)\s+\}T/i
+                words = $1.split(/\s+/)
                 words.each do |word|
                     next if word == '->'
                     @coverage[word.downcase] += 1 unless colons[word.downcase]
