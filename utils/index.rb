@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
 require 'yaml'
+require 'csv'
 
 def usage
     puts <<EOF
@@ -19,7 +20,7 @@ File.readable?(dict) || abort("#{dict} not found!")
 cov = ARGV.shift
 
 coverage = {}
-if File.readable?(cov)
+if cov && File.readable?(cov)
     coverage = YAML.load(File.read(cov))
 end
 
@@ -32,8 +33,7 @@ input.lines.each do |line|
     when /^\s*;\s+H:\s*(.+)/
         help << $1
     when /^\s*dword(q?)\s+(.+)/
-        _label, nameq, flags = $2.split(',')
-        name = nameq[1..-2].downcase # remove quotes
+        _label, name, flags = CSV.parse_line($2)
         name.tr!("'", '"') if $1 == 'q'
         output[name] ||= {}
         output[name].merge!({"help" => help}) unless help.empty?
