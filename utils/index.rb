@@ -34,6 +34,7 @@ input.lines.each do |line|
         help << $1
     when /^\s*dword(q?)\s+(.+)/
         _label, name, flags = CSV.parse_line($2)
+        name.upcase!
         name.tr!("'", '"') if $1 == 'q'
         output[name] ||= {}
         output[name].merge!({"help" => help}) unless help.empty?
@@ -41,7 +42,7 @@ input.lines.each do |line|
             fl = flags.split('|')
             output[name].merge!({"flags" => fl}) unless fl.empty?
         end
-        output[name].merge!({"tests" => coverage[name]}) if coverage[name]
+        output[name].merge!({"tests" => coverage[name.downcase]}) if coverage[name.downcase]
     when /^\s*eword/
         help = []
     end
