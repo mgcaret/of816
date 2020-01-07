@@ -30,10 +30,14 @@
     - tester.fs
     - test-utils.fs
     - 7.3.3.fs
-- name: 7.3.4 Text input
+- name: 7.3.4 Text input and output
   load:
     - tester.fs
     - 7.3.4.fs
+- name: 7.3.5 Numeric input and output
+  load:
+    - tester.fs
+    - 7.3.5.fs
 - name: 7.3.6 Comparison operators
   load:
     - tester.fs
@@ -57,3 +61,7 @@
   load:
     - tester.fs
     - 7.3.9.fs
+- name: OF816 Words
+  load:
+    - tester.fs
+    - of816-words.fs

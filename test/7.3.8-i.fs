@@ -66,4 +66,13 @@ T{ 1 123 SWAP 0 DO I 4 > IF DROP 234 LEAVE THEN LOOP -> 123 }T
 T{ 5 123 SWAP 0 DO I 4 > IF DROP 234 LEAVE THEN LOOP -> 123 }T
 T{ 6 123 SWAP 0 DO I 4 > IF DROP 234 LEAVE THEN LOOP -> 234 }T
 
+t{ 3 0 do unloop exit loop -> }t
+t{ 3 0 do 3 0 do unloop unloop exit loop loop -> }t
+
 t{ 1 0 do true ?leave false loop -> }t
+
+testing 7.3.8.6 Error handling - interpretation state
+
+t{ ' noop catch -> 0 }t
+t{ clear ' drop catch -> -4 }t
+t{ 123 ' throw catch nip -> 123 }t

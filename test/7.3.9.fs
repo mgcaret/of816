@@ -79,7 +79,12 @@ testing 7.3.9.2 Dictionary commands
 
 testing 7.3.9.2.1 Data space allocation
 
-\ tested in 7.3.3:  here allot align c, w, l, ,
+\ mostly tested in 7.3.3:  here allot align c, w, l, ,
+
+t{ create da1 -> }t
+t{ here align -> here }t      \ OF816 has no alignment restrictions
+t{ 0 c, here align -> here }t \ OF816 has no alignment restrictions
+t{ here 2 cells allot 2 na+ -> here }t
 
 testing 7.3.9.2.2 Immediate words
 
