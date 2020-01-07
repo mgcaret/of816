@@ -4303,13 +4303,6 @@ dword     xRESTORE_FCODE_STATE,"RESTORE-FCODE-STATE"
 eword
 .endif
 
-.if 0 ; more testing stuff
-dword     TEST_FCODE,"TEST-FCODE"
-          jsl   _pushda
-          .incbin "t/test.fc"
-eword
-.endif
-
 ; FCode evaluation
 ; this does *not* save and restore the FCode evaluator state, that's what byte-load is
 ; for.  This just gets things going, and unless SET-TOKEN is called, sticks with the ROM
