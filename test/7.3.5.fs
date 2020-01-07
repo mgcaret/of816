@@ -49,7 +49,7 @@ testing 7.3.5.4 Numeric output primitives
 hex
 
 : s= ( str len str len )
-  2 pick 2dup = if
+  2 pick over = if
     drop swap comp 0=
   else
     2drop 2drop false

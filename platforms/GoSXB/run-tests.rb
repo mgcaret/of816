@@ -134,7 +134,7 @@ def run_suite(suite, outfile = nil)
             if cs_line =~ /\s*[tT]\{\s+:\s+(\S+)/
                 colons[$1.downcase] = true
             end
-            if cs_line =~ /T\{\s+(.+)\s+\}T/i
+            if cs_line =~ /^\s*T\{\s+(.+)\s+\-\>\s+/i
                 words = $1.split(/\s+/)
                 words.each do |word|
                     next if word == '->'
