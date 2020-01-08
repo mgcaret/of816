@@ -52,7 +52,7 @@
     - tester.fs
     - test-utils.fs
     - 7.3.8.fs
-- name: 7.3.8 Control-flow commands in interpretation state
+- name: 7.3.8-i Control-flow commands in interpretation state
   load:
     - tester.fs
     - test-utils.fs
