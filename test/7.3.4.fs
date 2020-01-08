@@ -10,8 +10,8 @@ t{ source 0> swap 0> -> true true }t
 t{ bl word test count swap 0> -> 4 true }t
 
 testing 7.3.4.2 Console input
-\ not functionally tested
 
+t{ \ -> supercalafrag }t   \ since 't{}' is a nop this should be fine
 t{ ' key?   0> -> true }t
 t{ ' key    0> -> true }t
 t{ ' expect 0> -> true }t
@@ -51,7 +51,6 @@ t{ #line @ 0>= -> true }t
 t{ #out @ 0>= -> true }t
 
 testing 7.3.4.6 Display pause
-\ not functionally tested
 
 t{ ' exit? 0> -> true }t
 
