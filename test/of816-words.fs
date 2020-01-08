@@ -1,6 +1,8 @@
 testing OF816 words
 
-hex
+\ excluding FCode-related words
+
+t{ binary base @ hex -> 2 }t
 
 : s= ( str len str len )
   2 pick over = if
@@ -45,6 +47,9 @@ t{ fbbb free-mem -> }t
 t{ $hex( 414243) 2dup $2value -> }t
 t{ abc s" ABC" s= -> true }t
 
+\ Case-independent comparison
+t{ s" foo" drop s" FoO" cicomp -> 0 }t
+
 \ Memory debug, good time to run it after the above
 t{ debug-mem -> }t
 
@@ -58,3 +63,11 @@ t{ qt1 execute -> 123 }t
 \ Existence of a couple of words that are hard to test
 t{ ' $empty-wl 0= -> false }t
 t{ ' $env?-wl 0= -> false }t
+
+\ square root
+decimal
+t{ 0 sqrtrem -> 0 0 }t
+t{ 4 sqrtrem -> 2 0 }t
+t{ 25 sqrtrem -> 5 0 }t
+t{ 31 sqrtrem -> 5 6 }t
+hex

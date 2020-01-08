@@ -19,7 +19,24 @@ T{ 8000 F RSHIFT -> 1 }T         \ BIGGEST
 T{ MSB 1 RSHIFT MSB AND -> 0 }T      \ RSHIFT ZERO FILLS MSBS
 T{ MSB 1 RSHIFT 2* -> MSB }T
 
-\ todo: >>a << >>
+t{ 1 1 >>a -> 0 }t
+t{ 0 1 >>a -> 0 }t
+t{ 0 invert 1 >> 1 >>a 0< -> false }t
+t{ -1 1 >>a -> -1 }t
+t{ -1 2 >>a -> -1 }t
+t{ -1 4 >>a -> -1 }t
+t{ -2 1 >>a -> -1 }t
+t{ -4 1 >>a -> -2 }t
+
+\ << >> are synonyms for lshift and rshift, do abbreviated test
+T{ 1 0 << -> 1 }T
+T{ 1 1 << -> 2 }T
+T{ 1 2 << -> 4 }T
+
+T{ 1 0 >> -> 1 }T
+T{ 1 1 >> -> 0 }T
+T{ 2 1 >> -> 1 }T
+T{ 4 2 >> -> 1 }T
 
 T{ 0S 2* -> 0S }T
 T{ 1 2* -> 2 }T
@@ -27,14 +44,15 @@ T{ 4000 2* -> 8000 }T
 T{ 1S 2* 1 XOR -> 1S }T
 T{ MSB 2* -> 0S }T
 
-\ todo: u2/
-
 T{ 0S 2/ -> 0S }T
 T{ 1 2/ -> 0 }T
 T{ 4000 2/ -> 2000 }T
 T{ 1S 2/ -> 1S }T            \ MSB PROPOGATED
 T{ 1S 1 XOR 2/ -> 1S }T
 T{ MSB 2/ MSB AND -> MSB }T
+
+t{ 0 invert u2/ 0< -> false }t
+t{ 0 invert u2/ u2/ -> 0 invert 2 >> }t
 
 T{ 0 0 AND -> 0 }T
 T{ 0 1 AND -> 0 }T
