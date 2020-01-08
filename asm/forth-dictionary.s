@@ -1798,7 +1798,7 @@ dword     TUCK,"TUCK"
 eword
 
 ; H: ( n1 n2 n3 -- n3 )
-dword     TWONIP,"2NIP"
+hword     NIPTWO,"NIP2"
           ENTER
           .dword PtoR
           .dword TWODROP
@@ -4697,7 +4697,7 @@ lp:       .dword PtoR             ; ( c-addr u1 u2 -- c-addr u1 )
           .dword DUP              ; ( ... c-addr u1 u2 u2' )
           .dword _IFFALSE         ; ( ... c-addr u1 u2 )
           .dword lp
-          .dword TWONIP           ; ( ... u2 )
+          .dword NIPTWO           ; ( ... u2 )
           EXIT
 found:    .dword RDROP
           .dword TWOPtoR          ; ( c-addr u1 xt +-1 -- c-addr u1 )
@@ -4733,7 +4733,7 @@ dword     dFIND,"$FIND"
           .dword _IF
           .dword notfnd
           .dword DROP
-          .dword TWONIP
+          .dword NIPTWO
           .dword TRUE             ; IEEE 1275 requires true, not -1 or 1
 notfnd:   EXIT
 eword
@@ -6586,7 +6586,7 @@ loop:     .dword INQ              ; ( -- f )
           .dword _IF              ; ( c-addr u 0 | c-addr u xt xt -- c-addr u | c-addr u xt )
           .dword trynum           ; if xt = 0
           .dword DROP             ; drop flag
-          .dword TWONIP           ; ( c-addr u xt -- xt )
+          .dword NIPTWO           ; ( c-addr u xt -- xt )
           .dword CONLYQ           ; compile-only? (leaves xt on stack
           .dword _IFFALSE
           .dword conly
@@ -6608,7 +6608,7 @@ trynum:   .dword TWODUP           ; ( c-addr u -- c-addr u c-addr u )
           .dword EMIT
           NLIT  -13
           .dword THROW
-goodnum:  .dword TWONIP
+goodnum:  .dword NIPTWO
           .dword _SMART
           .dword loop             ; if interpreting
           .dword LITERAL
