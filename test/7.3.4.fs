@@ -12,11 +12,11 @@ t{ bl word test count swap 0> -> 4 true }t
 testing 7.3.4.2 Console input
 
 t{ \ -> supercalafrag }t   \ since 't{}' is a nop this should be fine
-t{ ' key?   0> -> true }t
-t{ ' key    0> -> true }t
-t{ ' expect 0> -> true }t
-t{ ' span   0> -> true }t
-t{ ' accept 0> -> true }t
+t{ ' key?   0= -> false }t
+t{ ' key    0= -> false }t
+t{ ' expect 0= -> false }t
+t{ ' span   0= -> false }t
+t{ ' accept 0= -> false }t
 
 testing 7.3.4.3 ASCII constants
 
