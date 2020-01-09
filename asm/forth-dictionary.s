@@ -2597,7 +2597,7 @@ eword
 
 .if 0
 ; H: ( -- n ) copy third-inner loop index to stack
-dword     KX,"K",F_CONLY
+dword     KX,"K",F_CONLY ; noindex
           lda   29,s
           tay
           lda   31,s
@@ -4266,37 +4266,37 @@ dword     RLSTORE,"RL!",F_IMMED
 eword
 
 .if 0 ; stuff for testing
-dword     xSET_MUTABLE_FTABLES,"SET-MUTABLE-FTABLES"
+dword     xSET_MUTABLE_FTABLES,"SET-MUTABLE-FTABLES" ; noindex
           ENTER
           .dword SET_MUTABLE_FTABLES
           EXIT
 eword
 
-dword     xSET_RAM_FTABLE,"SET-RAM-FTABLE"
+dword     xSET_RAM_FTABLE,"SET-RAM-FTABLE" ; noindex
           ENTER
           .dword SET_RAM_FTABLE
           EXIT
 eword
 
-dword     xSET_ROM_FTABLE,"SET-ROM-FTABLE"
+dword     xSET_ROM_FTABLE,"SET-ROM-FTABLE" ; noindex
           ENTER
           .dword SET_ROM_FTABLE
           EXIT
 eword
 
-dword     xGET_FTABLES,"GET-FTABLES"
+dword     xGET_FTABLES,"GET-FTABLES" ; noindex
           ENTER
           .dword GET_FTABLES
           EXIT
 eword
 
-dword     xSAVE_FCODE_STATE,"SAVE-FCODE-STATE"
+dword     xSAVE_FCODE_STATE,"SAVE-FCODE-STATE" ; noindex
           ENTER
           .dword SAVE_FCODE_STATE
           EXIT
 eword
 
-dword     xRESTORE_FCODE_STATE,"RESTORE-FCODE-STATE"
+dword     xRESTORE_FCODE_STATE,"RESTORE-FCODE-STATE" ; noindex
           ENTER
           .dword RESTORE_FCODE_STATE
           EXIT
@@ -5836,19 +5836,19 @@ eword
 ; in the case that INSTANCE was not used.
 .if include_fcode
 ; ( -- ) compile the machine execution semantics of CREATE (jsl _pushda)
-hword     pCREATE,"%CREATE"
+hword     pCREATE,"%CREATE" ; noindex
           jmp   dCREATE::docreate
 eword
 
 ; H: ( n -- ) compile the machine execution semantics of VALUE (jsl _pushvalue) and the value
-dword     pVALUE,"%VALUE"
+dword     pVALUE,"%VALUE" ; noindex
           jsr   _1parm
           jmp   dVALUE::dovalue
 eword
 
 ; H: ( n -- ) compile the machine execution semantics of BUFFER (jsl _valuevalue) and the
 ; H: buffer address
-dword     pBUFFER,"%BUFFER"
+dword     pBUFFER,"%BUFFER" ; noindex
           ENTER
           .dword ALLOC
           .dword pVALUE
@@ -5856,7 +5856,7 @@ dword     pBUFFER,"%BUFFER"
 eword
 
 ; H: ( -- ) compile the machine execution semantics of CREATE (jsl _pushda) and compile a zero 
-dword     pVARIABLE,"%VARIABLE"
+dword     pVARIABLE,"%VARIABLE" ; noindex
           ENTER
           .dword pCREATE
           .dword ZERO
@@ -5865,7 +5865,7 @@ dword     pVARIABLE,"%VARIABLE"
 eword
 
 ; H: ( -- ) compile the machine execution semantics of DEFER (jsl _deferred)
-dword     pDEFER,"%DEFER"
+dword     pDEFER,"%DEFER" ; noindex
           ldy   #.loword(dUNDEFERRED)
           lda   #.hiword(dUNDEFERRED)
           jsr   _pushay
@@ -6442,7 +6442,7 @@ eword
 ;   after the marker
 ; * restoring the search order and CURRENT ensures no removed wordlists are in use
 ; * Restoring HERE deallocates all dictionary space from the marker and beyond.
-dword     MARKER,"MARKER"
+dword     MARKER,"MARKER" ; noindex
           ENTER
 
           CODE

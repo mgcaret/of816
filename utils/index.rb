@@ -30,6 +30,8 @@ output = Hash.new()
 help = []
 input.lines.each do |line|
     case line
+    when /;.*noindex/
+        # nothing
     when /^\s*;\s+H:\s*(.+)/
         help << $1
     when /^\s*dword(q?)\s+(.+)/
