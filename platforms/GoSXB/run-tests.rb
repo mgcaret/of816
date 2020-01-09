@@ -141,6 +141,21 @@ def run_suite(suite, outfile = nil)
                     @coverage[word.downcase] += 1 unless colons[word.downcase]
                 end
             end
+            if prevline =~ /expect:\s*\"(.+)\"\s*$/
+                unless line.chomp == $1
+                    STDERR.puts prevline
+                    STDERR.puts "Unexpected: #{line.chomp.inspect}"
+                    errors += 1
+                end
+            elsif prevline =~ /expect:\s*\/(.+)\/\s*$/
+                rexp = Regexp.new($1)
+                unless line.chomp =~ rexp
+                    STDERR.puts prevline
+                    STDERR.puts "Unexpected: #{line.chomp.inspect}"
+                    errors += 1
+                end
+            end
+
             prevline = line
         end
         puts "Errors = #{errors}"

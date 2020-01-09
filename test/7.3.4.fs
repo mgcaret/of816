@@ -37,16 +37,16 @@ t{ control A -> 01 }t
 
 testing 7.3.4.4 Console output
 
-t{ ." test" -> }t
-t{ .( test ) -> }t
-t{ 41 emit -> }t
-t{ parse-word test type -> }t
+t{ ." test" -> }t \ expect: "test OK"
+t{ .( test) -> }t \ expect: "test OK"
+t{ 41 emit -> }t \ expect: "A OK"
+t{ parse-word test type -> }t \ expect: "test OK"
 
 testing 7.3.4.5 Output formatting
 
-t{ cr -> }t
-t{ space -> }t
-t{ 10 spaces -> }t
+t{ cr -> }t \ expect: ""
+t{ space -> }t \ expect: "  OK"
+t{ 8 spaces -> }t \ expect: "         OK"
 t{ #line @ 0>= -> true }t
 t{ #out @ 0>= -> true }t
 
