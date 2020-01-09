@@ -63,6 +63,8 @@ t{ qt1 execute -> 123 }t
 \ Existence of a couple of words that are hard to test
 t{ ' $empty-wl 0= -> false }t
 t{ ' $env?-wl 0= -> false }t
+t{ ' $sysif 0= -> false }t
+t{ ' $direct 0= -> false }t
 
 \ square root
 decimal
@@ -71,3 +73,5 @@ t{ 4 sqrtrem -> 2 0 }t
 t{ 25 sqrtrem -> 5 0 }t
 t{ 31 sqrtrem -> 5 6 }t
 hex
+
+t{ $memtop @ 0= -> false }t

@@ -6,7 +6,11 @@ T{ : EQU CONSTANT ; -> }T
 T{ X123 EQU Y123 -> }T
 T{ Y123 -> 123 }T
 
-\ todo: 2constant
+t{ 123 456 2CONSTANT X123456 -> }t
+t{ X123456 -> 123 456 }t
+t{ : 2EQU 2CONSTANT ; -> }t
+t{ X123456 2EQU Y123456 -> }t
+t{ Y123456 -> 123 456 }t
 
 T{ 111 VALUE VAL1 -999 VALUE VAL2 -> }T
 T{ VAL1 -> 111 }T
@@ -32,7 +36,9 @@ T{ BUF:TEST DUP ALIGNED = -> TRUE }T
 T{ 111 BUF:TEST ! 222 BUF:TEST CELL+ ! -> }T
 T{ BUF:TEST @ BUF:TEST CELL+ @ -> 111 222 }T
 
-\ todo: alias
+t{ : al1 123 ; -> }t
+t{ alias al2 al1 -> }t
+t{ al2 -> al1 }t
 
 t{ defer df1 -> }t
 t{ ' true to df1 -> }t
@@ -42,7 +48,10 @@ t{ ' false to df1 -> }t
 t{ ' df1 behavior -> ' false }t
 t{ df1 -> false }t
 
-\ todo: struct field
+t{ struct -> 0 }t \ is syntactic sugar for zero
+t{ struct 2 field fld1 1 field fld2 -> 3 }t
+t{ 0 fld1 -> 0 }t
+t{ 0 fld2 -> 2 }t
 
 T{ : NOP : POSTPONE ; ; -> }T
 T{ NOP NOP1 NOP NOP2 -> }T
