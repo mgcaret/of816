@@ -28,7 +28,7 @@ bad:      ONLIT -49
           .dword THROW
 eword
 
-; H: ( widn ... wid1 n -- ) set dictionary search order
+; H: ( widn ... wid1 n -- ) Set dictionary search order.
 dword     SET_ORDER,"SET-ORDER"
           ENTER
           .dword DUP
@@ -73,7 +73,7 @@ eword
 .endif
 
 .if max_search_order > 0
-; H: ( -- wid ) return wordlist containing system words
+; H: ( -- wid ) Return the WID of the wordlist containing system words.
 dword     FORTH_WORDLIST,"FORTH-WORDLIST"
 .else
 hword     FORTH_WORDLIST,"FORTH-WORDLIST"
@@ -81,7 +81,7 @@ hword     FORTH_WORDLIST,"FORTH-WORDLIST"
           SYSVAR SV_FORTH_WL
 eword
 
-; H: ( -- ) set the first wordlist in the search order to the system words
+; H: ( -- ) Set the first wordlist in the search order to the system words
 dword     FORTH,"FORTH"
 .if max_search_order > 0
           ENTER
@@ -95,7 +95,7 @@ dword     FORTH,"FORTH"
 eword
 
 .if max_search_order > 0
-; H: ( -- wid ) return the wordlist for environmental queries
+; H: ( -- wid ) Return the WID of the wordlist for environmental queries.
 dword     dENVQ_WL,"$ENV?-WL"
 .else
 hword     dENVQ_WL,"$ENV?-WL"
@@ -121,13 +121,13 @@ hword     dORDER,"$ORDER"
           EXIT
 eword
 
-; ( -- a-addr ) variable containing current compiler wordlist
+; ( -- a-addr ) Variable containing current compiler wordlist.
 hword     dCURRENT,"$CURRENT"
           SYSVAR SV_CURRENT
 eword
 
 .if max_search_order > 0
-; H: ( -- wid ) return first wordlist in search order
+; H: ( -- wid ) Return first wordlist in search order.
 dword     CONTEXT,"CONTEXT"
 .else
 hword     CONTEXT,"CONTEXT"
@@ -150,7 +150,7 @@ empty:    .dword dCURRENT
 eword
 
 .if max_search_order > 0
-; H: ( -- wid ) get current compiler wordlist
+; H: ( -- wid ) Get WID current compiler wordlist.
 dword     GET_CURRENT,"GET-CURRENT"
 .else
 hword     GET_CURRENT,"GET-CURRENT"
@@ -162,7 +162,7 @@ hword     GET_CURRENT,"GET-CURRENT"
 eword
 
 .if max_search_order > 0
-; H: ( -- widn ... wid1 u ) get dictionary search order
+; H: ( -- widn ... wid1 u ) Get dictionary search order.
 dword     GET_ORDER,"GET-ORDER"
           ENTER
           .dword dORDER
@@ -182,7 +182,7 @@ lpdone:   .dword UNLOOP
           EXIT
 eword
 
-; ( wid -- ) set the first wordlist in the search order
+; ( wid -- ) Set the first wordlist in the search order.
 hword     TOP_OF_ORDER,"TOP-OF-ORDER"
           ENTER
           .dword PtoR
@@ -201,7 +201,7 @@ default:  .dword RtoP
           EXIT
 eword
 
-; H: ( -- ) duplicate the first wordlist in the search order
+; H: ( -- ) Fuplicate the first wordlist in the search order.
 dword     ALSO,"ALSO"
           ENTER
           .dword GET_ORDER
@@ -217,7 +217,7 @@ dword     ALSO,"ALSO"
           EXIT
 eword
 
-; H: ( -- ) remove the first wordlist in the search order
+; H: ( -- ) Remove the first wordlist in the search order.
 dword     PREVIOUS,"PREVIOUS"
           ENTER
           .dword GET_ORDER
@@ -232,7 +232,7 @@ noorder:  ONLIT -50
           .dword THROW
 eword
 
-; H: ( wid -- ) set the compiler wordlist
+; H: ( wid -- ) Set the compiler wordlist.
 dword     SET_CURRENT,"SET-CURRENT"
           ENTER
           .dword dCURRENT
@@ -240,7 +240,7 @@ dword     SET_CURRENT,"SET-CURRENT"
           EXIT
 eword
 
-; H: ( -- ) set the search order to contain only the system wordlist
+; H: ( -- ) Set the search order to contain only the system wordlist.
 dword     ONLY,"ONLY"
           ENTER
           .dword FORTH_WORDLIST
@@ -249,7 +249,7 @@ dword     ONLY,"ONLY"
           EXIT
 eword
 
-; H: ( -- ) set the search order to contain only the current top of the order
+; H: ( -- ) Set the search order to contain only the current top of the order.
 dword     SEAL,"SEAL"
           ENTER
           .dword CONTEXT
@@ -258,7 +258,7 @@ dword     SEAL,"SEAL"
           EXIT
 eword
 
-; H: ( wid -- c-addr u ) return the name of a wordlist, or ^address if no name
+; H: ( wid -- c-addr u ) Return the name of a wordlist, or ^address if no name.
 hword     WL_NAME,"WL-NAME"
           ENTER
           .dword DUP
@@ -274,7 +274,7 @@ noname:   JUMP rNAME_noname1
           EXIT
 eword
 
-; H: ( -- ) display the current search order and compiler wordlist
+; H: ( -- ) Display the current search order and compiler wordlist.
 dword     ORDER,"ORDER"
           ENTER
           SLIT "Compiling to: "
@@ -300,7 +300,7 @@ lpdone:   .dword UNLOOP
           EXIT
 eword
 
-; H: ( -- ) set the compiler wordlist to the first wordlist in the search order
+; H: ( -- ) Set the compiler wordlist to the first wordlist in the search order.
 dword     DEFINITIONS,"DEFINITIONS"
           ENTER
           .dword CONTEXT
@@ -445,7 +445,7 @@ hword     TMPBASE,"TMPBASE"
           EXIT
 eword
 
-; H: ( -- ) display version information
+; H: ( -- ) Display version information.
 dword     DOTVERSION,".VERSION"
           ENTER
           SLIT .concat("OF816 v",VERSION,"/")
@@ -469,7 +469,7 @@ dword     DOTVERSION,".VERSION"
           EXIT
 eword
 
-; H: ( -- ) reset the system
+; H: ( -- ) Reset the system.
 dword     RESET_ALL,"RESET-ALL"
           lda   #SI_RESET_ALL
           jsl   _call_sysif
@@ -478,7 +478,7 @@ dword     RESET_ALL,"RESET-ALL"
 :         NEXT
 eword
 
-; H: ( -- ) restore system stack pointer and return to caller
+; H: ( -- ) Restore system stack pointer and exit Forth.
 dword     BYE,"BYE"
           lda   SYS_RSTK
           tcs
@@ -528,7 +528,7 @@ dotype:   .dword TYPE
           EXIT
 eword
 
-; H: ( xt -- xi ... xj n ) call xt, trap exception and return in n
+; H: ( xt -- xi ... xj n|0 ) Call xt, trap exception, and return it in n.
 ; catch return stack frame is:
 ; IP (4), old RSTK_SAVE (2), data SP (2, first out)
 dword     CATCH,"CATCH"
@@ -566,7 +566,7 @@ fixup:    pla                     ; get old RSTK_SAVE
           PUSHNEXT
 eword
 
-; H: ( n -- ) throw exception n if n <> 0
+; H: ( n -- ) Throw exception n if n <> 0.
 dword     THROW,"THROW"
           jsr   _popay            ; get exception # from stack
 throway:  .if trace
@@ -635,7 +635,8 @@ noabort:  .dword TWODROP
           EXIT          
 eword
 
-; H: ( f -- ) parse string ending in " from input stream, execute -2 THROW if f is true
+; H: Compilation/Interpretation: ( [text<">] -- )  Execution: ( f -- )
+; H: If f is true, display text and execute -2 THROW.
 dwordq    ABORTQ,"ABORT'",F_IMMED
           ENTER
           .dword SQ
@@ -646,7 +647,7 @@ interp:   .dword _ABORTQ
           EXIT
 eword
 
-; H: ( -- ) execute -1 THROW
+; H: ( -- ) Execute -1 THROW.
 dword     ABORT,"ABORT"
           ENTER
           ONLIT -1
@@ -654,7 +655,7 @@ dword     ABORT,"ABORT"
           EXIT
 eword
 
-; H: ( -- u ) u = address of the CPU direct page
+; H: ( -- addr ) addr = address of the CPU direct page
 dword     dDIRECT,"$DIRECT"
           tdc
           tay
@@ -662,7 +663,7 @@ dword     dDIRECT,"$DIRECT"
           PUSHNEXT
 eword
 
-; H: ( -- u ) u = top of usable data space
+; H: ( -- addr ) addr = top of usable data space
 dword     dMEMTOP,"$MEMTOP"
           ENTER
           .dword dDIRECT
@@ -689,32 +690,32 @@ dword     UNUSED,"UNUSED"
           EXIT
 eword
 
-; H: ( -- ) do nothing
+; H: ( -- ) Do nothing.
 dword     NOOP,"NOOP"
           NEXT
 eword
 
-; H: ( -- u ) u = size of char in bytes
+; H: ( -- u ) u = size of char in bytes.
 dword     SCHAR,"/C"
           FCONSTANT 1
 eword
 
-; H: ( -- u ) u = size of word in bytes
+; H: ( -- u ) u = size of word in bytes.
 dword     SWORD,"/W"
           FCONSTANT 2
 eword
 
-; H: ( -- u ) u = size of long in bytes
+; H: ( -- u ) u = size of long in bytes.
 dword     SLONG,"/L"
           FCONSTANT 4
 eword
 
-; H: ( -- u ) u = size of cell in bytes
+; H: ( -- u ) u = size of cell in bytes.
 dword     SCELL,"/N"
           FCONSTANT 4
 eword
 
-; H: ( u1 n -- u2 ) u2 = u1 + n * size of char in bytes
+; H: ( u1 n -- u2 ) u2 = u1 + n * size of char in bytes.
 dword     CAPLUS,"CA+"
           ENTER
           .dword SCHAR
@@ -723,28 +724,28 @@ domath:   .dword UMULT
           EXIT
 eword
 
-; H: ( u1 n -- u2 ) u2 = u1 + n * size of word in bytes
+; H: ( u1 n -- u2 ) u2 = u1 + n * size of word in bytes.
 dword     WAPLUS,"WA+"
           ENTER
           .dword SWORD
           JUMP CAPLUS::domath
 eword
 
-; H: ( u1 n -- u2 ) u2 = u1 + n * size of long in bytes
+; H: ( u1 n -- u2 ) u2 = u1 + n * size of long in bytes.
 dword     LAPLUS,"LA+"
           ENTER
           .dword SLONG
           JUMP CAPLUS::domath
 eword
 
-; H: ( u1 n -- u2 ) u2 = u1 + n * size of cell in bytes
+; H: ( u1 n -- u2 ) u2 = u1 + n * size of cell in bytes.
 dword     NAPLUS,"NA+"
           ENTER
           .dword SCELL
           JUMP CAPLUS::domath
 eword
 
-; H: ( u1 -- u2 ) u2 = u1 + size of char in bytes
+; H: ( u1 -- u2 ) u2 = u1 + size of char in bytes.
 dword     CHARPLUS,"CHAR+"
           ENTER
           .dword SCHAR
@@ -752,7 +753,7 @@ dword     CHARPLUS,"CHAR+"
           EXIT
 eword
 
-; H: ( u1 -- u2 ) u2 = u1 + size of cell in bytes
+; H: ( u1 -- u2 ) u2 = u1 + size of cell in bytes.
 dword     CELLPLUS,"CELL+"
           ENTER
           .dword SCELL
@@ -760,7 +761,7 @@ dword     CELLPLUS,"CELL+"
           EXIT
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 * size of char
+; H: ( n1 -- n2 ) n2 = n1 * size of char.
 dword     CHARS,"CHARS"
           ENTER
           .dword SCHAR
@@ -768,7 +769,7 @@ dword     CHARS,"CHARS"
           EXIT
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 * size of cell
+; H: ( n1 -- n2 ) n2 = n1 * size of cell.
 dword     CELLS,"CELLS"
           ENTER
           .dword SCELL
@@ -776,17 +777,17 @@ dword     CELLS,"CELLS"
           EXIT
 eword
 
-; H: ( u1 -- u2 ) u2 = next aligned address after u1
+; H: ( u1 -- u2 ) u2 = next aligned address after u1.
 dword     ALIGNED,"ALIGNED"
           NEXT
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 + size of char
+; H: ( n1 -- n2 ) n2 = n1 + size of char.
 dword     CAINCR,"CA1+"
           jmp   CHARPLUS::code
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 + size of word
+; H: ( n1 -- n2 ) n2 = n1 + size of word.
 dword     WAINCR,"WA1+"
           ENTER
           .dword SWORD
@@ -794,7 +795,7 @@ dword     WAINCR,"WA1+"
           EXIT          
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 + size of long
+; H: ( n1 -- n2 ) n2 = n1 + size of long.
 dword     LAINCR,"LA1+"
           ENTER
           .dword SLONG
@@ -802,17 +803,17 @@ dword     LAINCR,"LA1+"
           EXIT          
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 + size of cell
+; H: ( n1 -- n2 ) n2 = n1 + size of cell.
 dword     NAINCR,"NA1+"
           jmp   CELLPLUS::code
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 * size of char
+; H: ( n1 -- n2 ) n2 = n1 * size of char.
 dword     SCHARMULT,"/C*"
           jmp CHARS::code
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 * size of word
+; H: ( n1 -- n2 ) n2 = n1 * size of word.
 dword     SWORDMULT,"/W*"
           ENTER
           .dword SWORD
@@ -820,7 +821,7 @@ dword     SWORDMULT,"/W*"
           EXIT
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 * size of long
+; H: ( n1 -- n2 ) n2 = n1 * size of long.
 dword     SLONGMULT,"/L*"
           ENTER
           .dword SLONG
@@ -828,12 +829,12 @@ dword     SLONGMULT,"/L*"
           EXIT
 eword
 
-; H: ( n1 -- n2 ) n2 = n1 * size of cell
+; H: ( n1 -- n2 ) n2 = n1 * size of cell.
 dword     SCELLMULT,"/N*"
           jmp CELLS::code
 eword
 
-; H: ( u -- u1 ... u4 ) u1 ... u4 = bytes of u
+; H: ( u -- u1 ... u4 ) u1 ... u4 = bytes of u.
 dword     LBSPLIT,"LBSPLIT"
           jsr   _1parm
           lda   STACKBASE+0,x
@@ -857,7 +858,7 @@ dword     LBSPLIT,"LBSPLIT"
           PUSHNEXT
 eword
 
-; H: ( u -- u1 ... u2 ) u1 ... u2 = words of u
+; H: ( u -- u1 ... u2 ) u1 ... u2 = words of u.
 dword     LWSPLIT,"LWSPLIT"
           jsr   _1parm
           ldy   STACKBASE+2,x
@@ -866,7 +867,7 @@ dword     LWSPLIT,"LWSPLIT"
           PUSHNEXT
 eword
 
-; H: ( u -- u1 .. u2 ) u1 .. u2 = bytes of word u
+; H: ( u -- u1 .. u2 ) u1 .. u2 = bytes of word u.
 dword     WBSPLIT,"WBSPLIT"
           jsr   _1parm
           stz   STACKBASE+2,x
@@ -882,7 +883,7 @@ dword     WBSPLIT,"WBSPLIT"
           PUSHNEXT
 eword
 
-; H: ( b.l b2 b3 b.h -- q ) join bytes into quad
+; H: ( b.l b2 b3 b.h -- q ) Join bytes into quad.
 dword     BLJOIN,"BLJOIN"
           jsr   _4parm
           lda   STACKBASE+12,x
@@ -916,7 +917,7 @@ _1drop:   inx
           NEXT
 eword
 
-; H: ( b.l b.h -- w ) join bytes into word
+; H: ( b.l b.h -- w ) Join bytes into word.
 dword     BWJOIN,"BWJOIN"
           jsr   _2parm
           stz   STACKBASE+6,x
@@ -931,7 +932,7 @@ dword     BWJOIN,"BWJOIN"
           bra   BLJOIN::_1drop
 eword
 
-; H: ( w.l w.h -- q ) join words into quad
+; H: ( w.l w.h -- q ) Join words into quad.
 dword     WLJOIN,"WLJOIN"
           jsr   _2parm
           lda   STACKBASE+0,x
@@ -939,7 +940,7 @@ dword     WLJOIN,"WLJOIN"
           bra   BLJOIN::_1drop
 eword
 
-; H: ( w -- w' ) flip the byte order of word
+; H: ( w -- w' ) Flip the byte order of w.
 dword     WBFLIP,"WBFLIP"
           jsr   _1parm
           lda   STACKBASE+0,x
@@ -951,7 +952,7 @@ dword     WBFLIP,"WBFLIP"
           NEXT
 eword
 
-; H: ( q -- q' ) flip the byte order of quad
+; H: ( q -- q' ) Flip the byte order of quad.
 dword     LBFLIP,"LBFLIP"
           jsr   _1parm
           ldy   STACKBASE+0,x
@@ -964,7 +965,7 @@ dword     LBFLIP,"LBFLIP"
           NEXT
 eword
 
-; H: ( q -- q ) flip the word order of quad
+; H: ( q -- q ) Flip the word order of quad.
 dword     LWFLIP,"LWFLIP"
           jsr   _1parm
           ldy   STACKBASE+0,x
@@ -974,7 +975,7 @@ dword     LWFLIP,"LWFLIP"
           NEXT
 eword
 
-; ( word -- sign-extended-long )
+; H: ( word -- sign-extended )
 dword     WSX,"WSX"
           jsr   _1parm
           ldy   #$0000
@@ -986,7 +987,7 @@ dword     WSX,"WSX"
           NEXT
 eword
 
-; ( byte -- sign-extended-long )
+; H: ( byte -- sign-extended )
 dword     BSX,"BSX"
           jsr   _1parm
           ldy   #$0000
@@ -1007,7 +1008,7 @@ hword     dHIMEM,"$HIMEM"
           SYSVAR SV_HIMEM
 eword
 
-; H: ( u -- c-addr ) allocate memory from heap
+; H: ( u -- c-addr ) Allocate memory from heap.
 dword     ALLOC,"ALLOC-MEM"
           jsr   _popxr            ; size into XR
           jsr   _alloc
@@ -1018,7 +1019,7 @@ dword     ALLOC,"ALLOC-MEM"
 :         PUSHNEXT
 eword
 
-; H: ( c-addr u -- ) release memory to heap
+; H: ( c-addr u -- ) Release memory to heap, u is currently ignored.
 dword     FREE,"FREE-MEM"
           jsr   _stackincr        ; we should really check this (len)
           jsr   _popwr
@@ -1030,7 +1031,7 @@ dword     FREE,"FREE-MEM"
 :         NEXT
 eword
 
-; H: ( -- ) display heap and temporary string information
+; H: ( -- ) Display heap and temporary string information.
 dword     DBGMEM,"DEBUG-MEM"
           ENTER
           .dword CR
@@ -1099,7 +1100,7 @@ eom:      .dword UDOT
           EXIT
 eword
 
-; H: ( -- c-addr ) STATE variable, zero if interpreting
+; H: ( -- a-addr ) STATE variable, zero if interpreting.
 dword     STATE,"STATE"
           SYSVAR SV_STATE
 eword
@@ -1119,7 +1120,7 @@ hword     dTMPDEF,"$>TMPDEF"
           SYSVAR SV_pTMPDEF         ; pointer to memory allocated for temp def
 eword
 
-; H: ( -- ) enter interpretation state
+; H: ( -- ) Enter interpretation state.
 dword     STATEI,"[",F_IMMED|F_CONLY
           ENTER
           .dword STATE
@@ -1127,7 +1128,7 @@ dword     STATEI,"[",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( -- ) enter compilation state
+; H: ( -- ) Enter compilation state.
 ; immediacy called out in IEEE 1275-1994
 dword     STATEC,"]",F_IMMED
           ENTER
@@ -1136,7 +1137,7 @@ dword     STATEC,"]",F_IMMED
           EXIT
 eword
 
-; H: ( -- c-addr ) system BASE varaible
+; H: ( -- a-addr ) System BASE variable.
 dword     BASE,"BASE"
           SYSVAR SV_BASE
 eword
@@ -1160,7 +1161,7 @@ do_emit:  lda   #SI_EMIT
 :         rts
 .endproc          
 
-; H: ( char -- ) output char
+; H: ( char -- ) Output char.
 dword     EMIT,"EMIT"
           jsr   _peekay
           tya
@@ -1181,7 +1182,7 @@ do_emit:  jsr   _emit
           NEXT
 eword
 
-; H: ( c-addr u -- ) output string
+; H: ( addr u -- ) Output string.
 dword     TYPE,"TYPE"
           jsr   _popxr
           jsr   _popwr
@@ -1197,7 +1198,7 @@ do_emit:  jsr   _pusha
           rtl
 eword
 
-; H: ( -- f ) if #LINE >= 20, prompt user to continue and return false if they want to
+; H: ( -- f ) If #LINE >= 20, prompt user to continue and return false if they want to.
 dword     EXITQ,"EXIT?"
           ENTER
           .dword NLINE
@@ -1221,22 +1222,22 @@ nopage:   .dword FALSE
           EXIT
 eword
 
-; H: ( -- c-addr ) variable containing the number of lines output
+; H: ( -- addr ) Variable containing the number of lines output.
 dword     NLINE,"#LINE"
           SYSVAR SV_NLINE
 eword
 
-; H: ( -- c-addr ) variable containing the number of chars output on the current line
+; H: ( -- addr ) variable containing the number of chars output on the current line.
 dword     NOUT,"#OUT"
           SYSVAR SV_NOUT
 eword
 
-; H: ( -- c-addr ) variable containing offset to the current parsing area of input buffer
+; H: ( -- addr ) Variable containing offset to the current parsing area of input buffer.
 dword     PIN,">IN"
           SYSVAR SV_PIN
 eword
 
-; H: ( -- c-addr ) variable containing number of chars in the current input buffer 
+; H: ( -- addr ) Variable containing number of chars in the current input buffer.
 dword     NIN,"#IN"
           SYSVAR SV_NIN
 eword
@@ -6365,7 +6366,7 @@ hword     dCREATE_WL,"$CREATE-WL"
           EXIT
 eword
 
-; H: ( -- wid ) create a new wordlist
+; H: ( -- wid ) Create a new wordlist.
 ; wordlists are allocated from the dictionary space, containing two cells
 ; the first being the last word defined in the wordlist, and the second containing
 ; an xt to an associated vocabulary definition if one has been defined
@@ -6388,9 +6389,9 @@ dword     dEMPTY_WL,"$EMPTY-WL"
           EXIT
 eword
 
-; H: ( "name"<> -- ) create a new named wordlist definition, when name is executed
-; H: put the WID of the wordlist at the top of the search order
-; H: the address of the body of the definition is the wid of the wordlist
+; H: ( "name"<> -- ) Create a new named wordlist definition.  When name is executed,
+; H: put the WID of the wordlist at the top of the search order.
+; H: The WID is the address of teh body of the named wordlist definition.
 dword     VOCABULARY,"VOCABULARY"
           ENTER
           .dword CREATE
