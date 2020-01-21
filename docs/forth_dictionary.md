@@ -1,6 +1,6 @@
 # Forth Dictionary
 
-Updated: 2020-01-13 15:23:03 -0800
+Updated: 2020-01-16 09:50:15 -0800
 
 ## !
 
@@ -10,7 +10,7 @@ _( n c-addr -- )_ write cell n to c-addr
 
 _( "text"<"> -- c-addr u )_ parse string, including hex interpolation
 
-## #
+## \#
 
 _( ud1 -- ud2 )_ divide ud1 by BASE, convert remainder to char and HOLD it, ud2 = quotient
 
@@ -94,6 +94,10 @@ _( -- a-addr )_ variable containing current input source ID
 _( ... u -- ... )_ call system interface function u
 
 ## $TMPSTR
+
+Allocate a temporary string buffer for interpretation semantics of strings
+and return the address and length of the buffer.  If taking the slot used
+by an existing buffer, free it.
 
 ## $VALUE
 
@@ -375,13 +379,13 @@ _( "name"<> -- colon-sys )_ parse name, create colon definition and enter compil
 
 ## :NONAME
 
-_( -- colon-sys )_ create an anonymous colon definition and enter compiling state
-the xt of the anonymous definition is left on the stack after ;
+_( -- colon-sys )_ Create an anonymous colon definition and enter compiling state.
+The xt of the anonymous definition is left on the stack after ;.
 
 ## :TEMP
 
-_( -- colon-sys )_ create a temporary anonymous colon definition and enter compiling state
-the temporary definition is executed immediately after ;
+_( -- colon-sys )_ Create a temporary anonymous colon definition and enter
+compiling state.  The temporary definition is executed immediately after ;
 
 ## ;
 
@@ -394,27 +398,30 @@ _( -- )_ end compiler mode, begin machine code section of definition
 
 ## ;]
 
-## <
+_( C: quot-sys -- )_ _( R: -- xt )_ End a quotation.  During executon,
+leave xt of the quotation on the stack.
+
+## \<
 
 _( n1 n2 -- f )_ f = true if n1 < n2, false if not
 
-## <#
+## \<#
 
 _( -- )_ begin pictured numeric output
 
-## <<
+## \<<
 
 _( n1 n2 -- n3 )_ n3 = n1 << n2
 
-## <=
+## \<=
 
 _( n1 n2 -- f )_ f = true if n1 <= n2, false if not
 
-## <>
+## \<>
 
 _( n1 n2 -- f )_ f = true if n1 <> n2, false if not
 
-## <W@
+## \<W@
 
 _( c-addr -- n )_ fetch sign-extended word from c-addr
 
@@ -422,47 +429,47 @@ _( c-addr -- n )_ fetch sign-extended word from c-addr
 
 _( n1 n2 -- f )_ f = true if n1 = n2, false if not
 
-## >
+## \>
 
 _( n1 n2 -- f )_ f = true if n1 > n2, false if not
 
-## >=
+## \>=
 
 _( n1 n2 -- f )_ f = true if n1 >= n2, false if not
 
-## >>
+## \>>
 
 _( n1 n2 -- n3 )_ n3 = n1 >> n2
 
-## >>A
+## \>>A
 
 _( n1 n2 -- n3 )_ n3 = n1 >> n2, extending sign bit
 
-## >BODY
+## \>BODY
 
 _( xt -- a-addr)_ return body of word at xt, if unable then throw exception -31
 
-## >IN
+## \>IN
 
 _( -- addr )_ Variable containing offset to the current parsing area of input buffer.
 
-## >LINK
+## \>LINK
 
 _( xt -- addr|0 )_ get link field of function at xt or 0 if none
 
-## >NAME
+## \>NAME
 
 _( xt -- c-addr u )_ get string name of function at xt, or ^xt if anonymous/noname
 
-## >NUMBER
+## \>NUMBER
 
 _( ud1 c-addr1 u1 -- ud2 c-addr2 u2 )_ convert text to number
 
-## >R
+## \>R
 
 _( n -- )_ _(R: -- n )_
 
-## >R@
+## \>R@
 
 _( n -- n )_ _( R: -- n )_
 
@@ -511,7 +518,8 @@ _( addr len -- u )_ get input line of up to len chars, stor at addr, u = # chars
 
 ## ACONCAT
 
-_( c-addr1 u1 c-addr2 u2 -- c-addr3 u1+u2 )_ concatenate allocated strings
+_( c-addr1 u1 c-addr2 u2 -- c-addr3 u1+u2 )_ Concatenate allocated strings,
+freeing the originals.
 
 ## AGAIN
 
@@ -1519,7 +1527,7 @@ _( "name"<> -- )_ execute CREATE name and ALLOT one cell, initially a zero.
 
 _( "name"<> -- )_ Create a new named wordlist definition.  When name is executed,
 put the WID of the wordlist at the top of the search order.
-The WID is the address of teh body of the named wordlist definition.
+The WID is the address of the body of the named wordlist definition.
 
 ## W!
 
@@ -1603,6 +1611,8 @@ _( -- )_ Enter interpretation state.
 _( [old-name<>] -- xt )_ immediately parse old-name in input stream, return xt of word
 
 ## [:
+
+_( C: -- quot-sys )_ _( R: -- )_ Start a quotation.
 
 ## [CHAR]
 
