@@ -33,7 +33,9 @@ puts
 
 index.keys.sort.each do |word|
     word_info = index[word]
-    puts "## #{word}"
+    cword = word.gsub(/^(#+)$/) { "\\#{$1}" } # let '#' display properly
+    cword.gsub!(/^([<>])/) { "\\#{$1}" }
+    puts "## #{cword}"
     puts
     if word_info['help']
         word_info['help'].each_with_index do |line, i|
