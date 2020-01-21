@@ -3052,9 +3052,9 @@ hword     dCSBUF,"$CSBUF"
 eword
 
 ; ( c-addr1 u1 -- c-addr2 u1 )
-; Allocate a temporary string buffer for interpretation semantics of strings
-; and return the address and length of the buffer
-; if taking the slot used by an existing buffer, free it.
+; H: Allocate a temporary string buffer for interpretation semantics of strings
+; H: and return the address and length of the buffer.  If taking the slot used
+; H: by an existing buffer, free it.
 dword     dTMPSTR,"$TMPSTR"
           jsr   _2parm
           lda   STACKBASE+0,x     ; get u1
@@ -5376,7 +5376,7 @@ done:     ldy   YR
           PUSHNEXT
 eword
 
-; ( c-addr1 u1 c-addr2 u2 -- caddr1 u1+u2 )
+; ( c-addr1 u1 c-addr2 u2 -- caddr1 u1+u2 )  Concatenate strings.
 ; c-addr1 is assumed to have enough room for the string
 hword     SCONCAT,"SCONCAT"
           jsr   _4parm
@@ -5414,7 +5414,8 @@ dwordq    ASTR,"A'"
           EXIT
 eword
 
-; H: ( c-addr1 u1 c-addr2 u2 -- c-addr3 u1+u2 ) concatenate allocated strings
+; H: ( c-addr1 u1 c-addr2 u2 -- c-addr3 u1+u2 ) Concatenate allocated strings,
+; H: freeing the originals.
 ; Concatenate two strings that are in memory returned by ALLOC-MEM
 ; returning a string allocated via ALLOC-MEM and the original strings
 ; freed via FREE-MEM
@@ -6003,8 +6004,8 @@ dword     COLON,":"
           EXIT
 eword
 
-; H: ( -- colon-sys ) create an anonymous colon definition and enter compiling state
-; H: the xt of the anonymous definition is left on the stack after ;
+; H: ( -- colon-sys ) Create an anonymous colon definition and enter compiling state.
+; H: The xt of the anonymous definition is left on the stack after ;.
 dword     NONAME,":NONAME"
           ENTER
           ONLIT $80               ; name length is 0 for noname
@@ -6021,8 +6022,8 @@ dword     NONAME,":NONAME"
           EXIT
 eword
 
-; H: ( -- colon-sys ) create a temporary anonymous colon definition and enter compiling state
-; H: the temporary definition is executed immediately after ;
+; H: ( -- colon-sys ) Create a temporary anonymous colon definition and enter
+; H: compiling state.  The temporary definition is executed immediately after ;
 ; word supporting temporary colon definitions to implement IEEE 1275
 ; words that are extended to run in interpretation state
 dword     dTEMPCOLON,":TEMP"
@@ -6051,11 +6052,11 @@ eword
 ; ( xt xt' -- ) 
 hword     dTEMPSEMIQ,"$;TEMP?",F_IMMED|F_CONLY
           ENTER
-          .dword dTMPDEF          ; ( -- a-addr )
+          .dword dTMPDEF          ; ( -- a-addr ) first see if we are in a temp def
           .dword FETCH            ; ( a-addr -- x ) 0 if not in temp def
           .dword _IF              ; ( x -- )
           .dword notmp            ; if not in temp def
-dosemi:   .dword DEPTH            ; ( -- u1 )
+dosemi:   .dword DEPTH            ; ( -- u1 ) next see if the stack depth matches
           .dword dCSDEPTH         ; ( u1 -- u1 c-addr1 ) verify stack depth is what it should be
           .dword FETCH            ; ( u1 c-addr1 -- u1 u2 )
           .dword ULTE             ; ( u1 u2 -- f ) is less than or equal to?
@@ -6328,6 +6329,7 @@ eword
 ; This implementation skips the quotation with AHEAD and afterwards leaves the
 ; the xt on the stack.
 ; quot-sys is ( -- old-$CURDEF forward-ref xt )
+; H: ( C: -- quot-sys ) ( R: -- ) Start a quotation.
 dword     SQUOT,"[:",F_IMMED|F_CONLY
           ENTER
           .dword dCURDEF          ; fix current def to quotation
@@ -6338,6 +6340,8 @@ dword     SQUOT,"[:",F_IMMED|F_CONLY
           EXIT
 eword
 
+; H: ( C: quot-sys -- ) ( R: -- xt ) End a quotation.  During executon,
+; H: leave xt of the quotation on the stack.
 dword     EQUOT,";]",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT        ; compile EXIT into current def
@@ -6391,7 +6395,7 @@ eword
 
 ; H: ( "name"<> -- ) Create a new named wordlist definition.  When name is executed,
 ; H: put the WID of the wordlist at the top of the search order.
-; H: The WID is the address of teh body of the named wordlist definition.
+; H: The WID is the address of the body of the named wordlist definition.
 dword     VOCABULARY,"VOCABULARY"
           ENTER
           .dword CREATE
