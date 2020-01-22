@@ -5783,7 +5783,7 @@ dword     IS_USER_WORD,"(IS-USER-WORD)"
           EXIT
 eword
 
-; H: ( n str len ) create a definition that pushes the first cell of the body, initially n
+; H: ( n str len -- ) create a definition that pushes the first cell of the body, initially n
 dword     dVALUE,"$VALUE"
           jsr   _3parm            ; avoid dictionary corruption from stack underflow
           jsr   _mkentry

@@ -1,6 +1,6 @@
 # Forth Dictionary
 
-Updated: 2020-01-21 23:37:36 -0800
+Updated: 2020-01-21 23:40:51 -0800
 
 ## !
 
@@ -106,7 +106,7 @@ by an existing buffer, free it.
 
 ## $VALUE
 
-( n str len ) create a definition that pushes the first cell of the body, initially n
+_( n str len -- )_ create a definition that pushes the first cell of the body, initially n
 
 ## '
 
