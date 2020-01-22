@@ -1,6 +1,6 @@
 # Forth Dictionary
 
-Updated: 2020-01-21 23:40:51 -0800
+Updated: 2020-01-21 23:45:31 -0800
 
 ## !
 
@@ -589,7 +589,7 @@ _( n -- )_ allocate n bytes in the dictionary
 
 ## ALSO
 
-_( -- )_ Fuplicate the first wordlist in the search order.
+_( -- )_ Duplicate the first wordlist in the search order.
 
 ## AND
 
