@@ -201,7 +201,7 @@ default:  .dword RtoP
           EXIT
 eword
 
-; H: ( -- ) Fuplicate the first wordlist in the search order.
+; H: ( -- ) Duplicate the first wordlist in the search order.
 dword     ALSO,"ALSO"
           ENTER
           .dword GET_ORDER
