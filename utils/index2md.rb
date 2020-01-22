@@ -37,16 +37,23 @@ index.keys.sort.each do |word|
     cword.gsub!(/^([<>])/) { "\\#{$1}" }
     puts "## #{cword}"
     puts
+    if word_info['flags']
+        puts "- Immediate." if word_info['flags'].include?('F_IMMED')
+        if word_info['flags'].include?('F_CONLY')
+            if word_info['flags'].include?('F_TEMPD')
+                puts "- In interpretation state, starts temporary definition."
+            else
+                puts "- Compile-only."
+            end
+        end
+        puts
+    end
     if word_info['help']
         word_info['help'].each_with_index do |line, i|
-            if line.start_with?('(')
-                line.gsub!(/[(](.+?)[)]/, '_(\1)_') # emphasize stack effects
-            else
-                if line =~ /^\s*\S+:/
-                    # space for separating interpretation/compilation/etc.
-                    puts if i > 0
-                end
-                line.gsub!(/:\s+[(](.+?)[)]/, ': _(\1)_') # emphasize stack effects
+            line.gsub!(/[(](.+?--.+?)[)]/, '_(\1)_') # emphasize stack effects
+            if line =~ /^\s*\S+:/
+                # space for separating interpretation/compilation/etc.
+                puts if i > 0
             end
             puts line
         end

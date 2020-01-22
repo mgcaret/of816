@@ -1,12 +1,14 @@
 # Forth Dictionary
 
-Updated: 2020-01-16 09:50:15 -0800
+Updated: 2020-01-21 23:37:36 -0800
 
 ## !
 
 _( n c-addr -- )_ write cell n to c-addr
 
 ## "
+
+- Immediate.
 
 _( "text"<"> -- c-addr u )_ parse string, including hex interpolation
 
@@ -36,12 +38,13 @@ _( ud -- 0 )_ perform # until quotient is zero
 
 ## $2VALUE
 
-_( n1 n2 str len )_ create a definition that pushes the first two cells of the body
+_( n1 n2 str len -- )_ create a definition that pushes the first two cells of the body
 initially n1 and n2
 
 ## $BYTE-EXEC
 
-_( addr xt -- )_ evaluate FCode at addr with fetch function xt, do not save state
+_( addr xt -- )_ evaluate FCode at addr with fetch function xt, do not save FCode
+evaluator state
 
 ## $CREATE
 
@@ -53,7 +56,7 @@ _( -- addr )_ addr = address of the CPU direct page
 
 ## $EMPTY-WL
 
-_( -- wid )_ create a new empty wordlist _(danger!)_
+_( -- wid )_ create a new empty wordlist (danger!)
 
 ## $ENV?-WL
 
@@ -68,6 +71,8 @@ _( c-addr u -- xt true | c-addr u false )_ find word in search order
 _( xt -- )_ forget word referenced by xt and subsequent words
 
 ## $HEX(
+
+- Immediate.
 
 _( "text"<rparen> -- c-addr u )_ parse hex, return in allocated string
 
@@ -101,13 +106,15 @@ by an existing buffer, free it.
 
 ## $VALUE
 
-_( n str len )_ create a definition that pushes the first cell of the body, initially n
+( n str len ) create a definition that pushes the first cell of the body, initially n
 
 ## '
 
 _( old-name<> -- xt )_ parse old-name in input stream, return xt of word
 
 ## (
+
+- Immediate.
 
 _( "text"<rparen> -- )_ parse and discard text until a right paren or end of input
 
@@ -153,6 +160,9 @@ _( n c-addr -- )_ add n to value at c-addr
 
 ## +LOOP
 
+- Immediate.
+- Compile-only.
+
 Compilation: _( C: do-sys -- )_
 
 Execution: _( u|n -- )_ add u|n to loop index and continue loop if within bounds
@@ -183,9 +193,13 @@ _( n -- )_ output n
 
 ## ."
 
+- Immediate.
+
 _( "text"<"> -- )_ output parsed text
 
 ## .(
+
+- Immediate.
 
 _( "text"<rparen> -- )_ parse text until a right paren or end of input, output text
 
@@ -389,14 +403,23 @@ compiling state.  The temporary definition is executed immediately after ;
 
 ## ;
 
+- Immediate.
+- Compile-only.
+
 _( colon-sys -- )_ consume colon-sys and enter interpretation state, ending the current
 definition.  If the definition was temporary, execute it.
 
 ## ;CODE
 
+- Immediate.
+- Compile-only.
+
 _( -- )_ end compiler mode, begin machine code section of definition
 
 ## ;]
+
+- Immediate.
+- Compile-only.
 
 _( C: quot-sys -- )_ _( R: -- xt )_ End a quotation.  During executon,
 leave xt of the quotation on the stack.
@@ -479,7 +502,10 @@ _( a-addr -- )_ output signed contents of cell at a-addr
 
 ## ?DO
 
-Compilation: _( -- )_ ( R: -- do-sys )
+- Immediate.
+- In interpretation state, starts temporary definition.
+
+Compilation: _( -- )_ _( R: -- do-sys )_
 
 Execution: _( limit start -- )_ begin DO loop, skip if limit=start
 
@@ -488,6 +514,8 @@ Execution: _( limit start -- )_ begin DO loop, skip if limit=start
 _( n -- n )_ if n = 0, else _( n1 -- n1 n2 )_ n2 = n1
 
 ## ?LEAVE
+
+- Compile-only.
 
 _( f -- )_ exit loop if f is nonzero
 
@@ -505,7 +533,11 @@ _( -- )_ Execute -1 THROW.
 
 ## ABORT"
 
-Compilation/Interpretation: _( [text<">] -- )_  Execution: _( f -- )_
+- Immediate.
+
+Compilation/Interpretation: _( [text<">] -- )_
+
+Execution: _( f -- )_
 If f is true, display text and execute -2 THROW.
 
 ## ABS
@@ -523,11 +555,17 @@ freeing the originals.
 
 ## AGAIN
 
+- Immediate.
+- Compile-only.
+
 _( C: dest -- )_ _( R: -- )_ resolve dest, jump to BEGIN
 
 ## AHEAD
 
-_( C: orig )_ _( E: -- )_ jump ahead as resolved by e.g. THEN
+- Immediate.
+- In interpretation state, starts temporary definition.
+
+_( C: orig ) ( E: -- )_ jump ahead as resolved by e.g. THEN
 
 ## ALIAS
 
@@ -535,7 +573,7 @@ _( "name1"<> "name2"<> -- )_ create name1, name1 is a synonym for name2
 
 ## ALIGN
 
-_( u -- u )_ align u _(no-op in this implementation)_
+_( u -- u )_ align u (no-op in this implementation)
 
 ## ALIGNED
 
@@ -559,17 +597,22 @@ _( n1 n2 -- n3 )_ n3 = n1 & n2
 
 ## ASCII
 
+- Immediate.
+
 _( "word"<> -- char )_ perform either CHAR or [CHAR] per the current compile state
 
 ## AT-XY
 
-_( u1 u2 -- )_ place cursor at col u1 row u2 _(uses ANSI escape sequence)_
+_( u1 u2 -- )_ place cursor at col u1 row u2 (uses ANSI escape sequence)
 
 ## BASE
 
 _( -- a-addr )_ System BASE variable.
 
 ## BEGIN
+
+- Immediate.
+- In interpretation state, starts temporary definition.
 
 _( C: -- dest )_ _( E: -- )_ start a BEGIN loop
 
@@ -663,6 +706,9 @@ _( -- <cr> )_
 
 ## CASE
 
+- Immediate.
+- In interpretation state, starts temporary definition.
+
 Compilation: _( R: -- case-sys )_ start a CASE...ENDCASE structure
 
 Execution: _( -- )_
@@ -721,9 +767,14 @@ _( addr1 u1 addr2 u2 -- n1 )_ compare two strings
 
 ## COMPILE
 
+- Immediate.
+- Compile-only.
+
 _( -- )_ Compile code to compile the immediately following word.  Better to use POSTPONE.
 
 ## COMPILE,
+
+- Immediate.
 
 _( xt -- )_ compile xt into the dictionary
 
@@ -737,7 +788,9 @@ _( -- wid )_ Return first wordlist in search order.
 
 ## CONTROL
 
-_( "name"<> )_ parse name, place low 5 bits of first char on stack, if compiling stat
+- Immediate.
+
+( "name"<> ) parse name, place low 5 bits of first char on stack, if compiling stat
 compile it as a literal
 
 ## COUNT
@@ -761,6 +814,8 @@ _( -- )_ emit a CR/LF combination, set increment #LINE
 _( "name"<> -- )_ create a definition, when executed pushes the body address
 
 ## D#
+
+- Immediate.
 
 _( "#"<> -- n | -- )_ parse following number as decimal, compile as literal if compiling
 
@@ -818,11 +873,17 @@ _( d -- d' )_ negate d
 
 ## DO
 
-Compilation: _( -- )_ ( R: -- do-sys )
+- Immediate.
+- In interpretation state, starts temporary definition.
+
+Compilation: _( -- )_ _( R: -- do-sys )_
 
 Execution: _( limit start -- )_ begin DO loop
 
 ## DOES>
+
+- Immediate.
+- Compile-only.
 
 _( -- )_ alter execution semantics of most recently-created definition to perform
 the following execution semantics.
@@ -841,6 +902,9 @@ _( n1 -- n1 n2 )_ n2 = n1
 
 ## ELSE
 
+- Immediate.
+- Compile-only.
+
 _( C: if-sys -- else-sys )_ _( E: -- )_ ELSE clause of IF ... ELSE ... THEN
 
 ## EMIT
@@ -849,9 +913,15 @@ _( char -- )_ Output char.
 
 ## END-CODE
 
+- Immediate.
+- Compile-only.
+
 _( code-sys -- )_ synonym for C;
 
 ## ENDCASE
+
+- Immediate.
+- Compile-only.
 
 Compilation: _( case-sys -- )_  conclude a CASE...ENDCASE structure
 
@@ -859,7 +929,10 @@ Execution: _( | n -- )_ continue execution, dropping n if no OF matched
 
 ## ENDOF
 
-Compilation; ( case-sys of-sys -- case-sys ) conclude an OF...ENDOF structure
+- Immediate.
+- Compile-only.
+
+Compilation; _( case-sys of-sys -- case-sys )_ conclude an OF...ENDOF structure
 
 Execution: Continue execution at ENDCASE of case-sys
 
@@ -888,6 +961,8 @@ _( n1 -- n2 )_ if n1 is odd, n2=n1+1, otherwise n2=n1
 _( xt -- )_ execute xt, regardless of its flags
 
 ## EXIT
+
+- Compile-only.
 
 ## EXIT?
 
@@ -957,6 +1032,8 @@ _( fcode# -- xt f )_ get fcode#'s xt and immediacy
 
 ## H#
 
+- Immediate.
+
 _( "#"<> -- n | -- )_ parse following number as hex, compile as literal if compiling
 
 ## HERE
@@ -973,11 +1050,16 @@ _( c -- )_ place c in pictured numeric output
 
 ## I
 
+- Compile-only.
+
 _( -- n )_ copy inner loop index to stack
 
 ## IF
 
-_( C: if-sys )_ _( E: n -- )_ begin IF ... ELSE ... ENDIF
+- Immediate.
+- In interpretation state, starts temporary definition.
+
+_( C: if-sys ) ( E: n -- )_ begin IF ... ELSE ... ENDIF
 
 ## IMMEDIATE
 
@@ -988,6 +1070,8 @@ _( -- )_ mark last compiled word as an immediate word
 _( x -- x' )_ invert the bits in x
 
 ## J
+
+- Compile-only.
 
 _( -- n )_ copy second-inner loop index to stack
 
@@ -1043,6 +1127,8 @@ _( char -- char' )_ lower case convert char
 
 ## LEAVE
 
+- Compile-only.
+
 _( -- )_ exit loop
 
 ## LEFT-PARSE-STRING
@@ -1056,9 +1142,14 @@ _( -- <lf> )_
 
 ## LITERAL
 
+- Immediate.
+
 _( n -- )_ compile numeric literal n into dictionary, leave n on stack at execution
 
 ## LOOP
+
+- Immediate.
+- Compile-only.
 
 Compilation: _( C: do-sys -- )_
 
@@ -1146,6 +1237,8 @@ _( R: x1 ... xn -- )_ _( n -- x1 ... xn n )_
 
 ## O#
 
+- Immediate.
+
 _( "#"<> -- n | --)_ parse following number as octal, compile as literal if compiling
 
 ## OCTAL
@@ -1153,6 +1246,9 @@ _( "#"<> -- n | --)_ parse following number as octal, compile as literal if comp
 _( -- )_ store 8 to BASE
 
 ## OF
+
+- Immediate.
+- Compile-only.
 
 Compilation: _( case-sys -- case-sys of-sys )_ begin an OF...ENDOF structure
 
@@ -1192,7 +1288,7 @@ _( -- a-addr )_ return address of PAD
 
 ## PAGE
 
-_( -- )_ clear screen & home cursor _(uses ANSI escape sequence)_
+_( -- )_ clear screen & home cursor (uses ANSI escape sequence)
 
 ## PARSE
 
@@ -1215,6 +1311,8 @@ _( "word"<> -- c-addr u )_ parse word from input stream, return address and leng
 _( x1 ... xn u -- x1 ... xn x(n-u)_ )
 
 ## POSTPONE
+
+- Immediate.
 
 _( "name"<> -- )_  
 
@@ -1240,9 +1338,13 @@ _( R: n -- n )_ _( -- n )_
 
 ## RB!
 
+- Immediate.
+
 _( byte addr -- )_ perform FCode-equivalent RB!: store byte
 
 ## RB@
+
+- Immediate.
 
 _( addr -- byte )_ perform FCode-equivalent RB@: fetch byte
 
@@ -1252,9 +1354,15 @@ _( R: n -- )_
 
 ## RECURSE
 
+- Immediate.
+- Compile-only.
+
 _( -- )_ compile the execution semantics of the most recently-created definition
 
 ## RECURSIVE
+
+- Immediate.
+- Compile-only.
 
 _( -- )_ make the current definition findable during compilation
 
@@ -1263,6 +1371,9 @@ _( -- )_ make the current definition findable during compilation
 _( -- f )_ refill input buffer, f = true if that worked, false if not
 
 ## REPEAT
+
+- Immediate.
+- Compile-only.
 
 _( C: orig dest -- )_ _(R: -- )_ resolve orig and dest, repeat BEGIN loop
 
@@ -1274,9 +1385,13 @@ _( -- )_ Reset the system.
 
 ## RL!
 
+- Immediate.
+
 _( cell addr -- )_ perform FCode-equivalent RL!, store cell
 
 ## RL@
+
+- Immediate.
 
 _( addr -- cell )_ perform FCode-equivalent RL@: fetch cell
 
@@ -1294,13 +1409,19 @@ _( n1 n2 -- n3 )_ n3 = n1 >> n2
 
 ## RW!
 
+- Immediate.
+
 _( word addr -- )_ perform FCode-equivalent RW!: store word
 
 ## RW@
 
+- Immediate.
+
 _( addr -- word )_ perform FCode-equivalent RW@: fetch word
 
 ## S"
+
+- Immediate.
 
 _( "text"<"> -- c-addr u )_
 
@@ -1356,6 +1477,9 @@ _( n -- s )_ s = -1 if n is negative, 0 if 0, 1 if positive
 
 ## SLITERAL
 
+- Immediate.
+- Compile-only.
+
 C: _( c-addr1 u -- )_ R: _( -- c-addr 2 u )_ compile string literal into current def
 
 ## SM/REM
@@ -1368,7 +1492,7 @@ _( -- c-addr u )_ return address and length of input source buffer
 
 ## SOURCE-ID
 
-_( -- n )_ return current input source id _(0 = console, -1 = string, >0 = file)_
+_( -- n )_ return current input source id (0 = console, -1 = string, >0 = file)
 
 ## SPACE
 
@@ -1398,6 +1522,9 @@ _( n1 n2 -- n2 n1 )_
 
 ## THEN
 
+- Immediate.
+- Compile-only.
+
 _( C: if-sys|else-sys -- )_ _( E: -- )_
 
 ## THROW
@@ -1406,7 +1533,10 @@ _( n -- )_ Throw exception n if n <> 0.
 
 ## TO
 
+- Immediate.
+
 _( n "name"<> -- )_ change the first cell of the body of xt to n.  Can be used on
+most words created with CREATE, DEFER, VALUE, etc.  even VARIABLE
 
 ## TRUE
 
@@ -1441,6 +1571,8 @@ _( u1 u2 -- u3 )_ u3 = u1*u2
 _( u -- )_ output u
 
 ## U.0
+
+_( u1 -- )_ output u1 with no trailing space
 
 ## U.R
 
@@ -1500,9 +1632,14 @@ _( c-addr -- n )_ fetch word from c-addr
 
 ## UNLOOP
 
+- Compile-only.
+
 _( -- )_ _( R: loop-sys -- )_ remove loop parameters from stack
 
 ## UNTIL
+
+- Immediate.
+- Compile-only.
 
 _( C: dest -- )_ _( R: x -- )_ UNTIL clause of BEGIN...UNTIL loop
 
@@ -1563,6 +1700,9 @@ _( u -- u1 .. u2 )_ u1 .. u2 = bytes of word u.
 
 ## WHILE
 
+- Immediate.
+- Compile-only.
+
 _( C: dest -- orig dest )_ _( E: x -- )_ WHILE clause of BEGIN...WHILE...REPEAT loop
 
 ## WITHIN
@@ -1604,29 +1744,46 @@ _( n1 n2 -- n3 )_ n3 = n1 ^ n2
 
 ## [
 
+- Immediate.
+- Compile-only.
+
 _( -- )_ Enter interpretation state.
 
 ## [']
+
+- Immediate.
 
 _( [old-name<>] -- xt )_ immediately parse old-name in input stream, return xt of word
 
 ## [:
 
+- Immediate.
+- Compile-only.
+
 _( C: -- quot-sys )_ _( R: -- )_ Start a quotation.
 
 ## [CHAR]
+
+- Immediate.
+- Compile-only.
 
 _( "word"<> -- char )_ immediately perform CHAR and compile literal
 
 ## [COMPILE]
 
+- Immediate.
+
 _( "name"<> -- )_ Compile name now.  Better to use POSTPONE.
 
 ## \
 
-_( "..."<end> -- )_ discard the rest of the input buffer _(line during EVALUATE)_
+- Immediate.
+
+_( "..."<end> -- )_ discard the rest of the input buffer (line during EVALUATE)
 
 ## ]
+
+- Immediate.
 
 _( -- )_ Enter compilation state.
 

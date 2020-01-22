@@ -635,7 +635,8 @@ noabort:  .dword TWODROP
           EXIT          
 eword
 
-; H: Compilation/Interpretation: ( [text<">] -- )  Execution: ( f -- )
+; H: Compilation/Interpretation: ( [text<">] -- )
+; H: Execution: ( f -- )
 ; H: If f is true, display text and execute -2 THROW.
 dwordq    ABORTQ,"ABORT'",F_IMMED
           ENTER
@@ -3704,7 +3705,7 @@ dword     UDOTR,"U.R"
           EXIT
 eword
 
-; ( u1 -- ) output u1 with no trailing space
+; H: ( u1 -- ) output u1 with no trailing space
 dword     UDOTZ,"U.0"
           ENTER
           .dword ZERO
@@ -4308,7 +4309,8 @@ eword
 ; this does *not* save and restore the FCode evaluator state, that's what byte-load is
 ; for.  This just gets things going, and unless SET-TOKEN is called, sticks with the ROM
 ; FCode tables.
-; H: ( addr xt -- ) evaluate FCode at addr with fetch function xt, do not save state
+; H: ( addr xt -- ) evaluate FCode at addr with fetch function xt, do not save FCode
+; H: evaluator state
 dword     dBYTE_EXEC,"$BYTE-EXEC"
           jsr   _2parm
           ENTER
@@ -5793,7 +5795,7 @@ dovalue:  ldy   #.loword(_pushvalue)
           NEXT
 eword
 
-; H: ( n1 n2 str len ) create a definition that pushes the first two cells of the body
+; H: ( n1 n2 str len -- ) create a definition that pushes the first two cells of the body
 ; H: initially n1 and n2
 dword     dTWOVALUE,"$2VALUE"
           jsr   _4parm            ; avoid dictionary corruption from stack underflow
@@ -5906,7 +5908,7 @@ hword     _TO,"_TO"
 eword
 
 ; H: ( n "name"<> -- ) change the first cell of the body of xt to n.  Can be used on
-; most words created with CREATE, DEFER, VALUE, etc.  even VARIABLE
+; H: most words created with CREATE, DEFER, VALUE, etc.  even VARIABLE
 dword     TO,"TO",F_IMMED
           ENTER
           .dword PARSEFIND

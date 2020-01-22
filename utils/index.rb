@@ -41,7 +41,7 @@ input.lines.each do |line|
         output[name] ||= {}
         output[name].merge!({"help" => help}) unless help.empty?
         if flags
-            fl = flags.split('|')
+            fl = flags.split(/[|\+]/)
             output[name].merge!({"flags" => fl}) unless fl.empty?
         end
         output[name].merge!({"tests" => coverage[name.downcase]}) if coverage[name.downcase]
