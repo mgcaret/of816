@@ -77,7 +77,8 @@ def run_suite(suite, outfile = nil)
                     puts "Lines complete."
                     stdin.flush
                     begin
-                        Timeout.timeout(10) do
+                        # Give test 30 seconds to complete
+                        Timeout.timeout(30) do
                             outbuf.write(stdout.read)
                         end
                     rescue Timeout::Error

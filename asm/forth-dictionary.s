@@ -6,7 +6,8 @@
 ; following the JSL.  This would be bad if they are not supposed to do so.
 ; of course, this caution doesn't apply to words in ROM that can't be altered
 
-; comments starting with H: define help text to be used if I ever ship a help command
+; comments starting with H: define help text to be used for documentation generation
+; including if I ever ship a help command
 
 dstart "forth"
 
@@ -258,7 +259,7 @@ dword     SEAL,"SEAL"
           EXIT
 eword
 
-; H: ( wid -- c-addr u ) Return the name of a wordlist, or ^address if no name.
+; H: ( wid -- addr u ) Return the name of a wordlist, or ^address if no name.
 hword     WL_NAME,"WL-NAME"
           ENTER
           .dword DUP
@@ -389,7 +390,7 @@ hword     ddSYSINIT,"$$SYSINIT"
           ONLIT max_search_order  ; now allocate the storage for the search order
           .dword CELLS
           .dword ALLOT
-.endif ; match_search_order
+.endif ; max_search_order
           .dword dMEMTOP          ; set $HIMEM to $MEMTOP for dynamic allocation
           .dword FETCH
           .dword dHIMEM
@@ -429,7 +430,7 @@ no_fcode:
           EXIT
 eword
 
-; ( xt base -- ) execute xt with temporary base
+; ( xt base -- ) execute xt with temporary number base
 hword     TMPBASE,"TMPBASE"
           ENTER
           .dword BASE
@@ -566,7 +567,7 @@ fixup:    pla                     ; get old RSTK_SAVE
           PUSHNEXT
 eword
 
-; H: ( n -- ) Throw exception n if n <> 0.
+; H: ( n -- ) Throw exception n if n is nonzero.
 dword     THROW,"THROW"
           jsr   _popay            ; get exception # from stack
 throway:  .if trace
@@ -1004,7 +1005,7 @@ dword     BSX,"BSX"
           NEXT
 eword
 
-; ( -- c-addr )
+; ( -- addr ) variable containing address of top of data space
 hword     dHIMEM,"$HIMEM"
           SYSVAR SV_HIMEM
 eword
@@ -1101,22 +1102,22 @@ eom:      .dword UDOT
           EXIT
 eword
 
-; H: ( -- a-addr ) STATE variable, zero if interpreting.
+; H: ( -- addr ) Variable, zero if interpreting, nonzero if compiling.
 dword     STATE,"STATE"
           SYSVAR SV_STATE
 eword
 
-; ( -- u ) variable containing depth of control-flow stack
+; ( -- u ) Variable containing depth of control-flow stack.
 hword     dCSDEPTH,"$CSDEPTH"
           SYSVAR SV_dCSDEPTH        ; Control-flow stack depth for temporary definitions
 eword
 
-; ( -- c-addr ) variable to store HERE during temporary definition creation
+; ( -- addr ) Variable to store HERE during temporary definition creation.
 hword     dSAVEHERE,"$SAVEHERE"
           SYSVAR SV_dSAVEHERE       ; saved HERE for temporary definitions
 eword
 
-; ( -- c-addr ) variable pointing to memory allocated for temporary definition
+; ( -- addr ) Variable pointing to memory allocated for temporary definition.
 hword     dTMPDEF,"$>TMPDEF"
           SYSVAR SV_pTMPDEF         ; pointer to memory allocated for temp def
 eword
@@ -1138,12 +1139,12 @@ dword     STATEC,"]",F_IMMED
           EXIT
 eword
 
-; H: ( -- a-addr ) System BASE variable.
+; H: ( -- a-addr ) Variable containing current numeric base.
 dword     BASE,"BASE"
           SYSVAR SV_BASE
 eword
 
-; H: ( ... u -- ... ) call system interface function u
+; H: ( ... u -- ... ) Call system interface function u.
 dword     dSYSIF,"$SYSIF"
           jsr   _popay
           tya
@@ -1228,7 +1229,7 @@ dword     NLINE,"#LINE"
           SYSVAR SV_NLINE
 eword
 
-; H: ( -- addr ) variable containing the number of chars output on the current line.
+; H: ( -- addr ) Variable containing the number of chars output on the current line.
 dword     NOUT,"#OUT"
           SYSVAR SV_NOUT
 eword
@@ -1249,7 +1250,7 @@ dword     EXECUTE,"EXECUTE"
           RUN
 eword
 
-; ( -- ) read a cell from the instruction stream, set the next IP to it
+; ( -- ) Read a cell from the instruction stream, set the next IP to it.
 hword     _JUMP,"_JUMP"
           jsr   _fetch_ip_cell
           jsr   _decay
@@ -1258,13 +1259,13 @@ go:       sty   IP
           NEXT
 eword
 
-; ( -- ) read and discard a cell from the instruction stream
+; ( -- ) Read and discard a cell from the instruction stream.
 hword     _SKIP,"_SKIP"
           jsr   _fetch_ip_cell
           NEXT
 eword
 
-; ( -- ) read a cell from the instruction stream; if interpretation state set IP to it
+; ( -- ) Read a cell from the instruction stream; if interpretation state set IP to it.
 hword     _SMART,"_SMART"
           .if 1 ; native
           ldy   #SV_STATE
@@ -1288,26 +1289,27 @@ hword     _SMART,"_SMART"
           .endif
 eword
 
-; ( -- ) read and discard two cells from the instruction stream
+; ( -- ) Read and discard two cells from the instruction stream.
 hword     _SKIP2,"_SKIP2"
           jsr   _fetch_ip_cell
           bra   _SKIP::code
 eword
 
-; H: ( n -- ) compile cell n into the dictionary
+; H: ( n -- ) Compile cell n into the dictionary.
 dword     COMMA,","
           jsr   _popay
           jsr   _ccellay
           NEXT
 eword
 
-; H: ( xt -- ) compile xt into the dictionary
+; H: ( xt -- ) Compile xt into the dictionary.
 ; immediacy called out in IEEE 1275-1994
 dword     COMPILECOMMA,"COMPILE,",F_IMMED
           bra   COMMA::code
 eword
 
-; H: ( n -- ) compile numeric literal n into dictionary, leave n on stack at execution
+; H: Compilation: ( n -- )
+; H: Execution: ( -- n )
 dword     LITERAL,"LITERAL",F_IMMED
           jsr   _1parm
           .if no_fast_lits
@@ -1325,7 +1327,7 @@ dword     LITERAL,"LITERAL",F_IMMED
           .endif
 eword
 
-; H: ( char -- ) compile char into dictionary
+; H: ( char -- ) Compile char into dictionary.
 dword     CCOMMA,"C,"
           jsr   _popay
           tya
@@ -1333,7 +1335,7 @@ dword     CCOMMA,"C,"
           NEXT
 eword
 
-; H: ( word -- ) compile word into dictionary
+; H: ( word -- ) Compile word into dictionary.
 dword     WCOMMA,"W,"
           jsr   _popay
           tya
@@ -1341,17 +1343,17 @@ dword     WCOMMA,"W,"
           NEXT
 eword
 
-; H: ( q -- ) compile quad into the dictionary
+; H: ( q -- ) Compile cell q into dictionary.
 dword     LCOMMA,"L,"
           bra COMMA::code
 eword
 
-; H: ( u -- u ) align u (no-op in this implementation)
+; H: ( u -- u ) Align u (no-op in this implementation).
 dword     ALIGN,"ALIGN"
           NEXT
 eword
 
-; H: ( n -- ) allocate n bytes in the dictionary
+; H: ( n -- ) Allocate n bytes in the dictionary.
 dword     ALLOT,"ALLOT"
           jsr   _popay
           pha
@@ -1365,26 +1367,26 @@ dword     ALLOT,"ALLOT"
           NEXT
 eword
 
-; H: ( c-addr -- n ) fetch cell from c-addr
+; H: ( addr -- n ) Fetch n from addr.
 dword     FETCH,"@"
           jsr   _popwr
 fetch2:   jsr   _wrfetchind
           PUSHNEXT
 eword
 
-; H: ( c-addr -- n ) fetch cell from c-addr
+; H: ( addr -- n ) Fetch n from addr.
 dword     LFETCH,"L@"
           bra   FETCH::code
 eword
 
 .if unaligned_words
-; H: ( c-addr -- n ) fetch cell from c-addr
+; H: ( addr -- n ) Fetch n from addr.
 dword     LFECTCHU,"UNALIGNED-L@"
           bra   LFETCH::code
 eword
 .endif
 
-; H: ( c-addr -- n1 n2 ) fetch two consecutive cells from c-addr
+; H: ( addr -- n1 n2 ) Fetch two consecutive cells from addr.
 dword     TWOFETCH,"2@"
           jsr   _popwr
           jsr   _wrplus4
@@ -1394,7 +1396,7 @@ dword     TWOFETCH,"2@"
           bra   FETCH::fetch2
 eword
 
-; H: ( c-addr -- char ) fetch char from c-addr
+; H: ( addr -- char ) Fetch char from addr.
 dword     CFETCH,"C@"
           jsr   _popwr
           sep   #SHORT_A
@@ -1405,7 +1407,7 @@ dword     CFETCH,"C@"
           NEXT
 eword
 
-; H: ( c-addr -- word ) fetch word from c-addr
+; H: ( addr -- word ) Fetch word from addr.
 dword     WFETCH,"W@"
           jsr   _popwr
           lda   [WR]
@@ -1413,7 +1415,7 @@ dword     WFETCH,"W@"
           NEXT
 eword
 
-; H: ( c-addr -- n ) fetch sign-extended word from c-addr
+; H: ( addr -- n ) Fetch sign-extended word from addr.
 dword     WFETCHS,"<W@"
           ENTER
           .dword WFETCH
@@ -1422,13 +1424,13 @@ dword     WFETCHS,"<W@"
 eword
 
 .if unaligned_words
-; H: ( c-addr -- n ) fetch word from c-addr
+; H: ( addr -- n ) Fetch word from addr.
 dword     WFECTCHU,"UNALIGNED-W@"
           bra   WFETCH::code
 eword
 .endif
 
-; H: ( n c-addr -- ) write cell n to c-addr
+; H: ( n addr -- ) Store n at addr.
 dword     STORE,"!"
           jsr   _popwr
 store2:   jsr   _popay
@@ -1436,19 +1438,19 @@ store2:   jsr   _popay
           NEXT
 eword
 
-; H: ( n c-addr -- ) write cell n to c-addr
+; H: ( n addr -- ) Store n at addr.
 dword     LSTORE,"L!"
           bra   STORE::code
 eword
 
 .if unaligned_words
-; H: ( n c-addr -- ) write cell n to c-addr
+; H: ( n addr -- ) Store n at addr.
 dword     LSTOREU,"UNALIGNED-L!"
           bra   LSTORE::code
 eword
 .endif
 
-; H: ( n1 n2 c-addr -- ) write consecutive cells n1 and n2 to c-addr
+; H: ( n1 n2 addr -- ) Store two consecutive cells at addr.
 dword     TWOSTORE,"2!"
           jsr   _popwr
           jsr   _popay
@@ -1457,7 +1459,7 @@ dword     TWOSTORE,"2!"
           bra   STORE::store2
 eword
 
-; H: ( char c-addr -- ) write char n to c-addr
+; H: ( char addr -- ) Store char at addr.
 dword     CSTORE,"C!"
           jsr   _popwr
           jsr   _popay
@@ -1468,7 +1470,7 @@ dword     CSTORE,"C!"
           NEXT
 eword
 
-; H: ( word c-addr -- ) write word n to c-addr
+; H: ( word addr -- ) Store word at addr.
 dword     WSTORE,"W!"
           jsr   _popwr
           jsr   _popay
@@ -1478,13 +1480,13 @@ dword     WSTORE,"W!"
 eword
 
 .if unaligned_words
-; H: ( word c-addr -- ) write word n to c-addr
+; H: ( word addr -- ) Store word at addr.
 dword     WSTOREU,"UNALIGNED-W!"
           bra   WSTORE::code
 eword
 .endif
 
-; ( n1 addr -- n2 ) swap n1 with n2 at addr
+; ( n1 addr -- n2 ) Swap n1 with n2 at addr.
 hword     CSWAP,"CSWAP"
           ENTER
           .dword DUP
@@ -1494,13 +1496,13 @@ hword     CSWAP,"CSWAP"
           EXIT
 eword
 
-; H: ( n1 -- n1 n2 ) n2 = n1
+; H: ( n1 -- n1 n2 ) n2 = n1.
 dword     DUP,"DUP"
           jsr   _peekay
           PUSHNEXT
 eword
 
-; H: ( n -- n ) if n = 0, else ( n1 -- n1 n2 ) n2 = n1
+; H: ( 0 -- 0 ) | ( n1 -- n1 n2 ) n2 = n1.
 dword     QDUP,"?DUP"
           jsr   _peekay
           cmp   #$00
@@ -1530,25 +1532,45 @@ dword     TWOPtoR,"2>R"
           bra   PtoR::code
 eword
 
-; H: ( x1 ... xn n -- n ) ( R: x1 ... xn -- )
-; must be primitive   
-dword     NPtoR,"N>R"
-          jsr   _popay
-          sty   YR
-          sty   YR+2
-          cpy   #$00
+; Common code to copy YR items from parameter stack to
+; return stack.
+.proc     _xNPtoR
+          lda   YR
           beq   done
-  :       jsr   _popay
+:         jsr   _popay
           pha
           phy
           dec   YR
           bne   :-
-done:     lda #$00
-          ldy   YR+2
-          PUSHNEXT
+done:     lda   YR+2
+          bpl   :+
+          and   #$7FFF
+          jsr   _pusha
+:         NEXT
+.endproc
+
+; ( xu ... x1 u -- u ) ( R: -- x1 ... xu ) remove u items from parameter stack
+; and place on return stack, used by SAVE-INPUT.
+hword     XNPtoR,"XN>R"
+          jsr   _popay
+          sty   YR
+          sty   YR+2
+          lda   #$8000
+          tsb   YR+2
+          bra   _xNPtoR
 eword
 
-; H: ( R: n -- ) ( -- n )
+; H: ( xu ... x0 u -- ) ( R: -- x0 ... xu ) remove u+1 items from parameter stack
+; H: and place on return stack.
+dword     NPtoR,"N>R"
+          jsr   _popay
+          iny
+          sty   YR
+          stz   YR+2
+          bra   _xNPtoR
+eword
+
+; H: ( R: x -- ) ( -- x )
 ; must be primitive   
 dword     RtoP,"R>"
           ply
@@ -1556,7 +1578,7 @@ dword     RtoP,"R>"
           PUSHNEXT
 eword
 
-; H: ( R: n1 n2 -- ) ( -- n1 n2 )
+; H: ( R: x1 x2 -- ) ( -- x1 x2 )
 ; must be primitive   
 dword     TWORtoP,"2R>"
           ply
@@ -1569,21 +1591,42 @@ dword     TWORtoP,"2R>"
           NEXT
 eword
 
-; H: ( R: x1 ... xn -- ) ( n -- x1 ... xn n )
-dword     NRtoP,"NR>"
-          jsr   _popay
-          sty   YR
-          sty   YR+2
-          cpy   #$00
+; Common code to copy YR items from return stack to
+; parameter stack.
+.proc     _xNRtoP
+          lda   YR
           beq   done
 :         ply
           pla
           jsr   _pushay
           dec   YR
           bne   :-
-done:     lda   #$00
-          ldy   YR+2
-          PUSHNEXT
+done:     lda   YR+2
+          bpl   :+
+          and   #$7FFF
+          jsr   _pusha
+:         NEXT
+.endproc
+
+; ( R: x1 ... xu -- ) ( u -- xu ... x1 u ) remove u items from return stack
+; and place on parameter stack, used by RESTORE-INPUT.
+hword     XNRtoP,"XNR>"
+          jsr   _popay
+          sty   YR
+          sty   YR+2
+          lda   #$8000
+          tsb   YR+2
+          bra   _xNRtoP
+eword
+
+; H: ( R: x0 ... xu -- ) ( u -- xu ... x0 ) remove u+1 items from return stack
+; H: and place on parameter stack.
+dword     NRtoP,"NR>"
+          jsr   _popay
+          iny
+          sty   YR
+          stz   YR+2
+          bra   _xNRtoP
 eword
 
 ; H: ( R: n -- n ) ( -- n )
@@ -1618,7 +1661,7 @@ dword     RDROP,"RDROP"
           NEXT
 eword
 
-; H: ( R: n -- n' ) n' = n + 1
+; H: ( R: n1 -- n2 ) n2 = n1 + 1
 ; increment item on return stack
 dword     RINCR,"R+1"
           lda   1,s
@@ -1631,7 +1674,8 @@ dword     RINCR,"R+1"
 :         NEXT
 eword
 
-; H: ( n1 -- n2 ) n2 = n1th cell in return stack
+.if 0 ; currently unused
+; H: ( u -- xu ) (R: xu ... x0 -- xu ... x0 )
 hword     RPICK,"RPICK"
           jsr   _popwr
           tya
@@ -1653,6 +1697,7 @@ hword     RPICK,"RPICK"
           pla
           NEXT
 eword
+.endif
 
 ; ( -- n ) n = cell-extended 24-bit address
 ; pluck the machine return address underneath the Forth return address
@@ -1677,19 +1722,19 @@ hword     RPLUCKADDR,"RPLUCKADDR"
           NEXT
 eword
 
-; H: ( n1 n2 -- n2 n1 )
+; H: ( x1 x2 -- x2 x1 )
 dword     SWAP,"SWAP"
           jsr   _swap
           NEXT
 eword
 
-; H: ( n1 -- )
+; H: ( x -- )
 dword     DROP,"DROP"
           jsr   _stackincr
           NEXT
 eword
 
-; H: ( n1 n2 n3 -- )
+; H: ( x1 x2 x3 -- )
 dword     THREEDROP,"3DROP"
           jsr   _stackincr
 twodrop:  jsr   _stackincr
@@ -1697,18 +1742,18 @@ twodrop:  jsr   _stackincr
           NEXT
 eword
 
-; H: ( n1 n2 -- )
+; H: ( x1 x2 -- )
 dword     TWODROP,"2DROP"
           bra   THREEDROP::twodrop
 eword
 
-; H: ( n1 ... nx -- ) empty stack
+; H: ( ... -- ) Empty stack.
 dword     CLEAR,"CLEAR"
           ldx   STK_TOP
           NEXT
 eword
 
-; H: ( n1 ... nx -- n1 ... nx x )
+; H: ( xu ... x1 -- xu ... x1 u )
 dword     DEPTH,"DEPTH"
           stx   WR
           lda   STK_TOP
@@ -1721,13 +1766,13 @@ dword     DEPTH,"DEPTH"
           PUSHNEXT
 eword
 
-; H: ( n1 n2 -- n1 n2 n3 ) n3 = n1
+; H: ( x1 x2 -- x1 x2 x2 )
 dword     OVER,"OVER"
           jsr   _over
           NEXT
 eword
 
-; H: ( x1 ... xn u -- x1 ... xn x(n-u) )
+; H: ( xu ... x1 x0 u -- xu ... x1 xu )
 dword     PICK,"PICK"
           jsr   _2parm
           lda   STACKBASE+0,x
@@ -1747,7 +1792,7 @@ dword     PICK,"PICK"
           NEXT
 eword
 
-; H: ( -- ) display stack contents
+; H: ( -- ) Display stack contents.
 dword     DOTS,".S"
           ENTER
           ONLIT '{'
@@ -1777,7 +1822,7 @@ done:     .dword DROP
           EXIT
 eword
 
-; H: ( n1 n2 -- n2 )
+; H: ( x1 x2 -- x2 )
 dword     NIP,"NIP"
           jsr   _2parm
           lda   STACKBASE+0,x
@@ -1791,7 +1836,7 @@ dword     NIP,"NIP"
           NEXT
 eword
 
-; H: ( n1 n2 -- n3 n1 n2 ) n3 = n2
+; H: ( x1 x2 -- x2 x1 x2 )
 dword     TUCK,"TUCK"
           ENTER
           .dword SWAP
@@ -1799,7 +1844,7 @@ dword     TUCK,"TUCK"
           EXIT
 eword
 
-; H: ( n1 n2 n3 -- n3 )
+; H: ( x1 x2 x3 -- x3 )
 hword     NIPTWO,"NIP2"
           ENTER
           .dword PtoR
@@ -1808,14 +1853,14 @@ hword     NIPTWO,"NIP2"
           EXIT
 eword
 
-; H: ( n1 n2 -- n1 n2 n3 n4 ) n3 = n1, n4 = n2
+; H: ( x1 x2 -- x1 x2 x1 x2 )
 dword     TWODUP,"2DUP"
           jsr   _over
           jsr   _over
           NEXT
 eword
 
-; H: ( n1 n2 n3 -- n1 n2 n3 n4 n5 n6 ) n4 = n1, n5 = n2, n6 = n3
+; H: ( x1 x2 x3 -- x1 x2 x3 x1 x2 x3 )
 dword     THREEDUP,"3DUP"
           ENTER
           ONLIT 2
@@ -1843,7 +1888,7 @@ eword
           rts
 .endproc
 
-; H: ( n1 n2 n3 -- n2 n3 n1 )
+; H: ( x1 x2 x3 -- x2 x3 x1 )
 dword     ROT,"ROT"
           .if 1 ; native
           jsr   _3parm
@@ -1859,7 +1904,7 @@ dword     ROT,"ROT"
           .endif
 eword
 
-; H: ( n1 n2 n3 -- n3 n1 n2 )
+; H: ( x1 x2 x3 -- x3 x1 x2 )
 dword     NROT,"-ROT"
           .if 1 ; native
           jsr   _3parm
@@ -1931,7 +1976,7 @@ dword     TWOSWAP,"2SWAP"
           EXIT
 eword
 
-; H: ( x1 x2 x3 x4 -- x1 x2 x3 x4 x5 x6 ) x5 = x1, x6 = x2
+; H: ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )
 dword     TWOOVER,"2OVER"
           ENTER
           .dword TWOPtoR
@@ -1951,7 +1996,7 @@ dword     TWOROT,"2ROT"
           EXIT
 eword
 
-; H: ( c-addr -- ) store all zero bits to cell at c-addr
+; H: ( addr -- ) Store all zero bits in cell at addr.
 dword     OFF,"OFF"
           jsr   _popwr
           lda   #$0000
@@ -1960,7 +2005,7 @@ onoff:    tay
           NEXT
 eword
 
-; H: ( c-addr -- ) store all one bits to cell at c-addr
+; H: ( addr -- ) Store all one bits to cell at addr.
 dword     ON,"ON"
           jsr   _popwr
           lda   #$FFFF
@@ -1989,7 +2034,7 @@ eword
           rts
 .endproc
 
-; H: ( n -- f ) f = true if x is zero, false if not
+; H: ( x -- f ) f = true if x is zero, false if not.
 dword     ZEROQ,"0="
           jsr   _zcmpcom
           ora   STACKBASE+0,x
@@ -1999,7 +2044,7 @@ st:       jmp   _cmpstore
 eword
 _cmpstore2 = ZEROQ::st
 
-; H: ( n -- f ) f = false if x is zero, true if not
+; H: ( x -- f ) f = false if x is zero, true if not.
 dword     ZERONEQ,"0<>"
           jsr   _zcmpcom
           ora   STACKBASE+0,x
@@ -2008,7 +2053,7 @@ dword     ZERONEQ,"0<>"
 :         bra   _cmpstore2
 eword
 
-; H: ( n -- f ) f = true if x > 0, false if not
+; H: ( n -- f ) f = true if n > 0, false if not.
 dword     ZEROGT,"0>"
           jsr   _zcmpcom
           bmi   _cmpstore2
@@ -2018,7 +2063,7 @@ dword     ZEROGT,"0>"
           bra   _cmpstore2
 eword
 
-; H: ( n -- f ) f = true if x >= 0, false if not
+; H: ( n -- f ) f = true if n >= 0, false if not.
 dword     ZEROGTE,"0>="
           jsr   _zcmpcom
           bmi   _cmpstore2
@@ -2026,7 +2071,7 @@ dword     ZEROGTE,"0>="
           bra   _cmpstore2
 eword
 
-; H: ( n -- f ) f = true if x < 0, false if not
+; H: ( n -- f ) f = true if n < 0, false if not.
 dword     ZEROLT,"0<"
           jsr   _zcmpcom
           bpl   _cmpstore
@@ -2034,7 +2079,7 @@ dword     ZEROLT,"0<"
           bra   _cmpstore
 eword
 
-; H: ( n -- f ) f = true if x <= 0, false if not
+; H: ( n -- f ) f = true if n <= 0, false if not.
 dword     ZEROLTE,"0<="
           jsr   _zcmpcom
           bmi   :+
@@ -2044,7 +2089,7 @@ dword     ZEROLTE,"0<="
           bra   _cmpstore
 eword
 
-; H: ( n1 n2 -- f ) f = true if n1 = n2, false if not
+; H: ( x1 x2 -- f ) f = true if x1 = x2, false if not.
 dword     EQUAL,"="
           jsr   _ucmpcom
           bne   _2cmpstore
@@ -2052,7 +2097,7 @@ dword     EQUAL,"="
           bra   _2cmpstore
 eword
 
-; H: ( n1 n2 -- f ) f = true if n1 <> n2, false if not
+; H: ( x1 x2 -- f ) f = true if x1 <> x2, false if not.
 dword     NOTEQUAL,"<>"
           jsr   _ucmpcom
           beq   _2cmpstore
@@ -2060,7 +2105,7 @@ dword     NOTEQUAL,"<>"
           bra   _2cmpstore
 eword
 
-; H: ( u1 u2 -- f ) f = true if u1 < u2, false if not
+; H: ( u1 u2 -- f ) f = true if u1 < u2, false if not.
 dword     ULT,"U<"
           jsr   _ucmpcom
           bcs   _2cmpstore
@@ -2068,7 +2113,7 @@ dword     ULT,"U<"
           bra   _2cmpstore
 eword
 
-; H: ( u1 u2 -- f ) f = true if u1 <= u2, false if not
+; H: ( u1 u2 -- f ) f = true if u1 <= u2, false if not.
 dword     ULTE,"U<="
           jsr   _ucmpcom
           beq   :+
@@ -2092,7 +2137,7 @@ eword
           NEXT
 .endproc   
 
-; H: ( u1 u2 -- f ) f = true if u1 > u2, false if not
+; H: ( u1 u2 -- f ) f = true if u1 > u2, false if not.
 dword     UGT,"U>"
           jsr   _ucmpcom
           beq   _2cmpstore
@@ -2101,7 +2146,7 @@ dword     UGT,"U>"
           bra   _2cmpstore
 eword
 
-; H: ( u1 u2 -- f ) f = true if u1 >= u2, false if not
+; H: ( u1 u2 -- f ) f = true if u1 >= u2, false if not.
 dword     UGTE,"U>="
           jsr   _ucmpcom
           bcc   _2cmpstore
@@ -2109,7 +2154,7 @@ dword     UGTE,"U>="
           bra   _2cmpstore
 eword
 
-; H: ( n1 n2 -- f ) f = true if n1 < n2, false if not
+; H: ( n1 n2 -- f ) f = true if n1 < n2, false if not.
 dword     SLT,"<"
           jsr   _scmpcom
           bcs   _2cmpstore
@@ -2117,7 +2162,7 @@ dword     SLT,"<"
           bra   _2cmpstore
 eword
 
-; H: ( n1 n2 -- f ) f = true if n1 <= n2, false if not
+; H: ( n1 n2 -- f ) f = true if n1 <= n2, false if not.
 dword     SLTE,"<="
           jsr   _scmpcom
           beq   :+
@@ -2126,7 +2171,7 @@ dword     SLTE,"<="
           bra   _2cmpstore
 eword
 
-; H: ( n1 n2 -- f ) f = true if n1 > n2, false if not
+; H: ( n1 n2 -- f ) f = true if n1 > n2, false if not.
 dword     SGT,">"
           jsr   _scmpcom
           beq   _2cmpstore
@@ -2135,7 +2180,7 @@ dword     SGT,">"
           bra   _2cmpstore
 eword
 
-; H: ( n1 n2 -- f ) f = true if n1 >= n2, false if not
+; H: ( n1 n2 -- f ) f = true if n1 >= n2, false if not.
 dword     SGTE,">="
           jsr   _scmpcom
           beq   :+
@@ -2144,7 +2189,7 @@ dword     SGTE,">="
           bra   _2cmpstore
 eword
 
-; H: ( n1 n2 -- n1|n2 ) return the greater of n1 or n2
+; H: ( n1 n2 -- n1|n2 ) Return the greater of n1 or n2.
 dword     MAX,"MAX"
           jsr   _scmpcom
           bcs   drop
@@ -2156,7 +2201,7 @@ drop:     inx
           NEXT
 eword
 
-; H: ( n1 n2 -- n1|n2 ) return the smaller of n1 or n2
+; H: ( n1 n2 -- n1|n2 ) Return the smaller of n1 or n2.
 dword     MIN,"MIN"
           jsr   _scmpcom
           bcc   MAX::drop
@@ -2182,7 +2227,7 @@ eword
           jmp   _stest32
 .endproc
 
-; ( c-addr -- ) set dictionary pointer to c-addr
+; ( addr -- ) Set dictionary pointer to addr.
 hword     toHERE,"->HERE"
           jsr   _popay
           sty   DHERE
@@ -2190,14 +2235,14 @@ hword     toHERE,"->HERE"
           NEXT
 eword
 
-; H: ( -- c-addr ) return dictionary pointer
+; H: ( -- addr ) Return dictionary pointer.
 dword     HERE,"HERE"
           ldy   DHERE
           lda   DHERE+2
           PUSHNEXT
 eword
 
-; ( -- c-addr ) return address of last definition in current vocabulary
+; H: ( -- addr ) Return address of last definition in current vocabulary.
 ; non-standard
 dword     LAST,"LAST"
           ENTER
@@ -2224,7 +2269,7 @@ hword     OLDHERE,"OLDHERE"
           EXIT
 eword
 
-; ( -- ) exit current definition
+; H: ( -- ) Exit this word, to the caller.
 dword     DEXIT,"EXIT",F_CONLY
           jmp   _exit_next
 eword
@@ -2274,7 +2319,8 @@ hword     _CONTROL_MM,"_CONTROL_MM"
           jmp   _throway
 eword
 
-; H: ( C: orig ) ( E: -- ) jump ahead as resolved by e.g. THEN
+; H: Compilation: ( -- orig )
+; H: Execution: ( -- ) Jump ahead as to the resolution of orig.
 dword     AHEAD,"AHEAD",F_IMMED|F_CONLY|F_TEMPD
           ENTER
           .dword _COMP_LIT
@@ -2285,7 +2331,8 @@ dword     AHEAD,"AHEAD",F_IMMED|F_CONLY|F_TEMPD
           EXIT
 eword
 
-; H: ( C: if-sys ) ( E: n -- ) begin IF ... ELSE ... ENDIF
+; H: Compilation: ( -- if-sys )
+; H: Execution: ( n -- ) Begin IF ... ELSE ... ENDIF.
 dword     IF,"IF",F_IMMED|F_CONLY|F_TEMPD
           ENTER
           .dword _COMP_LIT
@@ -2296,7 +2343,8 @@ dword     IF,"IF",F_IMMED|F_CONLY|F_TEMPD
           EXIT
 eword
 
-; H: ( C: if-sys -- else-sys ) ( E: -- ) ELSE clause of IF ... ELSE ... THEN
+; H: Compilation: ( if-sys -- else-sys )
+; H: Execution: ( -- ) ELSE clause of IF ... ELSE ... THEN.
 dword     ELSE,"ELSE",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT
@@ -2311,7 +2359,8 @@ dword     ELSE,"ELSE",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( C: if-sys|else-sys -- ) ( E: -- )
+; H: Compilation: ( if-sys|else-sys -- )
+; H: Execution: ( -- ) Conclustion of IF ... ELSE ... THEN.
 dword     THEN,"THEN",F_IMMED|F_CONLY
           ENTER
           .dword HERE               ; IF or ELSE branch goes here
@@ -2334,13 +2383,15 @@ dword     BOUNDS,"BOUNDS"
           NEXT
 eword
 
-; H: ( C: -- dest ) ( E: -- ) start a BEGIN loop
+; H: Compilation: ( -- dest )
+; H: Execution: ( -- ) start a BEGIN loop
 ; BEGIN is basically an immediate HERE   
 dword     BEGIN,"BEGIN",F_IMMED|F_CONLY|F_TEMPD
           jmp   HERE::code        ; dest on stack
 eword
 
-; H: ( C: dest -- orig dest ) ( E: x -- ) WHILE clause of BEGIN...WHILE...REPEAT loop
+; H: Compilation: ( dest -- orig dest )
+; H: Execution: ( x -- ) WHILE clause of BEGIN...WHILE...REPEAT loop
 dword     WHILE,"WHILE",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT
@@ -2352,7 +2403,8 @@ dword     WHILE,"WHILE",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( C: dest -- ) ( R: x -- ) UNTIL clause of BEGIN...UNTIL loop
+; H: Compilation: ( dest -- )
+; H: Execution: ( x -- ) UNTIL clause of BEGIN...UNTIL loop
 dword     UNTIL,"UNTIL",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT
@@ -2362,7 +2414,8 @@ dword     UNTIL,"UNTIL",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( C: orig dest -- ) (R: -- ) resolve orig and dest, repeat BEGIN loop
+; H: Compilation: ( orig dest -- ) Resolve orig and dest.
+; H: Execution: ( -- ) Repeat BEGIN loop.
 dword     REPEAT,"REPEAT",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT
@@ -2375,7 +2428,8 @@ dword     REPEAT,"REPEAT",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( C: dest -- ) ( R: -- ) resolve dest, jump to BEGIN
+; H: Compilation: ( dest -- )  Resolve dest.
+; H: Execution: ( -- ) Jump to BEGIN.
 dword     AGAIN,"AGAIN",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT
@@ -2447,8 +2501,8 @@ hword     _QDO,"_QDO"
 doloop:   jmp   _SKIP2::code      ; enter loop
 eword
 
-; H: Compilation: ( -- ) ( R: -- do-sys )
-; H: Execution: ( limit start -- ) begin DO loop
+; H: Compilation: ( -- do-sys )
+; H: Execution: ( limit start -- ) Start DO loop.
 dword     DO,"DO",F_IMMED|F_CONLY|F_TEMPD
           ENTER
           .dword _COMP_LIT
@@ -2461,8 +2515,8 @@ qdo:      .dword HERE             ; do-sys
           EXIT
 eword
 
-; H: Compilation: ( -- ) ( R: -- do-sys )
-; H: Execution: ( limit start -- ) begin DO loop, skip if limit=start
+; H: Compilation: ( -- do-sys )
+; H: Execution: ( limit start -- ) Start DO loop, skip if limit=start.
 dword     QDO,"?DO",F_IMMED|F_CONLY|F_TEMPD
           ENTER
           .dword  _COMP_LIT
@@ -2470,7 +2524,7 @@ dword     QDO,"?DO",F_IMMED|F_CONLY|F_TEMPD
           JUMP    DO::qdo
 eword
 
-; H: ( -- ) ( R: loop-sys -- ) remove loop parameters from stack
+; H: ( -- ) ( R: loop-sys -- ) Remove loop parameters from return stack.
 dword     UNLOOP,"UNLOOP",F_CONLY
           pla                     ; drop limit
           pla
@@ -2532,8 +2586,8 @@ hword     _PLOOP,"_+LOOP"
 :         jmp   _JUMP::code
 eword
 
-; H: Compilation: ( C: do-sys -- )
-; H: Execution: ( u|n -- ) add u|n to loop index and continue loop if within bounds
+; H: Compilation: ( do-sys -- )
+; H: Execution: ( u|n -- ) Add u|n to loop index and continue loop if within bounds.
 dword     PLOOP,"+LOOP",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT        ; compile execution semantics
@@ -2553,8 +2607,8 @@ dword     PLOOP,"+LOOP",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: Compilation: ( C: do-sys -- )
-; H: Execution: ( -- ) add 1 to loop index and continue loop if within bounds
+; H: Compilation: ( do-sys -- )
+; H: Execution: ( -- ) Add 1 to loop index and continue loop if within bounds.
 dword     LOOP,"LOOP",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT
@@ -2563,7 +2617,7 @@ dword     LOOP,"LOOP",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( -- ) exit loop
+; H: ( -- ) Exit DO loop.
 dword     LEAVE,"LEAVE",F_CONLY
           lda   9,s
           tay
@@ -2571,7 +2625,7 @@ dword     LEAVE,"LEAVE",F_CONLY
           jmp   _JUMP::go
 eword
 
-; H: ( f -- ) exit loop if f is nonzero
+; H: ( f -- ) Exit do loop if f is nonzero.
 dword     QLEAVE,"?LEAVE",F_CONLY
           jsr   _popay
           ora   #$0000
@@ -2581,7 +2635,7 @@ dword     QLEAVE,"?LEAVE",F_CONLY
           NEXT
 eword
 
-; H: ( -- n ) copy inner loop index to stack
+; H: ( -- n ) Copy inner loop index to stack.
 dword     IX,"I",F_CONLY
           lda   5,s
           tay
@@ -2589,7 +2643,7 @@ dword     IX,"I",F_CONLY
           PUSHNEXT
 eword
 
-; H: ( -- n ) copy second-inner loop index to stack
+; H: ( -- n ) Copy second-inner loop index to stack.
 dword     JX,"J",F_CONLY
           lda   17,s
           tay
@@ -2598,7 +2652,7 @@ dword     JX,"J",F_CONLY
 eword
 
 .if 0
-; H: ( -- n ) copy third-inner loop index to stack
+; H: ( -- n ) Copy third-inner loop index to stack.
 dword     KX,"K",F_CONLY ; noindex
           lda   29,s
           tay
@@ -2607,7 +2661,7 @@ dword     KX,"K",F_CONLY ; noindex
 eword
 .endif
 
-; H: Compilation: ( R: -- case-sys ) start a CASE...ENDCASE structure
+; H: Compilation: ( -- case-sys ) start a CASE...ENDCASE structure
 ; H: Execution: ( -- )
 dword     CASE,"CASE",F_IMMED|F_CONLY|F_TEMPD
           ENTER
@@ -2639,8 +2693,8 @@ nomatch:  jsr   _stackincr        ; drop test value
           jmp   _JUMP::code       ; go to jump target
 eword
 
-; H: Compilation: ( case-sys -- case-sys of-sys ) begin an OF...ENDOF structure
-; H: Execution: ( x1 x2 -- | x1 ) execute OF clause if x1 = x2, leave x1 on stack if not
+; H: Compilation: ( case-sys -- case-sys of-sys ) Begin an OF...ENDOF structure.
+; H: Execution: ( x1 x2 -- | x1 ) Execute OF clause if x1 = x2, leave x1 on stack if not.
 dword     OF,"OF",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT
@@ -2651,8 +2705,8 @@ dword     OF,"OF",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: Compilation; ( case-sys of-sys -- case-sys ) conclude an OF...ENDOF structure
-; H: Execution: Continue execution at ENDCASE of case-sys
+; H: Compilation; ( case-sys of-sys -- case-sys ) Conclude an OF...ENDOF structure.
+; H: Execution: Continue execution at ENDCASE of case-sys.
 dword     ENDOF,"ENDOF",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT        ; compile a jump
@@ -2665,8 +2719,8 @@ dword     ENDOF,"ENDOF",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: Compilation: ( case-sys -- )  conclude a CASE...ENDCASE structure
-; H: Execution: ( | n -- ) continue execution, dropping n if no OF matched
+; H: Compilation: ( case-sys -- ) Conclude a CASE...ENDCASE structure.
+; H: Execution: ( | n -- ) Continue execution, dropping n if no OF matched.
 dword     ENDCASE,"ENDCASE",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT        ; compile drop value under test
@@ -2679,7 +2733,7 @@ dword     ENDCASE,"ENDCASE",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( -- ) store 16 to BASE
+; H: ( -- ) Store 16 to BASE.
 dword     HEX,"HEX"
           ENTER
           ONLIT  16
@@ -2688,7 +2742,7 @@ dword     HEX,"HEX"
           EXIT
 eword
 
-; H: ( -- ) store 10 to BASE
+; H: ( -- ) Store 10 to BASE.
 dword     DECIMAL,"DECIMAL"
           ENTER
           ONLIT  10
@@ -2697,7 +2751,7 @@ dword     DECIMAL,"DECIMAL"
           EXIT
 eword
 
-; H: ( -- ) store 2 to BASE
+; H: ( -- ) Store 2 to BASE.
 dword     BINARY,"BINARY"
           ENTER
           ONLIT  2
@@ -2706,7 +2760,7 @@ dword     BINARY,"BINARY"
           EXIT
 eword
 
-; H: ( -- ) store 8 to BASE
+; H: ( -- ) Store 8 to BASE.
 dword     OCTAL,"OCTAL"
           ENTER
           ONLIT  8
@@ -2715,7 +2769,7 @@ dword     OCTAL,"OCTAL"
           EXIT
 eword
 
-; H: ( n -- n' ) increment top stack item
+; H: ( x1 -- x2 ) x2 = x1 + 1
 dword     INCR,"1+"
           jsr   _1parm
 doinc:    inc   STACKBASE+0,x
@@ -2724,7 +2778,7 @@ doinc:    inc   STACKBASE+0,x
 :         NEXT
 eword
 
-; H: ( n -- n' ) decrement top stack item
+; H: ( x1 -- x2 ) x2 = x1 - 1
 dword     DECR,"1-"
           jsr   _1parm
           lda   STACKBASE+0,x
@@ -2734,7 +2788,7 @@ dword     DECR,"1-"
           NEXT
 eword
 
-; H: ( n -- n' ) increment top stack item by 2
+; H: ( x1 -- x2 ) x2 = x1 + 2
 dword     TWOINCR,"2+"
           jsr   _1parm
           lda   STACKBASE+0,x
@@ -2746,7 +2800,7 @@ dword     TWOINCR,"2+"
 :         NEXT
 eword
 
-; H: ( n -- n' ) decrement top stack item by 2
+; H: ( x1 -- x2 ) x2 = x1 - 2
 dword     TWODECR,"2-"
           jsr   _1parm
           lda   STACKBASE+0,x
@@ -2758,26 +2812,26 @@ dword     TWODECR,"2-"
 :         NEXT
 eword
 
-; H: ( x -- x' ) invert the bits in x
+; H: ( x1 -- x2 ) Invert the bits in x1.
 dword     INVERT,"INVERT"
           jsr   _1parm
           jsr   _invert
           NEXT
 eword
 
-; H: ( x -- x' ) invert the bits in x
+; H: ( x1 -- x2 ) Invert the bits in x1.
 dword     NOT,"NOT"
           bra   INVERT::code
 eword
 
-; H: ( n -- n' ) negate n
+; H: ( n1 -- n2 ) Negate n1.
 dword     NEGATE,"NEGATE"
           jsr   _1parm
           jsr   _negate
           NEXT
 eword
 
-; H: ( n f -- n|n' ) if f < 0, then negate n
+; H: ( n1 f -- n1|n2 ) If f < 0, then negate n.
 ; non-standard   
 hword     QNEGATE,"?NEGATE"
           jsr   _popay
@@ -2786,7 +2840,7 @@ hword     QNEGATE,"?NEGATE"
           NEXT
 eword
 
-; H: ( n -- n' ) take the absolute value of n
+; H: ( n1 -- n2 ) Take the absolute value of n1.
 ; we don't check parms on stack here because
 ; NEGATE will error if empty
 dword     ABS,"ABS"
@@ -2796,14 +2850,14 @@ dword     ABS,"ABS"
 :         NEXT
 eword
 
-; H: ( d -- d' ) negate d
+; H: ( d1 -- d2 ) Negate d1.
 dword     DNEGATE,"DNEGATE"
           jsr   _2parm
           jsr   _dnegate
           NEXT                    ; push high cell
 eword
 
-; H: ( d -- d' ) take the absolute value of d
+; H: ( d1 -- d1|d2 ) Take the absolute value of d1.
 dword     DABS,"DABS"
           lda   STACKBASE+2,x
           bpl   :+
@@ -2811,7 +2865,7 @@ dword     DABS,"DABS"
 :         NEXT
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1+n2
+; H: ( x1 x2 -- x3 ) x3 = x1 + x2
 dword     PLUS,"+"
           jsr   _2parm
           lda   STACKBASE+4,x
@@ -2828,7 +2882,7 @@ stkinc:   inx
           NEXT
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1-n2
+; H: ( x1 x2 -- x3 ) x3 = x1 - x2
 dword     MINUS,"-"
           jsr   _2parm
           lda   STACKBASE+4,x
@@ -2841,7 +2895,7 @@ dword     MINUS,"-"
           bra   PLUS::stkinc
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1 & n2
+; H: ( u1 u2 -- u3 ) u3 = u1 & u2
 dword     LAND,"AND"
           jsr   _2parm
           lda   STACKBASE+4,x
@@ -2853,7 +2907,7 @@ dword     LAND,"AND"
           bra   PLUS::stkinc
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1 | n2
+; H: ( u1 u2 -- u3 ) u3 = u1 | u2
 dword     LOR,"OR"
           jsr   _2parm
           lda   STACKBASE+4,x
@@ -2865,7 +2919,7 @@ dword     LOR,"OR"
           bra   PLUS::stkinc
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1 ^ n2
+; H: ( u1 u2 -- u3 ) u3 = u1 ^ u2
 dword     LXOR,"XOR"
           jsr   _2parm
           lda   STACKBASE+4,x
@@ -2877,7 +2931,7 @@ dword     LXOR,"XOR"
           bra   PLUS::stkinc
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1 << n2
+; H: ( u1 u2 -- u3 ) u3 = u1 << u2
 dword     LSHIFT,"LSHIFT"
           jsr   _2parm
           jsr   _popxr
@@ -2891,7 +2945,7 @@ shift:    asl   STACKBASE+0,x
           rtl
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1 >> n2
+; H: ( u1 u2 -- u3 ) u3 = u1 >> u2
 dword     RSHIFT,"RSHIFT"
           jsr   _2parm
           jsr   _popxr
@@ -2905,17 +2959,17 @@ shift:    lsr   STACKBASE+2,x
           rtl
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1 << n2
+; H: ( u1 u2 -- u3 ) u3 = u1 << u2
 dword     LSHIFTX,"<<"
           bra   LSHIFT::code
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1 >> n2
+; H: ( u1 u2 -- u3 ) u3 = u1 >> u2
 dword     RSHIFTX,">>"
           bra   RSHIFT::code
 eword
 
-; H: ( n1 n2 -- n3 ) n3 = n1 >> n2, extending sign bit
+; H: ( x1 x2 -- x3 ) x3 = x1 >> x2, extending sign bit.
 dword     ARSHIFT,">>A"
           jsr   _2parm
           jsr   _popxr
@@ -2931,28 +2985,28 @@ shift:    lda   STACKBASE+2,x
           rtl
 eword        
 
-; H: ( n -- n' ) shift n1 one bit left
+; H: ( u1 -- u2 ) Shift n1 one bit left.
 dword     TWOMULT,"2*"
           jsr   _1parm
           jsl   LSHIFT::shift
           NEXT
 eword
 
-; H: ( n -- n' ) shift n1 one bit right
+; H: ( u1 -- u2 ) Shift n1 one bit right.
 dword     UTWODIV,"U2/"
           jsr   _1parm
           jsl   RSHIFT::shift
           NEXT
 eword
 
-; H: ( n -- n' ) shift n1 one bit right, extending sign bit
+; H: ( x1 -- x2 ) Shift x1 one bit right, extending sign bit.
 dword     TWODIV,"2/"
           jsr   _1parm
           jsl   ARSHIFT::shift
           NEXT
 eword
 
-; H: ( n c-addr -- ) add n to value at c-addr
+; H: ( n addr -- ) Add n to value at addr.
 dword     PSTORE,"+!"
           ENTER
           .dword DUP
@@ -2964,12 +3018,12 @@ dword     PSTORE,"+!"
           EXIT
 eword
 
-; H: ( d -- n ) convert double-number to number
+; H: ( d -- n ) Convert double-number to number.
 dword     DtoS,"D>S"
           jmp   DROP::code
 eword
 
-; H: ( n -- d ) convert number to double-number
+; H: ( n -- d ) Convert number to double-number.
 dword     StoD,"S>D"
           jsr   _1parm
           lda   STACKBASE+2,x
@@ -2980,7 +3034,7 @@ dword     StoD,"S>D"
           PUSHNEXT
 eword
 
-; H: ( n n -- d d ) convert two numbers to double-numbers
+; H: ( n1 n2 -- d1 d2 ) Convert two numbers to double-numbers.
 dword     TWOStoD,"2S>D"
           ENTER
           .dword PtoR
@@ -3012,14 +3066,14 @@ stkinc:   txa
           rts
 .endproc
 
-; H: ( d1 d2 -- d3 ) d3 = d1+d2
+; H: ( d1 d2 -- d3 ) d3 = d1 + d2
 dword     DPLUS,"D+"
           jsr   _4parm
           jsr   _dplus
           NEXT
 eword
 
-; H: ( d1 d2 -- d3 ) d3 = d1-d2
+; H: ( d1 d2 -- d3 ) d3 = d1 - d2
 dword     DMINUS,"D-"
           jsr   _4parm
           lda   STACKBASE+12,x
@@ -3052,7 +3106,7 @@ hword     dCSBUF,"$CSBUF"
           SYSVAR SV_CSBUF
 eword
 
-; ( c-addr1 u1 -- c-addr2 u1 )
+; H: ( addr1 u1 -- addr2 u1 )
 ; H: Allocate a temporary string buffer for interpretation semantics of strings
 ; H: and return the address and length of the buffer.  If taking the slot used
 ; H: by an existing buffer, free it.
@@ -3117,7 +3171,7 @@ nomem:    ldy   #.loword(-18)
           jmp   _throway          
 eword
 
-; H: ( -- ' ' )
+; H: ( -- <space> )
 dword     BL,"BL"
           lda   #' '
           jsr   _pusha
@@ -3161,31 +3215,30 @@ dword     LINEFEED,"LINEFEED"
           NEXT
 eword
 
-; H: ( -- ) emit a CR with no linefeed, set #OUT to 0
+; H: ( -- ) Emit a CR with no linefeed, set #OUT to 0.
 dword     pCR,"(CR"
           ENTER
           .dword CARRET
           .dword EMIT
-          ONLIT 0
           .dword NOUT
-          .dword STORE
+          .dword OFF
           EXIT
 eword
 
-; H: ( -- ) emit a LF
+; H: ( -- ) Emit a LF, increment #LINE.
 hword     LF,"LF"
-          ENTER
-          .dword LINEFEED
-          .dword EMIT
-          EXIT
-eword
-; H: ( -- ) emit a CR/LF combination, set increment #LINE
-
-dword     CR,"CR"
           ENTER
           ONLIT 1
           .dword NLINE
           .dword PSTORE
+          .dword LINEFEED
+          .dword EMIT
+          EXIT
+eword
+
+; H: ( -- ) Emit a CR/LF combination, increment #LINE, set #OUT to 0.
+dword     CR,"CR"
+          ENTER
           .dword pCR
           .dword LF
           EXIT
@@ -3205,7 +3258,7 @@ dword     BS,"BS"
           NEXT
 eword
 
-; H: ( -- ) clear screen & home cursor (uses ANSI escape sequence)
+; H: ( -- ) Clear screen & home cursor (uses ANSI escape sequence).
 dword     PAGE,"PAGE"
           ENTER
           .dword _SLIT
@@ -3215,7 +3268,7 @@ dword     PAGE,"PAGE"
           EXIT
 eword
 
-; H: ( u1 u2 -- ) place cursor at col u1 row u2 (uses ANSI escape sequence)
+; H: ( u1 u2 -- ) Place cursor at col u1 row u2 (uses ANSI escape sequence).
 dword     AT_XY,"AT-XY"
           ENTER
           ONLIT $1B
@@ -3237,7 +3290,7 @@ dword     AT_XY,"AT-XY"
           EXIT
 eword
 
-; H: ( ud u1 -- u2 u3 ) divide ud by u1, giving quotient u3 and remainder u2
+; H: ( ud u1 -- u2 u3 ) Divide ud by u1, giving quotient u3 and remainder u2.
 dword     UMDIVMOD,"UM/MOD"
           jsr   _3parm
           lda   STACKBASE+0,x
@@ -3248,7 +3301,7 @@ dword     UMDIVMOD,"UM/MOD"
           NEXT
 eword
 
-; H: ( d n1 -- n2 n3 ) symmetric divide d by n1, giving quotient n3 and remainder n2
+; H: ( d n1 -- n2 n3 ) Symmetric divide d by n1, giving quotient n3 and remainder n2.
 dword     SMDIVREM,"SM/REM"
           .if 1 ; native version
           jsr   _3parm
@@ -3293,14 +3346,14 @@ eword
           jmp   _throway
 .endproc
 
-; H: ( n -- s ) s = -1 if n is negative, 0 if 0, 1 if positive
+; H: ( n -- s ) s = -1 if n is negative, 0 if 0, 1 if positive.
 dword     SIGNUM,"SIGNUM"
           jsr   _1parm
           jsr   _signum
           NEXT
 eword
 
-; H: ( d n1 -- n2 n3 ) floored divide d by n1, giving quotient n3 and remainder n2
+; H: ( d n1 -- n2 n3 ) Floored divide d by n1, giving quotient n3 and remainder n2.
 dword     FMDIVMOD,"FM/MOD"
           .if 0 ; primitive, using math lib FM/MOD code based on SM/REM
           jsr   _3parm
@@ -3334,7 +3387,7 @@ else:     .dword RDROP
           .endif
 eword
 
-; H: ( u1 u2 -- u3 u4 ) divide u1 by u2, giving quotient u4 and remainder u3
+; H: ( u1 u2 -- u3 u4 ) Divide u1 by u2, giving quotient u4 and remainder u3.
 dword     UDIVMOD,"U/MOD"
           ENTER
           .dword PtoR
@@ -3344,7 +3397,7 @@ dword     UDIVMOD,"U/MOD"
           EXIT
 eword
 
-; H: ( n1 n2 -- n3 n4 ) symmetric divide n1 by n2, giving quotient n4 and remainder n3
+; H: ( n1 n2 -- n3 n4 ) Divide n1 by n2, giving quotient n4 and remainder n3.
 dword     DIVMOD,"/MOD"
           ENTER
           .dword PtoR
@@ -3354,7 +3407,7 @@ dword     DIVMOD,"/MOD"
           EXIT
 eword
 
-; H: ( n1 n2 -- n3 ) symmetric divide n1 by n2, giving remainder n3
+; H: ( n1 n2 -- n3 ) Divide n1 by n2, giving remainder n3.
 dword     MOD,"MOD"
           ENTER
           .dword DIVMOD
@@ -3362,7 +3415,7 @@ dword     MOD,"MOD"
           EXIT
 eword
 
-; H: ( n1 n2 -- n3 ) symmetric divide n1 by n2, giving quotient n3
+; H: ( n1 n2 -- n3 ) Divide n1 by n2, giving quotient n3.
 dword     DIV,"/"
           ENTER
           .dword DIVMOD
@@ -3370,7 +3423,7 @@ dword     DIV,"/"
           EXIT
 eword
 
-; H: ( n1 n2 n3 -- n4 n5 ) n4, n5 = symmetric rem, quot of n1*n2/n3 
+; H: ( n1 n2 n3 -- n4 n5 ) n4, n5 = rem, quot of n1*n2/n3.
 dword     MULTDIVMOD,"*/MOD"
           ENTER
           .dword PtoR
@@ -3380,7 +3433,7 @@ dword     MULTDIVMOD,"*/MOD"
           EXIT
 eword
 
-; H: ( n1 n2 n3 -- n4 ) n4 = symmetric quot of n1*n2/n3 
+; H: ( n1 n2 n3 -- n4 ) n4 = quot of n1*n2/n3.
 dword     MULTDIV,"*/"
           ENTER
           .dword MULTDIVMOD
@@ -3442,13 +3495,13 @@ dword     MULT,"*"
           EXIT
 eword
 
-; H: ( u1 -- u2 u3 ) u2 = closest square root <= to the true root, u3 = remainder
+; H: ( u1 -- u2 u3 ) u2 = closest square root <= to the true root, u3 = remainder.
 dword     SQRTREM,"SQRTREM"
           jsr   _sqroot
           NEXT
 eword
 
-; H: ( n1 -- n2 ) if n1 is odd, n2=n1+1, otherwise n2=n1
+; H: ( n1 -- n1|n2 ) n2 = n1+1 if n1 is odd.
 dword     EVEN,"EVEN"
           jsr   _1parm
           lda   STACKBASE+0,x
@@ -3483,7 +3536,7 @@ hword     dPPTR,"$PPTR"
           SYSVAR SV_dPPTR
 eword
 
-; H: ( -- ) begin pictured numeric output
+; H: ( -- ) Begin pictured numeric output.
 dword     PBEGIN,"<#"
           ENTER
           .dword WORDBUF
@@ -3494,7 +3547,7 @@ dword     PBEGIN,"<#"
           EXIT
 eword
 
-; H: ( c -- ) place c in pictured numeric output
+; H: ( c -- ) Place c in pictured numeric output.
 dword     PHOLD,"HOLD"
           ENTER
           .dword dPPTR
@@ -3507,7 +3560,7 @@ dword     PHOLD,"HOLD"
           EXIT
 eword
 
-; H: ( n -- ) place - in pictured numeric output if n is negative
+; H: ( n -- ) Place - in pictured numeric output if n is negative.
 dword     PSIGN,"SIGN"
           jsr   _popay
           and   #$8000
@@ -3518,7 +3571,7 @@ dword     PSIGN,"SIGN"
 :         NEXT
 eword
 
-; H: ( ud1 -- ud2 ) divide ud1 by BASE, convert remainder to char and HOLD it, ud2 = quotient
+; H: ( ud1 -- ud2 ) Divide ud1 by BASE, convert remainder to char and HOLD it, ud2 = quotient.
 dword     PNUM,"#"
           ENTER
           .dword BASE
@@ -3533,7 +3586,7 @@ hold:     jsr   _popay
           jmp   PHOLD::code
 eword
 
-; H: ( u1 -- u2 ) divide u1 by BASE, convert remainder to char and HOLD it, u2 = quotient
+; H: ( u1 -- u2 ) Divide u1 by BASE, convert remainder to char and HOLD it, u2 = quotient.
 dword     PUNUM,"U#"
           ENTER
           .dword ZERO
@@ -3545,7 +3598,7 @@ dword     PUNUM,"U#"
           bra   PNUM::hold
 eword
 
-; H: ( ud -- 0 ) perform # until quotient is zero
+; H: ( ud -- 0 ) Perform # until quotient is zero.
 dword     PNUMS,"#S"
           ENTER
 another:  .dword PNUM
@@ -3556,7 +3609,7 @@ another:  .dword PNUM
           EXIT
 eword
 
-; H: ( u -- 0 ) perform U# until quotient is zero
+; H: ( u -- 0 ) Perform U# until quotient is zero.
 dword     PUNUMS,"U#S"
           ENTER
 another:  .dword PUNUM
@@ -3566,7 +3619,7 @@ another:  .dword PUNUM
           EXIT
 eword
 
-; H: ( ud -- ) conclude pictured numeric output
+; H: ( ud -- ) Conclude pictured numeric output.
 dword     PDONE,"#>"
           ENTER
           .dword TWODROP
@@ -3581,7 +3634,7 @@ getstr:   .dword dPPTR
           EXIT
 eword
 
-; H: ( u -- ) conclude pictured numeric output
+; H: ( u -- ) Conclude pictured numeric output.
 dword     PUDONE,"U#>"
           ENTER
           .dword DROP
@@ -3640,7 +3693,7 @@ doit:     .dword PBEGIN
 .endif
 eword
 
-; H: ( n -- c-addr u ) convert n to text via pictured numeric output
+; H: ( n -- addr u ) Convert n to text via pictured numeric output.
 dword     NTOTXT,"(.)"
           ENTER
           .dword TRUE
@@ -3648,7 +3701,7 @@ dword     NTOTXT,"(.)"
           EXIT
 eword
 
-; H: ( u -- c-addr u ) convert u to text via pictured numeric output
+; H: ( u -- addr u ) Convert u to text via pictured numeric output.
 dword     UTOTXT,"(U.)"
           ENTER
           .dword FALSE
@@ -3656,7 +3709,7 @@ dword     UTOTXT,"(U.)"
           EXIT
 eword
 
-; H: ( c-addr u1 u2 ) output c-addr u1 in a field of size u2
+; H: ( addr u1 u2 ) output addr u1 in a field of size u2
 hword     DFIELD,"$FIELD"
           ENTER
           .dword OVER             ; ( c-addr u1 u2 -- c-addr u1 u2 u1' )
@@ -3673,7 +3726,7 @@ hword     DFIELD,"$FIELD"
           EXIT
 eword
 
-; H: ( d u -- ) output d in a field of u chars
+; H: ( d u -- ) Output d in a field of u chars.
 dword     DDOTR,"D.R"
           ENTER
           .dword PtoR
@@ -3684,7 +3737,7 @@ dword     DDOTR,"D.R"
           EXIT
 eword
 
-; H: ( d -- ) output d
+; H: ( d -- ) Output d.
 dword     DDOT,"D."
           ENTER
           .dword TRUE
@@ -3694,7 +3747,7 @@ dword     DDOT,"D."
           EXIT
 eword
 
-; H: ( u1 u2 -- ) output u1 in a field of u2 chars
+; H: ( u1 u2 -- ) Output u1 in a field of u2 chars.
 dword     UDOTR,"U.R"
           ENTER
           .dword PtoR
@@ -3705,7 +3758,7 @@ dword     UDOTR,"U.R"
           EXIT
 eword
 
-; H: ( u1 -- ) output u1 with no trailing space
+; H: ( u1 -- ) Output u1 with no trailing space.
 dword     UDOTZ,"U.0"
           ENTER
           .dword ZERO
@@ -3713,7 +3766,7 @@ dword     UDOTZ,"U.0"
           EXIT
 eword
 
-; H: ( n u -- ) output n in a field of u chars
+; H: ( n u -- ) Output n in a field of u chars.
 dword     DOTR,".R"
           ENTER
           .dword PtoR
@@ -3724,7 +3777,7 @@ dword     DOTR,".R"
           EXIT
 eword
 
-; H: ( u -- ) output u
+; H: ( u -- ) Output u.
 dword     UDOT,"U."
           ENTER
           .dword FALSE
@@ -3734,7 +3787,7 @@ dword     UDOT,"U."
           EXIT
 eword
 
-; H: ( n -- ) output n
+; H: ( n -- ) Output n.
 dword     DOT,"."
           ENTER
           .dword TRUE
@@ -3744,12 +3797,12 @@ dword     DOT,"."
           EXIT
 eword
 
-; H: ( n -- ) output n
+; H: ( n -- ) Output n.
 dword     SDOT,"S."
           bra   DOT::code
 eword
 
-; H: ( a-addr -- ) output signed contents of cell at a-addr
+; H: ( addr -- ) Output signed contents of cell at addr.
 dword     SHOW,"?"
           ENTER
           .dword FETCH
@@ -3757,7 +3810,7 @@ dword     SHOW,"?"
           EXIT
 eword
 
-; H: ( n -- ) output n in decimal base
+; H: ( n -- ) Output n in decimal base.
 dword     DOTD,".D"
           ENTER
           ONLIT 10
@@ -3767,7 +3820,7 @@ tmpbase:  ONLIT DOT
           EXIT
 eword
 
-; H: ( n -- ) output n in hexadecimal base
+; H: ( n -- ) Output n in hexadecimal base.
 dword     DOTH,".H"
           ENTER
           ONLIT 16
@@ -3780,14 +3833,14 @@ eword
           jmp   _popwr
 .endproc
 
-; H: ( addr1 addr2 len -- ) move memory
+; H: ( addr1 addr2 len -- ) Move memory.
 dword     MOVE,"MOVE"
           jsr   _popxryrwr
           jsr   _memmove
           NEXT
 eword
 
-; H: ( addr1 addr2 len -- ) move startomg from the bottom
+; H: ( addr1 addr2 len -- ) Move memory, startomg from the bottom.
 dword     CMOVE,"CMOVE"
           jsr   _popxryrwr
           clc
@@ -3795,7 +3848,7 @@ dword     CMOVE,"CMOVE"
           NEXT
 eword
 
-; H: ( addr1 addr2 len -- ) move starting from the top
+; H: ( addr1 addr2 len -- ) Move memory, starting from the top.
 dword     CMOVEUP,"CMOVE>"
           jsr   _popxryrwr
           sec
@@ -3803,7 +3856,7 @@ dword     CMOVEUP,"CMOVE>"
           NEXT
 eword
 
-; H: ( addr1 addr2 u1 -- n1 ) compare two strings of length u1 
+; H: ( addr1 addr2 u1 -- n1 ) Compare two strings of length u1.
 ; IEEE 1275
 dword     COMP,"COMP"
           stz   ZR                ; case sensitive
@@ -3844,7 +3897,7 @@ equal:    rep   #SHORT_A
           PUSHNEXT 
 eword
 
-; H: ( addr1 addr2 u1 -- n1 ) case-insensitive compare two strings of length u1 
+; H: ( addr1 addr2 u1 -- n1 ) Case-insensitive compare two strings of length u1.
 ; non-standard
 dword     CICOMP,"CICOMP"
           stz   ZR
@@ -3852,7 +3905,7 @@ dword     CICOMP,"CICOMP"
           bra   COMP::docomp
 eword
 
-; H: ( addr1 u1 addr2 u2 -- n1 ) compare two strings
+; H: ( addr1 u1 addr2 u2 -- n1 ) Compare two strings.
 ; ANS Forth
 dword     COMPARE,"COMPARE"
           ENTER
@@ -3875,7 +3928,7 @@ equal:    .dword DROP
           EXIT
 eword
 
-; H: ( c-addr1 u1 n -- c-addr2 u2 ) adjust string
+; H: ( c-addr1 u1 n -- c-addr2 u2 ) Adjust string.
 dword     sSTRING,"/STRING"
 .if 1 ; secondary - shorter, slower
           ENTER
@@ -3906,7 +3959,7 @@ dword     sSTRING,"/STRING"
 .endif
 eword
 
-; H: ( c-addr1 u1 c-addr2 u2 -- c-addr3 u3 flag )
+; H: ( c-addr1 u1 c-addr2 u2 -- c-addr3 u3 flag ) Search for substring.
 ;         WR   XR    YR   ZR
 ; in practice ZR can only be 16-bit like most other string stuff
 dword     SEARCH,"SEARCH"
@@ -3961,7 +4014,7 @@ nomatch:  lda   #$0000
           PUSHNEXT
 eword
 
-; H: ( addr len char -- ) fill memory with char
+; H: ( addr len char -- ) Fill memory with char.
 dword     FILL,"FILL"
           ENTER
           .dword NROT
@@ -3981,7 +4034,7 @@ dofill:   sep   #SHORT_A
           rtl
 eword
 
-; H: ( addr len -- ) fill memory with spaces
+; H: ( addr len -- ) Fill memory with spaces.
 dword     BLANK,"BLANK"
           ENTER
           ONLIT ' '
@@ -3989,7 +4042,7 @@ dword     BLANK,"BLANK"
           EXIT
 eword
 
-; H: ( addr len -- ) zero fill memory with spaces
+; H: ( addr len -- ) Zero fill memory.
 dword     ERASE,"ERASE"
           ENTER
           .dword ZERO
@@ -3997,7 +4050,7 @@ dword     ERASE,"ERASE"
           EXIT
 eword
 
-; H: ( addr len -- ) perform WBFLIP on the words in memory
+; H: ( addr len -- ) Perform WBFLIP on the words in memory.
 dword     WBFLIPS,"WBFLIPS"
           ldy   #.loword(doflip-1)
           lda   #.hiword(doflip-1)
@@ -4011,7 +4064,7 @@ doflip:   lda   [WR]
           rtl
 eword
 
-; H: ( addr len -- ) perform LBFLIP on the cells in memory
+; H: ( addr len -- ) Perform LBFLIP on the cells in memory.
 dword     LBFLIPS,"LBFLIPS"
           ldy   #.loword(doflip-1)
           lda   #.hiword(doflip-1)
@@ -4037,7 +4090,7 @@ cont:     sta   [WR]
           rtl
 eword
 
-; H: ( addr len -- ) perform LWFLIP on the cells in memory
+; H: ( addr len -- ) Perform LWFLIP on the cells in memory.
 dword     LWFLIPS,"LWFLIPS"
           ldy   #.loword(doflip-1)
           lda   #.hiword(doflip-1)
@@ -4053,7 +4106,7 @@ eword
 .if include_fcode
 ; FCode support words
 
-; H: ( addr -- char true ) access memory at addr, returning char
+; H: ( addr -- char true ) Access memory at addr, returning char.
 dword     CPEEK,"CPEEK"
           ENTER
           .dword CFETCH
@@ -4061,7 +4114,7 @@ dword     CPEEK,"CPEEK"
           EXIT
 eword
 
-; H: ( addr -- word true ) access memory at addr, returning word
+; H: ( addr -- word true ) Access memory at addr, returning word.
 dword     WPEEK,"WPEEK"
           ENTER
           .dword WFETCH
@@ -4069,7 +4122,7 @@ dword     WPEEK,"WPEEK"
           EXIT
 eword
 
-; H: ( addr -- cell true ) access memory at addr, returning cell
+; H: ( addr -- cell true ) Access memory at addr, returning cell.
 dword     LPEEK,"LPEEK"
           ENTER
           .dword LFETCH
@@ -4077,7 +4130,7 @@ dword     LPEEK,"LPEEK"
           EXIT
 eword
 
-; H: ( char addr -- true ) store char at addr
+; H: ( char addr -- true ) Store char at addr.
 dword     CPOKE,"CPOKE"
           ENTER
           .dword CSTORE
@@ -4085,7 +4138,7 @@ dword     CPOKE,"CPOKE"
           EXIT
 eword
 
-; H: ( word addr -- true ) store word at addr
+; H: ( word addr -- true ) Store word at addr.
 dword     WPOKE,"WPOKE"
           ENTER
           .dword WSTORE
@@ -4093,7 +4146,7 @@ dword     WPOKE,"WPOKE"
           EXIT
 eword
 
-; H: ( cell addr -- true ) store cell at addr
+; H: ( cell addr -- true ) Store cell at addr.
 dword     LPOKE,"LPOKE"
           ENTER
           .dword LSTORE
@@ -4152,7 +4205,7 @@ dword     xFCODE_REVISION,"FCODE-REVISION"
           EXIT
 eword
 
-; H: ( -- ) display FCode IP and byte, throw exception -256
+; H: ( -- ) Display FCode IP and byte, throw exception -256.
 dword     FERROR,"FERROR"
           ENTER
           .dword dFCODE_IP
@@ -4166,12 +4219,12 @@ dword     FERROR,"FERROR"
           EXIT
 eword
 
-; H: ( xt fcode# f -- ) set fcode# to execute xt, immediacy f
+; H: ( xt fcode# f -- ) Set fcode# to execute xt, immediacy f.
 dword     SET_TOKEN,"SET-TOKEN"
           jml   xSET_TOKEN_code
 eword
 
-; H: ( fcode# -- xt f ) get fcode#'s xt and immediacy
+; H: ( fcode# -- xt f ) Get fcode#'s xt and immediacy.
 dword     GET_TOKEN,"GET-TOKEN"
           jsr   _1parm
           jsl   lGET_TOKEN
@@ -4219,7 +4272,7 @@ hword     dRLSTORE,"$RL!"
           jmp   LSTORE::code
 eword
 
-; H: ( addr -- byte ) perform FCode-equivalent RB@: fetch byte
+; H: ( addr -- byte ) Perform FCode-equivalent RB@: fetch byte.
 dword     RBFETCH,"RB@",F_IMMED
           ENTER
           ONLIT $230
@@ -4227,7 +4280,7 @@ dword     RBFETCH,"RB@",F_IMMED
           EXIT
 eword
 
-; H: ( addr -- word ) perform FCode-equivalent RW@: fetch word
+; H: ( addr -- word ) Perform FCode-equivalent RW@: fetch word.
 dword     RWFETCH,"RW@",F_IMMED
           ENTER
           ONLIT $232
@@ -4235,7 +4288,7 @@ dword     RWFETCH,"RW@",F_IMMED
           EXIT
 eword
 
-; H: ( addr -- cell ) perform FCode-equivalent RL@: fetch cell
+; H: ( addr -- cell ) Perform FCode-equivalent RL@: fetch cell.
 dword     RLFETCH,"RL@",F_IMMED
           ENTER
           ONLIT $234
@@ -4243,7 +4296,7 @@ dword     RLFETCH,"RL@",F_IMMED
           EXIT
 eword
 
-; H: ( byte addr -- ) perform FCode-equivalent RB!: store byte
+; H: ( byte addr -- ) Perform FCode-equivalent RB!: store byte.
 dword     RBSTORE,"RB!",F_IMMED
           ENTER
           ONLIT $231
@@ -4251,7 +4304,7 @@ dword     RBSTORE,"RB!",F_IMMED
           EXIT
 eword
 
-; H: ( word addr -- ) perform FCode-equivalent RW!: store word
+; H: ( word addr -- ) Perform FCode-equivalent RW!: store word.
 dword     RWSTORE,"RW!",F_IMMED
           ENTER
           ONLIT $233
@@ -4259,7 +4312,7 @@ dword     RWSTORE,"RW!",F_IMMED
           EXIT
 eword
 
-; H: ( cell addr -- ) perform FCode-equivalent RL!, store cell
+; H: ( cell addr -- ) Perform FCode-equivalent RL!, store cell.
 dword     RLSTORE,"RL!",F_IMMED
           ENTER
           ONLIT $235
@@ -4348,7 +4401,8 @@ usext:    .dword dFCODE_FETCH     ; and put it in $FCODE-FETCH
           EXIT     
 eword
 
-; H: ( addr xt -- ) sav state, evaluate FCode at addr with fetch function xt, restore state
+; H: ( addr xt -- ) Evaluate FCode at addr with fetch function xt, saving and
+; restoring FCode evaluator state.
 dword     BYTE_LOAD,"BYTE-LOAD"
           ENTER
           .dword SAVE_FCODE_STATE
@@ -4363,7 +4417,7 @@ dword     BYTE_LOAD,"BYTE-LOAD"
 eword
 .endif ; end of FCode stuff
 
-; H: ( addr len -- ) dump memory
+; H: ( addr len -- ) Dump memory.
 dword     DUMP,"DUMP"
           ENTER
           .dword BOUNDS
@@ -4394,7 +4448,7 @@ noaddr:   .dword DUP
           EXIT
 eword
 
-; H: ( xt -- addr|0 ) get link field of function at xt or 0 if none
+; H: ( xt -- addr|0 ) Get link field of word at xt or 0 if none.
 dword     rLINK,">LINK"
           jsr   _popyr
           jsr   _xttohead
@@ -4407,7 +4461,8 @@ nolink:   lda   #$0000
           PUSHNEXT
 eword
 
-; H: ( xt -- c-addr u ) get string name of function at xt, or ^xt if anonymous/noname
+; H: ( xt -- c-addr u ) Get string name of word at xt, or ^xt if anonymous/noname.
+; H: Uses pictured numeric output.
 dword     rNAME,">NAME"
           ENTER
           .dword ZERO             ; ( xt -- xt 0 )
@@ -4453,7 +4508,7 @@ noname1:  .dword PBEGIN
 eword
 rNAME_noname1 = rNAME::noname1
 
-; H: ( c-addr -- c-addr+1 u ) count packed string at c-addr
+; H: ( addr -- addr+1 u ) Count packed string at addr.
 dword     COUNT,"COUNT"
           ENTER
           .dword DUP
@@ -4463,7 +4518,7 @@ dword     COUNT,"COUNT"
           EXIT
 eword
 
-; H: ( str len addr -- addr ) pack string into addr, similar to PLACE in some Forths
+; H: ( str len addr -- addr ) Pack string into addr, similar to PLACE in some Forths.
 dword     PACK,"PACK"
           jsr   _3parm
           jsr   _popyr
@@ -4489,7 +4544,7 @@ bad:      ldy   #.loword(-18)
           jmp   _throway
 eword
 
-; H: ( c-addr u1 -- c-addr u2 ) u2 = length of string with trailing spaces omitted
+; H: ( addr u1 -- addr u2 ) u2 = length of string with trailing spaces omitted.
 dword     MTRAILING,"-TRAILING"
           lda   STACKBASE+4,x
           sta   WR
@@ -4507,7 +4562,7 @@ done:     sty   STACKBASE+0,x
           NEXT
 eword
 
-; H: ( ud1 c-addr1 u1 -- ud2 c-addr2 u2 ) convert text to number
+; H: ( ud1 addr1 u1 -- ud2 addr2 u2 ) Convert text to number.
 ; note: only converts positive numbers!
 dword     GNUMBER,">NUMBER"
           jsr   _4parm
@@ -4573,8 +4628,8 @@ done:     ldy   WR
           PUSHNEXT
 eword
 
-; H: ( str len char -- r-str r-len l-str l-len ) parse string for char, returning
-; H: the left and right sides
+; H: ( str len char -- r-str r-len l-str l-len ) Parse string for char, returning
+; H: the left and right sides.
 dword     LEFT_PARSE_STRING,"LEFT-PARSE-STRING"
           jsr   _popyr              ; char
           jsr   _popxr              ; len
@@ -4622,7 +4677,7 @@ nomatch:  jsr   _pushay
           bra   :-  
 eword
 
-; H: ( str len -- val.lo val.hi ) parse two integers from string in the form "n2,n2"
+; H: ( str len -- val.lo val.hi ) Parse two integers from string in the form "n2,n2".
 dword     PARSE_2INT,"PARSE-2INT"
           ENTER
           ONLIT ','
@@ -4641,7 +4696,7 @@ dword     PARSE_2INT,"PARSE-2INT"
           EXIT
 eword
 
-; ( c-addr u wid -- xt ) search wordlist wid for word
+; ( c-addr u wid -- xt ) Search wordlist wid for word.
 hword     dWLSEARCH,"$WLSEARCH"
           jsr   _popwr
           ldy   #$02
@@ -4658,7 +4713,7 @@ hword     dWLSEARCH,"$WLSEARCH"
 eword
 
 .if max_search_order > 0
-; H: ( c-addr u wid -- 0 | xt +-1 ) search wordlist for word
+; H: ( c-addr u wid -- 0 | xt +-1 ) Search wordlist for word.
 dword     SEARCH_WORDLIST,"SEARCH-WORDLIST"
 .else
 hword     SEARCH_WORDLIST,"SEARCH-WORDLIST"
@@ -4675,7 +4730,7 @@ hword     SEARCH_WORDLIST,"SEARCH-WORDLIST"
 notfound: EXIT
 eword
 
-; H: ( c-addr u -- 0 | xt +-1 ) search for word in current search order
+; H: ( c-addr u -- 0 | xt +-1 ) Search for word in current search order.
 dword     SEARCH_ALL,"$SEARCH"
           ENTER
 .if max_search_order > 0
@@ -4708,12 +4763,12 @@ found:    .dword RDROP
           .dword TWORtoP          ; ( -- xt +-1 )
           EXIT
 .endif
-noorder:  .dword FORTH_WORDLIST
-          .dword SEARCH_WORDLIST
+noorder:  .dword GET_CURRENT      ; If no search order, search current
+          .dword SEARCH_WORDLIST  ; compiler wordlist.
           EXIT
 eword
 
-; H: ( c-addr u -- xn...x1 t | f ) environmental query
+; H: ( c-addr u -- xn...x1 t | f ) Environmental query.
 dword     ENVIRONMENTQ,"ENVIRONMENT?"
           ENTER
           .dword dENVQ_WL
@@ -4727,7 +4782,7 @@ dword     ENVIRONMENTQ,"ENVIRONMENT?"
 nope:     EXIT
 eword
 
-; H: ( c-addr u -- xt true | c-addr u false ) find word in search order
+; H: ( c-addr u -- xt true | c-addr u false ) Find word in search order.
 dword     dFIND,"$FIND"
           ENTER
           .dword TWODUP
@@ -4741,7 +4796,7 @@ dword     dFIND,"$FIND"
 notfnd:   EXIT
 eword
 
-; H: ( c-addr -- xt ) find packed string word in search order, 0 if not found
+; H: ( c-addr -- xt|0 ) Find packed string word in search order, 0 if not found.
 dword     FIND,"FIND"
           ENTER
           .dword DUP
@@ -4758,7 +4813,7 @@ notfd:    .dword RtoP
           EXIT
 eword
 
-; H: ( old-name<> -- xt ) parse old-name in input stream, return xt of word
+; H: ( [old-name< >] -- xt ) Parse old-name in input stream, return xt of word.
 dword     PARSEFIND,"'"
           ENTER
           .dword PARSE_WORD
@@ -4772,7 +4827,7 @@ exc:      ONLIT -13
           .dword THROW
 eword
 
-; H: ( [old-name<>] -- xt ) immediately parse old-name in input stream, return xt of word
+; H: ( [old-name< >] -- xt ) Immediately parse old-name in input stream, return xt of word.
 dword     CPARSEFIND,"[']",F_IMMED
           ENTER
           .dword PARSEFIND
@@ -5153,7 +5208,7 @@ hword     ISSPC,"ISSPACE?"
           EXIT
 eword
 
-; H: ( "word"<> -- c-addr u ) parse word from input stream, return address and length
+; H: ( [word< >] -- addr u ) Parse word from input stream, return address and length.
 dword     PARSE_WORD,"PARSE-WORD"
           ENTER
 l1:       .dword INQ              ; is there input?
@@ -5181,12 +5236,12 @@ none:     .dword INPTR
           EXIT
 eword
 
-; H: ( "word"<> -- c-addr u ) alias of PARSE-WORD
+; H: ( [word< >] -- addr u ) Alias of PARSE-WORD.
 dword     PARSE_NAME,"PARSE-NAME"
           bra PARSE_WORD::code
 eword
 
-; H: ( char "word"<char> -- c-addr u ) parse word from input stream, delimited by char
+; H: ( char [text<char>] -- addr u ) Parse text from input stream, delimited by char.
 dword     PARSE,"PARSE"
           ENTER
           .dword PtoR
@@ -5206,8 +5261,8 @@ i1:       .dword INCR
           JUMP l1
 eword
 
-; H: ( char "word"<char> -- c-addr ) parse word from input stream delimited by char, return
-; H: address of WORD buffer containing packed string
+; H: ( char [text<char>] -- addr ) Parse text from input stream delimited by char, return
+; H: address of WORD buffer containing packed string.
 dword     WORD,"WORD"
           ENTER
           .dword PARSE
@@ -5223,7 +5278,7 @@ bad:      ONLIT -18
           .dword THROW
 eword
 
-; H: ( "word"<> -- char ) parse word from input stream, return value of first char
+; H: ( [word< >] -- char ) Parse word from input stream, return value of first char.
 dword     CHAR,"CHAR"
           ENTER
 do:       .dword PARSE_WORD
@@ -5232,7 +5287,7 @@ do:       .dword PARSE_WORD
           EXIT
 eword
 
-; H: ( "word"<> -- char ) immediately perform CHAR and compile literal
+; H: ( [word< >] -- char ) Immediately perform CHAR and compile literal.
 dword     CCHAR,"[CHAR]",F_IMMED|F_CONLY
           ENTER
 do:       .dword  CHAR
@@ -5240,7 +5295,7 @@ do:       .dword  CHAR
           EXIT
 eword
 
-; H: ( "word"<> -- char ) perform either CHAR or [CHAR] per the current compile state
+; H: ( [word< >] -- char ) Perform either CHAR or [CHAR] per the current compile state.
 dword     ASCII,"ASCII",F_IMMED
           ENTER
           .dword _SMART
@@ -5248,7 +5303,7 @@ dword     ASCII,"ASCII",F_IMMED
           JUMP CCHAR::do
 eword
 
-; H: ( "text"<rparen> -- ) parse and discard text until a right paren or end of input
+; H: ( [text<)>] -- ) Parse and discard text until a right paren or end of input.
 dword     LPAREN,"(",F_IMMED
           ENTER
           ONLIT ')'
@@ -5257,7 +5312,7 @@ dword     LPAREN,"(",F_IMMED
           EXIT
 eword
 
-; H: ( "text"<rparen> -- ) parse text until a right paren or end of input, output text
+; H: ( [text<)>] -- ) Parse text until a right paren or end of input, output text.
 dword     DOTPAREN,".(",F_IMMED
           ENTER
           ONLIT ')'
@@ -5267,7 +5322,7 @@ dword     DOTPAREN,".(",F_IMMED
 eword
 
 ; Helper to compile a string
-; ( c-addr u -- )
+; ( addr u -- )
 hword     CSTRING,"CSTRING"
           jsr   _2parm
           ldy   #.loword(docs-1)
@@ -5279,8 +5334,8 @@ docs:     jsr   _cbytea
           rtl
 eword
 
-; compile string literal as described by top two stack items
-; H: C: ( c-addr1 u -- ) R: ( -- c-addr 2 u ) compile string literal into current def
+; H: Compiling: ( addr1 u -- ) compile string literal into current def
+; H: Execution: ( -- addr2 u ) return compiled string
 dword     SLITERAL,"SLITERAL",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT
@@ -5291,7 +5346,7 @@ dword     SLITERAL,"SLITERAL",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( "text"<"> -- c-addr u )
+; H: ( [text<">] -- addr u )
 dwordq    SQ,"S'",F_IMMED
           ENTER
           ONLIT '"'
@@ -5304,7 +5359,7 @@ interp:   .dword dTMPSTR
           EXIT
 eword
 
-; H: ( "text"<"> -- ) output parsed text
+; H: ( [text<">] -- ) Parse text and output.
 dwordq    DOTQ,".'",F_IMMED
           ENTER
           .dword SQ
@@ -5317,7 +5372,7 @@ eword
 
 ; parse paired hex digits until right paren
 ; return string in buffer created by alloc-mem
-; H: ( "text"<rparen> -- c-addr u ) parse hex, return in allocated string
+; H: ( [text<)>] -- addr u ) Parse hex digits, return in allocated string.
 dword     dHEXP,"$HEX(",F_IMMED
           ENTER
           ONLIT 256
@@ -5378,8 +5433,8 @@ done:     ldy   YR
           PUSHNEXT
 eword
 
-; ( c-addr1 u1 c-addr2 u2 -- caddr1 u1+u2 )  Concatenate strings.
-; c-addr1 is assumed to have enough room for the string
+; ( addr1 u1 addr2 u2 -- addr1 u1+u2 )  Concatenate strings.
+; addr1 is assumed to have enough room for the string
 hword     SCONCAT,"SCONCAT"
           jsr   _4parm
           lda   STACKBASE+12,x    ; get c-addr1+u1 to YR
@@ -5403,7 +5458,7 @@ hword     SCONCAT,"SCONCAT"
           NEXT
 eword
 
-; H: ( "text"<"> -- c-addr u ) parse quoted text in input buffer, copy to allocated string
+; H: ( [text<">] -- c-addr u ) Parse text in input buffer, copy to allocated string.
 dwordq    ASTR,"A'"
           ENTER
           ONLIT '"'
@@ -5416,7 +5471,7 @@ dwordq    ASTR,"A'"
           EXIT
 eword
 
-; H: ( c-addr1 u1 c-addr2 u2 -- c-addr3 u1+u2 ) Concatenate allocated strings,
+; H: ( addr1 u1 addr2 u2 -- addr3 u1+u2 ) Concatenate allocated strings,
 ; H: freeing the originals.
 ; Concatenate two strings that are in memory returned by ALLOC-MEM
 ; returning a string allocated via ALLOC-MEM and the original strings
@@ -5446,7 +5501,8 @@ dword     ACONCAT,"ACONCAT"
           EXIT
 eword
 
-; H: ( "text"<"> -- c-addr u ) parse string, including hex interpolation
+; H: Compiling: ( [text<">] -- ) Parse string, including IEEE 1275-1994 hex interpolation.
+; H: Execution: ( -- addr u ) Return parsed string.
 dwordq    QUOTE,"'",F_IMMED
           ENTER
           .dword ZERO             ; ( -- 0 )
@@ -5483,8 +5539,8 @@ done:     .dword RtoP             ; ( -- c-addr3' ) ( R: c-addr3' -- )
           EXIT
 eword
 
-; H: ( -- ) Compile code to compile the immediately following word.  Better to use POSTPONE.
-; BTW don't use with numbers.
+; H: ( -- ) Compile code to compile the immediately following word which must resolve to an xt.
+; H: Better to use POSTPONE in most cases.
 dword     COMPILE,"COMPILE",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT        ; Compile a _COMP_LIT
@@ -5492,7 +5548,7 @@ dword     COMPILE,"COMPILE",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( "name"<> -- ) Compile name now.  Better to use POSTPONE.
+; H: ( [name< >] -- ) Compile name now.  Better to use POSTPONE.
 dword     ICOMPILE,"[COMPILE]",F_IMMED
           ENTER
           .dword PARSEFIND
@@ -5500,8 +5556,7 @@ dword     ICOMPILE,"[COMPILE]",F_IMMED
           EXIT
 eword
 
-; H: ( "name"<> -- )  
-; Compile the compilation semantics of name
+; H: ( [name< >] -- ) Compile the compilation semantics of name.
 ; Basically, if the word is immediate, compile its xt
 ; If not, compile code that compiles its xt
 dword     POSTPONE,"POSTPONE",F_IMMED
@@ -5522,7 +5577,7 @@ exc:      ONLIT -13
           .dword THROW
 eword
 
-; H: ( -- ) output the words in the CONTEXT wordlist
+; H: ( -- ) Output the words in the CONTEXT wordlist.
 dword     WORDS,"WORDS"
           ENTER
           .dword CONTEXT
@@ -5547,7 +5602,7 @@ done:     .dword DROP             ; ( h -- )
 eword
 
 .if include_see
-; H: ( xt -- ) attempt to decompile the word at xt
+; H: ( xt -- ) Attempt to decompile the word at xt.
 dword     dSEE,"(SEE)"
           ENTER
           .dword QDUP
@@ -5651,7 +5706,7 @@ cant:     .dword DROP             ; drop pointer
           EXIT
 eword
 
-; H: ( "name"<> -- ) attempt to decompile name
+; H: ( [text< >] -- ) Attempt to decompile name.
 dword     SEE,"SEE"
           ENTER
           .dword PARSEFIND
@@ -5660,7 +5715,7 @@ dword     SEE,"SEE"
 eword
 .endif
 
-; H: ( c-addr u -- ) like CREATE but use c-addr u for name
+; H: ( addr u -- ) Like CREATE but use addr u for name.
 dword     dCREATE,"$CREATE"
           jsr   _mkentry
 docreate: ldy   #.loword(_pushda)
@@ -5669,7 +5724,7 @@ docreate: ldy   #.loword(_pushda)
           NEXT
 eword
 
-; H: ( "name"<> -- ) create a definition, when executed pushes the body address
+; H: ( [name< >] -- ) Create a definition, when executed pushes the body address.
 dword     CREATE,"CREATE"
           ENTER
           .dword PARSE_WORD
@@ -5677,7 +5732,7 @@ dword     CREATE,"CREATE"
           EXIT
 eword
 
-; H: ( "name"<> -- ) execute CREATE name and ALLOT one cell, initially a zero.
+; H: ( [name< >] -- ) Execute CREATE name and allocate one cell, initially a zero.
 dword     VARIABLE,"VARIABLE"
           ENTER
           .dword CREATE
@@ -5722,8 +5777,8 @@ eword
 csmm:     jmp   _CONTROL_MM::code
 .endproc
 
-; H: ( -- ) alter execution semantics of most recently-created definition to perform
-; H: the following execution semantics.
+; H: ( -- ) alter execution semantics of most recently-created definition to
+; H: perform the execution semantics of the code following DOES>.
 dword     DOES,"DOES>",F_IMMED|F_CONLY
           ENTER
           .dword SEMIS
@@ -5746,7 +5801,7 @@ hword     dUNDEFERRED,"$UNDEFERRED"
           jmp   _throway
 eword
 
-; ( xt str len -- ) -- create a deferred word with xt as its initial behavior
+; ( xt addr u -- ) Create a deferred word with xt as its initial behavior.
 hword     dDEFER,"$DEFER"
           jsr   _3parm
           jsr   _mkentry
@@ -5758,7 +5813,7 @@ dodefer:  ldy   #.loword(_deferred)
           NEXT
 eword
 
-; H: ( "name"<> -- ) create definition that executes the first word of the body as an xt
+; H: ( [name< >] -- ) Create definition that executes the first word of the body as an xt.
 dword     DEFER,"DEFER"
           ENTER
           NLIT dUNDEFERRED
@@ -5767,7 +5822,7 @@ dword     DEFER,"DEFER"
           EXIT
 eword
 
-; H: ( "name"<> -- ) return the first cell of the body of name, which should be a DEFER word
+; H: ( [name< >] -- ) Return the first cell of the body of name, which should be a DEFER word.
 dword     BEHAVIOR,"BEHAVIOR"
           ENTER
           .dword  rBODY
@@ -5775,7 +5830,7 @@ dword     BEHAVIOR,"BEHAVIOR"
           EXIT
 eword
 
-; H: ( str len xt -- ) create a DEFER definition for string with xt as its initial behavior
+; H: ( addr u xt -- ) Create a DEFER definition for string with xt as its initial behavior.
 dword     IS_USER_WORD,"(IS-USER-WORD)"
           ENTER
           .dword NROT             ; reorder for $DEFER
@@ -5783,7 +5838,7 @@ dword     IS_USER_WORD,"(IS-USER-WORD)"
           EXIT
 eword
 
-; H: ( n str len -- ) create a definition that pushes the first cell of the body, initially n
+; H: ( n addr u -- ) Create a definition that pushes the first cell of the body, initially n.
 dword     dVALUE,"$VALUE"
           jsr   _3parm            ; avoid dictionary corruption from stack underflow
           jsr   _mkentry
@@ -5795,7 +5850,7 @@ dovalue:  ldy   #.loword(_pushvalue)
           NEXT
 eword
 
-; H: ( n1 n2 str len -- ) create a definition that pushes the first two cells of the body
+; H: ( n1 n2 addr u -- ) Create a definition that pushes the first two cells of the body.
 ; H: initially n1 and n2
 dword     dTWOVALUE,"$2VALUE"
           jsr   _4parm            ; avoid dictionary corruption from stack underflow
@@ -5810,8 +5865,8 @@ dword     dTWOVALUE,"$2VALUE"
           NEXT
 eword
 
-; H: ( n "name"<> -- ) create a definition that pushes n on the stack, n can be changed
-; H: with TO
+; H: ( n [name< >] -- ) Create a definition that pushes n on the stack,
+; H:  n can be changed with TO.
 dword     VALUE,"VALUE"
           ENTER
           .dword PARSE_WORD
@@ -5819,7 +5874,8 @@ dword     VALUE,"VALUE"
           EXIT
 eword
 
-; H: ( n -- ) allocate memory immediately, create definition that returns address of memory
+; H: ( n [name< >] -- ) Allocate n bytes of memory, create definition that
+; H: returns the address of the allocated memory.
 dword     BUFFERC,"BUFFER:"
           ENTER
           .dword ALLOC
@@ -5827,7 +5883,7 @@ dword     BUFFERC,"BUFFER:"
           EXIT
 eword
 
-; H: ( n "name"<> -- ) alias of VALUE, OF816 doesn't have true constants
+; H: ( n [name< >] -- ) alias of VALUE, OF816 doesn't have true constants
 ; we don't have real constants, they can be modified with TO
 dword     CONSTANT,"CONSTANT"
           bra   VALUE::code
@@ -5844,14 +5900,15 @@ hword     pCREATE,"%CREATE" ; noindex
           jmp   dCREATE::docreate
 eword
 
-; H: ( n -- ) compile the machine execution semantics of VALUE (jsl _pushvalue) and the value
+; H: ( n -- ) Compile the machine execution semantics of VALUE (jsl _pushvalue)
+; H: and the value.
 dword     pVALUE,"%VALUE" ; noindex
           jsr   _1parm
           jmp   dVALUE::dovalue
 eword
 
-; H: ( n -- ) compile the machine execution semantics of BUFFER (jsl _valuevalue) and the
-; H: buffer address
+; H: ( addr -- ) Compile the machine execution semantics of BUFFER (jsl _pushvalue)
+; H: and the buffer address.
 dword     pBUFFER,"%BUFFER" ; noindex
           ENTER
           .dword ALLOC
@@ -5859,7 +5916,8 @@ dword     pBUFFER,"%BUFFER" ; noindex
           EXIT
 eword
 
-; H: ( -- ) compile the machine execution semantics of CREATE (jsl _pushda) and compile a zero 
+; H: ( -- ) Compile the machine execution semantics of CREATE (jsl _pushda)
+; H: and compile a zero.
 dword     pVARIABLE,"%VARIABLE" ; noindex
           ENTER
           .dword pCREATE
@@ -5868,7 +5926,7 @@ dword     pVARIABLE,"%VARIABLE" ; noindex
           EXIT
 eword
 
-; H: ( -- ) compile the machine execution semantics of DEFER (jsl _deferred)
+; H: ( -- ) Compile the machine execution semantics of DEFER (jsl _deferred).
 dword     pDEFER,"%DEFER" ; noindex
           ldy   #.loword(dUNDEFERRED)
           lda   #.hiword(dUNDEFERRED)
@@ -5877,7 +5935,7 @@ dword     pDEFER,"%DEFER" ; noindex
 eword
 .endif
 
-; H: ( n1 n2 "name"<> -- ) create name, name does ( -- n1 n2 ) when executed
+; H: ( n1 n2 [name< >] -- ) Create name, name does ( -- n1 n2 ) when executed.
 dword     TWOCONSTANT,"2CONSTANT"
           ENTER
           .dword PARSE_WORD
@@ -5885,7 +5943,7 @@ dword     TWOCONSTANT,"2CONSTANT"
           EXIT
 eword
 
-; H: ( "name1"<> "name2"<> -- ) create name1, name1 is a synonym for name2
+; H: ( [name1< >] [name2< >] -- ) create name1, name1 is a synonym for name2
 dword     ALIAS,"ALIAS"
           ENTER
           .dword PARSE_WORD
@@ -5907,8 +5965,8 @@ hword     _TO,"_TO"
           EXIT
 eword
 
-; H: ( n "name"<> -- ) change the first cell of the body of xt to n.  Can be used on
-; H: most words created with CREATE, DEFER, VALUE, etc.  even VARIABLE
+; H: ( n [name< >] -- ) Change the first cell of the body of xt to n.  Can be used on
+; H: most words created with CREATE, DEFER, VALUE, etc. (even VARIABLE).
 dword     TO,"TO",F_IMMED
           ENTER
           .dword PARSEFIND
@@ -5927,7 +5985,7 @@ dword     STRUCT,"STRUCT"
           PUSHNEXT
 eword
 
-; ( offset size c-addr u -- offset+size ) create word specified by c-addr u with
+; ( offset size addr u -- offset+size ) create word specified by addr u with
 ; execution semantics: ( addr -- addr+offset)
 hword     dFIELD,"$FIELD"
           jsr   _4parm
@@ -5949,7 +6007,8 @@ dofield:  ldy   #.loword(_field)
           NEXT
 eword
 
-; H: ( offset size "name"<> -- offset+size ) create name, name exec: ( addr -- addr+offset)
+; H: Compilation: ( offset size [name< >] -- offset+size ) create name
+; H: Execution of name: ( addr -- addr+offset)
 dword     FIELD,"FIELD"
           ENTER
           .dword PARSE_WORD
@@ -5991,7 +6050,7 @@ hword     SMUDGE,"SMUDGE"
           EXIT
 eword
 
-; H: ( "name"<> -- colon-sys ) parse name, create colon definition and enter compiling state
+; H: ( [name< >] -- colon-sys ) Parse name, start colon definition and enter compiling state.
 dword     COLON,":"
           ENTER
           .dword PARSE_WORD
@@ -6025,7 +6084,7 @@ dword     NONAME,":NONAME"
 eword
 
 ; H: ( -- colon-sys ) Create a temporary anonymous colon definition and enter
-; H: compiling state.  The temporary definition is executed immediately after ;
+; H: compiling state.  The temporary definition is executed immediately after ;.
 ; word supporting temporary colon definitions to implement IEEE 1275
 ; words that are extended to run in interpretation state
 dword     dTEMPCOLON,":TEMP"
@@ -6114,7 +6173,7 @@ hword     UNSMUDGE,"UNSMUDGE"
           EXIT
 eword
 
-; H: ( colon-sys -- ) consume colon-sys and enter interpretation state, ending the current
+; H: ( colon-sys -- ) Consume colon-sys and enter interpretation state, ending the current
 ; H: definition.  If the definition was temporary, execute it.
 dword     SEMI,";",F_IMMED|F_CONLY
           ENTER
@@ -6134,7 +6193,7 @@ dosemi:   .dword UNSMUDGE         ; consume colon-sys
           EXIT
 eword
 
-; H: ( -- ) make the current definition findable during compilation
+; H: ( -- ) Make the current definition findable during compilation.
 dword     RECURSIVE,"RECURSIVE",F_IMMED|F_CONLY
           ENTER
           .dword dCURDEF
@@ -6143,7 +6202,7 @@ dword     RECURSIVE,"RECURSIVE",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( -- ) compile the execution semantics of the most recently-created definition
+; H: ( -- ) Compile the execution semantics of the most current definition.
 dword     RECURSE,"RECURSE",F_IMMED|F_CONLY
           ENTER
           .dword dCURDEF
@@ -6152,7 +6211,7 @@ dword     RECURSE,"RECURSE",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( "name"<> -- code-sys ) create a new CODE definiion
+; H: ( [name< >] -- code-sys ) Create a new CODE definiion.
 ; TODO: activate ASSEMBLER words if available
 dword     CODEDEF,"CODE"
           ENTER
@@ -6164,7 +6223,7 @@ docode:   .dword DUP              ; one for setting flags, one for colon-sys
           EXIT
 eword
 
-; H: ( "name"<> -- code-sys ) create a new LABEL definition
+; H: ( [name< >] -- code-sys ) Create a new LABEL definition.
 dword     LABEL,"LABEL"
           ENTER
           .dword PARSE_WORD
@@ -6174,7 +6233,7 @@ dword     LABEL,"LABEL"
           JUMP CODEDEF::docode
 eword
 
-; H: ( code-sys -- ) consume code-sys, end CODE or LABEL definition
+; H: ( code-sys -- ) Consume code-sys, end CODE or LABEL definition.
 dword     CSEMI,"C;"
           jsr   _1parm
           ldy   #.loword(_next)
@@ -6184,12 +6243,12 @@ dword     CSEMI,"C;"
           JUMP SEMI::dosemi
 eword
 
-; H: ( code-sys -- ) synonym for C;
+; H: ( code-sys -- ) Synonym for C;.
 dword     ENDCODE,"END-CODE",F_IMMED|F_CONLY
           bra   CSEMI::code
 eword
 
-; ( xt -- ) mark XT as immediate
+; ( xt -- ) Mark XT as immediate.
 hword     dIMMEDIATE,"$IMMEDIATE"
           ENTER
           .dword DUP              ; dup XT (flags addr)
@@ -6201,7 +6260,7 @@ hword     dIMMEDIATE,"$IMMEDIATE"
           EXIT
 eword
 
-; H: ( -- ) mark last compiled word as an immediate word
+; H: ( -- ) Mark last compiled word as an immediate word.
 dword     IMMEDIATE,"IMMEDIATE"
           ENTER
           .dword LAST
@@ -6210,7 +6269,7 @@ dword     IMMEDIATE,"IMMEDIATE"
           EXIT
 eword
 
-; ( xt -- ) mark word at xt as protected
+; ( xt -- ) Mark word at xt as protected (from FORGET, not MARKER).
 hword     dPROTECTED,"$PROTECTED"
           ENTER
           .dword DUP              ; dup XT (flags addr)
@@ -6222,7 +6281,7 @@ hword     dPROTECTED,"$PROTECTED"
           EXIT
 eword
 
-; ( -- ) mark last created word as protected (e.g. from FORGET)
+; ( -- ) Mark last created word as protected (from FORGET, not MARKER).
 hword     PROTECTED,"PROTECTED"
           ENTER
           .dword LAST
@@ -6241,13 +6300,13 @@ hword     SEMIS,"SEMIS"
 eword
 
 ; TODO attempt to activate assembler package
-; H: ( -- ) end compiler mode, begin machine code section of definition
+; H: ( -- ) End compiler mode, begin machine code section of definition.
 dword     SCODE,";CODE",F_IMMED|F_CONLY
           bra SEMIS::code
 eword
 
 .if 0
-; ANS Forth locals
+; ANS Forth locals - half-baked and not usable yet
 
 ; ( u -- ) ( R: -- old_locals_ptr u*0 u2 )
 ; u2 = old SP after 
@@ -6331,7 +6390,8 @@ eword
 ; This implementation skips the quotation with AHEAD and afterwards leaves the
 ; the xt on the stack.
 ; quot-sys is ( -- old-$CURDEF forward-ref xt )
-; H: ( C: -- quot-sys ) ( R: -- ) Start a quotation.
+; H: Compilation: ( -- quot-sys ) Start a quotation.
+; H: Execution: ( -- ) Skip over quotation code.
 dword     SQUOT,"[:",F_IMMED|F_CONLY
           ENTER
           .dword dCURDEF          ; fix current def to quotation
@@ -6342,8 +6402,8 @@ dword     SQUOT,"[:",F_IMMED|F_CONLY
           EXIT
 eword
 
-; H: ( C: quot-sys -- ) ( R: -- xt ) End a quotation.  During executon,
-; H: leave xt of the quotation on the stack.
+; H: Compilation: ( quot-sys -- ) End a quotation.
+; H: Execution: ( -- xt )  Leave xt of the quotation on the stack.
 dword     EQUOT,";]",F_IMMED|F_CONLY
           ENTER
           .dword _COMP_LIT        ; compile EXIT into current def
@@ -6385,7 +6445,7 @@ dword     WORDLIST,"WORDLIST"
           EXIT
 eword
 
-; H: ( -- wid ) create a new empty wordlist (danger!)
+; H: ( -- wid ) Create a new empty wordlist (danger!).
 ; non-standard method to create a completely empty wordlist.  If this is the only
 ; list in the search order, it may be impossible to get out of the situation
 dword     dEMPTY_WL,"$EMPTY-WL"
@@ -6415,9 +6475,9 @@ dovocab:  .dword _COMP_LIT
           EXIT
 eword
 
-; H: ( c-addr u -- ) create a new named wordlist definition as per VOCABULARY
-; H: meant for adding more builtin dictionaries (e.g. platform specific dictionaries)
-; H: which are expected to adjust the root to the new wordlist
+; ( c-addr u -- ) Create a new named wordlist definition as per VOCABULARY.
+; Meant for adding more builtin dictionaries (e.g. platform specific dictionaries)
+; which are expected to adjust the root to the new wordlist
 hword    dVOCAB,"$VOCAB"
          ENTER
          .dword dCREATE
@@ -6460,7 +6520,7 @@ dword     MARKER,"MARKER" ; noindex
 eword
 .endif
 
-; H: ( "..."<end> -- ) discard the rest of the input buffer (line during EVALUATE)
+; H: ( [text<end>] -- ) Discard the rest of the input buffer (or line during EVALUATE)
 dword     BACKSLASH,"\",F_IMMED
           ENTER
           .dword SOURCEID
@@ -6491,7 +6551,7 @@ term:     .dword NIN
           EXIT
 eword
 
-; H: ( char -- char' ) upper case convert char
+; H: ( char -- char' ) Upper case convert char.
 dword     UPC,"UPC"
           jsr   _1parm
           lda   STACKBASE+0,x
@@ -6500,7 +6560,7 @@ dword     UPC,"UPC"
           NEXT
 eword
 
-; H: ( char -- char' ) lower case convert char
+; H: ( char -- char' ) Lower case convert char.
 dword     LCC,"LCC"
           jsr   _1parm
           lda   STACKBASE+0,x
@@ -6513,8 +6573,8 @@ dword     LCC,"LCC"
 done:     NEXT
 eword
 
-; H: ( "name"<> ) parse name, place low 5 bits of first char on stack, if compiling stat
-; H: compile it as a literal
+; H: ( [name< >] ) Parse name, place low 5 bits of first char on stack.
+; H: If compiling state, compile it as a literal.
 dword     CONTROL,"CONTROL",F_IMMED
           ENTER
           .dword CHAR
@@ -6526,7 +6586,7 @@ dword     CONTROL,"CONTROL",F_IMMED
 interp:   EXIT
 eword
 
-; H: ( char base -- digit true | char false ) attempt to convert char to digit
+; H: ( char base -- digit true | char false ) Attempt to convert char to digit.
 dword     DIGIT,"DIGIT"
           jsr   _2parm
           lda   STACKBASE+4,x
@@ -6542,7 +6602,7 @@ bad:      sty   STACKBASE+0,x
           NEXT
 eword
 
-; H: ( addr len -- true | n false ) attmept to convert string to number
+; H: ( addr len -- true | n false ) Attmept to convert string to number.
 dword     dNUMBER,"$NUMBER"
           ENTER
           .dword OVER
@@ -6649,7 +6709,8 @@ dword     SAVEINPUT,"SAVE-INPUT"
           EXIT
 eword
 
-; ( xn...x1 n f1 -- f2 ) restore current source input state, including source ID if f1 is true
+; H: ( xn...x1 n f1 -- f2 ) restore current source input state,
+; H: including source ID if f1 is true.
 dword     dRESTOREINPUT,"$RESTORE-INPUT"
           ENTER
           .dword SWAP             ; ( ... addr len ptr srcid f 4 )
@@ -6679,7 +6740,7 @@ bad:      ONLIT -12
           EXIT
 eword
 
-; ( xn...x1 n -- f ) restore current source input state, source ID must match current
+; H: ( xn...x1 n -- f ) Restore current source input state, source ID must match current.
 dword     RESTOREINPUT,"RESTORE-INPUT"
           ENTER
           .dword FALSE
@@ -6687,11 +6748,11 @@ dword     RESTOREINPUT,"RESTORE-INPUT"
           EXIT
 eword
 
-; H: ( xxn...xx1 c-addr u -- yxn...yx1 ) interpret text in c-addr u
+; H: ( xxn...xx1 addr u -- yxn...yx1 ) Interpret text in addr u.
 dword     EVALUATE,"EVALUATE"
           ENTER
           .dword SAVEINPUT
-          .dword NPtoR            ; throw it all on the return stack
+          .dword XNPtoR            ; throw it all on the return stack
           .dword PtoR             ; along with the count
           ONLIT -1
           .dword dSOURCEID        ; standard requires source-id to be -1 during EVALUATE
@@ -6706,7 +6767,7 @@ dword     EVALUATE,"EVALUATE"
           ONLIT INTERPRET
           .dword CATCH            ; we do this so that we can restore input if exception
           .dword RtoP             ; now put the input back to where we were
-          .dword NRtoP
+          .dword XNRtoP
           .dword TRUE
           .dword dRESTOREINPUT    ; restore the input spec, including source ID
           .dword DROP
@@ -6719,7 +6780,7 @@ dword     EVAL,"EVAL"
           bra   EVALUATE::code
 eword
 
-; ( "n"<> n ) parse number n, compile as literal if compiling
+; ( [number< >] n ) Parse number, compile as literal if compiling.
 hword     nNUM,"#NUM"
           ENTER
           .dword PARSE_WORD
@@ -6739,7 +6800,7 @@ bad:      ONLIT -24
 eword
 
 
-; H: ( "#"<> -- n | -- ) parse following number as decimal, compile as literal if compiling
+; H: ( [number< >] n )  Parse number as decimal, compile as literal if compiling.
 dword     DNUM,"D#",F_IMMED
           ENTER
           ONLIT 10
@@ -6749,14 +6810,14 @@ tmpbase:  ONLIT nNUM
           EXIT
 eword
 
-; H: ( "#"<> -- n | -- ) parse following number as hex, compile as literal if compiling
+; H: ( [number< >] n )  Parse number as hexadecimal, compile as literal if compiling.
 dword     HNUM,"H#",F_IMMED
           ENTER
           ONLIT 16
           JUMP DNUM::tmpbase
 eword          
 
-; H: ( "#"<> -- n | --) parse following number as octal, compile as literal if compiling
+; H: ( [number< >] n )  Parse number as octal, compile as literal if compiling.
 dword     ONUM,"O#",F_IMMED
           ENTER
           ONLIT 8
@@ -6769,7 +6830,7 @@ eword
 ; first we will scan the dictionary to see if the word to be forgotten is below
 ; the protection bit, and if it is found before we match the XT, we don't allow the
 ; forget
-; H: ( xt -- ) forget word referenced by xt and subsequent words
+; H: ( xt -- ) Forget word referenced by xt and subsequent words.
 dword     dFORGET,"$FORGET"
           ENTER
           .dword DUP              ; ( xt -- xt xt' )
@@ -6816,7 +6877,7 @@ cant:     SLIT "Can't forget "    ; ( xt -- xt str len )
           EXIT
 eword
 
-; H: ( "name"<> -- ) attempt to forget name and subsequent definitions in compiler
+; H: ( [name< >] -- ) Attempt to forget name and subsequent definitions in compiler
 ; H: word list.  This may have unintended consequences if things like wordlists and
 ; H: such were defined after name.
 dword     FORGET,"FORGET"
@@ -6868,7 +6929,7 @@ hword     dPATCH,"$PATCH"
 nopatch:  EXIT
 eword
 
-; H: ( -- ) ( R: ... -- ) enter outer interpreter loop, aborting any execution
+; H: ( -- ) ( R: ... -- ) Enter outer interpreter loop, aborting any execution.
 dword     QUIT,"QUIT"
           lda   RSTK_TOP          ; reset return stack pointer
           tcs
