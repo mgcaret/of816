@@ -5822,7 +5822,8 @@ dword     DEFER,"DEFER"
           EXIT
 eword
 
-; H: ( [name< >] -- ) Return the first cell of the body of name, which should be a DEFER word.
+; H: ( xt -- ) Return the first cell of the body of word at xt, normally a DEFER word
+; H: but will do the same on some other types of words (CREATE, VARIABLE, VALUE, etc).
 dword     BEHAVIOR,"BEHAVIOR"
           ENTER
           .dword  rBODY

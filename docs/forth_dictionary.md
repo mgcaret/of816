@@ -1,6 +1,6 @@
 # Forth Dictionary
 
-Updated: 2020-01-22 17:13:58 -0800
+Updated: 2020-01-22 17:56:07 -0800
 
 ## !
 
@@ -632,7 +632,8 @@ Execution: _( -- )_ start a BEGIN loop
 
 ## BEHAVIOR
 
-_( [name< >] -- )_ Return the first cell of the body of name, which should be a DEFER word.
+_( xt -- )_ Return the first cell of the body of word at xt, normally a DEFER word
+but will do the same on some other types of words (CREATE, VARIABLE, VALUE, etc).
 
 ## BELL
 
