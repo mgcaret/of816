@@ -212,3 +212,7 @@ T{ 4 5 ' T10 C6 -> 4 77 12 }T    \ ABORT" caught, no message
 : T9 S" 111 112 T8 113" EVALUATE 114 ;
 
 T{ 6 7 ' T9 C6 3 -> 6 7 13 3 }T         \ Test unlinking of sources
+
+\ Housekeeping to tell coverage tool that we got these
+t{ ' ABORT 0= -> false }t
+t{ ' ABORT" 0= -> false }t

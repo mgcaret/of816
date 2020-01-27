@@ -2451,7 +2451,9 @@ dword     WITHIN,"WITHIN"
           EXIT
 eword
 
-; H: ( n1|u1 n2|u2 n3|u3 -- f ) f =  true if n2|u2 <= n1|u1 <= n3|u3, false otherwise
+; H: ( n1 n2 n3 -- f ) f =  true if n2<=n1<=n3, false otherwise
+; this implementation fails when N3 is max-int and should be
+; replaced with something better at some point
 dword     BETWEEN,"BETWEEN"
           ENTER
           .dword INCR

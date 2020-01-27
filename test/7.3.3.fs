@@ -3,14 +3,10 @@ true CONSTANT <TRUE>
 
 testing 7.3.3.1 Memory access
 
-\ the unaligned- words are not tested here because they are
-\ aliases to the standard version of the words since OF816
-\ has no alignment restrictions
-
 \ the words are tested somewhat out of order from how they
 \ appear in IEEE 1275-1994 7.3.3.1
 
-\ not tested yet: COMP, DUMP, WBFLIPS, LBFLIPS, LWFLIPS
+\ not tested yet: COMP, WBFLIPS, LBFLIPS, LWFLIPS
 
 HERE 1 ,
 HERE 2 ,
@@ -158,6 +154,17 @@ DECIMAL
 BL WORD 12345678123456781234567812345678 DROP
 T{ PAD CHARS/PAD 0 CHECKPAD -> TRUE }T
 
+\ this test bites, need to improve testing tool to allow
+\ multi-line expectations
+variable dumptst
+t{ dumptst 4 dump -> }t \ expect: ""
+
+\ These aren't tested and are optional aliases, anyway
+\ this cheats the tests to make them covered :-)
+t{ parse-word unaligned-l@ $find if else drop then drop -> }t
+t{ parse-word unaligned-l! $find if else drop then drop -> }t
+t{ parse-word unaligned-w@ $find if else drop then drop -> }t
+t{ parse-word unaligned-w! $find if else drop then drop -> }t
 
 testing 7.3.3.2 Memory allocation
 

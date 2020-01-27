@@ -75,3 +75,5 @@ t{ 31 sqrtrem -> 5 6 }t
 hex
 
 t{ $memtop @ 0= -> false }t
+
+t{ 123 u.0 -> }t \ expect: "123 OK"

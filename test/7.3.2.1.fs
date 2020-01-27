@@ -34,7 +34,14 @@ T{ MID-UINT+1 1 RSHIFT 2 * -> MID-UINT+1 }T
 T{ MID-UINT+1 2 RSHIFT 4 * -> MID-UINT+1 }T
 T{ MID-UINT+1 1 RSHIFT MID-UINT+1 OR 2 * -> MID-UINT+1 }T
 
-\ todo: u*
+\ U* is essentially the same code as *, abbreviate test
+
+T{ 0 0 u* -> 0 }T            \ TEST IDENTITIES
+T{ 0 1 u* -> 0 }T
+T{ 1 0 u* -> 0 }T
+T{ 1 2 u* -> 2 }T
+T{ 2 1 u* -> 2 }T
+T{ 3 3 u* -> 9 }T
 
 T{ 0 1 / -> 0 1 T/ }T
 T{ 1 1 / -> 1 1 T/ }T
@@ -142,7 +149,13 @@ T{ -7 2 -3 */MOD -> -7 2 -3 T*/MOD }T
 T{ MAX-INT 2 MAX-INT */MOD -> MAX-INT 2 MAX-INT T*/MOD }T
 T{ MIN-INT 2 MIN-INT */MOD -> MIN-INT 2 MIN-INT T*/MOD }T
 
-\ todo: u/mod
+T{ 0 1 u/MOD -> 0 1 T/MOD }T
+T{ 1 1 u/MOD -> 1 1 T/MOD }T
+T{ 2 1 u/MOD -> 2 1 T/MOD }T
+T{ 2 2 u/MOD -> 2 2 T/MOD }T
+T{ 7 3 u/MOD -> 7 3 T/MOD }T
+T{ MAX-INT 1 u/MOD -> MAX-INT 1 T/MOD }T
+T{ MAX-INT MAX-INT u/MOD -> MAX-INT MAX-INT T/MOD }T
 
 T{ 0 1+ -> 1 }T
 T{ -1 1+ -> 0 }T
