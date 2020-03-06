@@ -3,7 +3,7 @@ OF816 is a [65C816](https://www.westerndesigncenter.com/wdc/w65c816s-chip.cfm)
 Forth implementation heavily inspired by 
 [Open Firmware (IEEE 1275-1994)](https://www.openfirmware.info/Welcome_to_OpenBIOS).
 
-Note that OF816 is *not* an Open Firmware implmentation (yet), but it has the
+Note that OF816 is *not* an Open Firmware implementation (yet), but it has the
 potential (and groundwork has been done) for it to become one.
 
 ## Features
