@@ -20,6 +20,7 @@ Among its many features are:
     * Core, most of Core Ext, Exception, Search Order, and Search Order Ext word
       sets.
     * Smattering of words from other sets.
+    * Good conformance test coverage.
 
 ## Goal
 
