@@ -1,7 +1,7 @@
 # OF816 Unit tests
 
 This directory contains unit and conformance tests for OF816.  The ```*.fs``` files
-contain the tests andtest support files.  Most tests are arranged in the order they
+contain the tests and test support files.  Most tests are arranged in the order they
 appear in IEEE 1275-94 chapters 5 and 7.
 
 Tests written in ALL CAPS, and ``tester.fs`` were borrowed from the Forth 2012/ANSI Forth
