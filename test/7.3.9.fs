@@ -131,7 +131,14 @@ variable csr
 t{ : cst [ state @ csr ! ] ; -> }t
 t{ csr @ -> 0 }t
 
-\ todo: compile [compile] compile,
+: ctestword compile true ;
+create comptest
+ctestword
+\ covers:compile
+t{ comptest @ -> ' true }t
+t{ ' false compile, comptest 1 na+ @ -> ' false }t
+t{ [compile] hex comptest 2 na+ @ -> ' hex }t
+
 
 testing 7.3.9.2.3 Dictionary search
 

@@ -18,9 +18,21 @@ testing 7.3.8.2 Case statement
       ENDCASE
 ;
 
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ 1 CS1 -> 111 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ 2 CS1 -> 222 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ 3 CS1 -> 333 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ 4 CS1 -> 999 }T
 
 \ Nested CASE's
@@ -38,11 +50,29 @@ T{ 4 CS1 -> 999 }T
          ENDCASE R> DROP
 ;
 
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ -1 1 CS2 ->  100 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ -1 2 CS2 ->  200 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ -1 3 CS2 -> -300 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ -2 1 CS2 -> -99  }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ -2 2 CS2 -> -199 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{  0 2 CS2 ->  299 }T
 
 \ Boolean short circuiting using CASE
@@ -55,9 +85,21 @@ T{  0 2 CS2 ->  299 }T
    ENDCASE
 ;
 
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ 1 CS3 -> 11 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ 2 CS3 -> 22 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ 3 CS3 -> 33 }T
+\ covers: case
+\ covers: endof
+\ covers: case
 T{ 9 CS3 -> 44 }T
 
 \ Empty CASE statements with/without default
@@ -167,10 +209,13 @@ DECIMAL
 
 : T1 9 ;
 : C1 1 2 3 ['] T1 CATCH ;
+\ covers: CATCH
 T{ C1 -> 1 2 3 9 0 }T         \ No THROW executed
 
 : T2 8 0 THROW ;
 : C2 1 2 ['] T2 CATCH ;
+\ covers: catch
+\ covers: throw
 T{ C2 -> 1 2 8 0 }T            \ 0 THROW does nothing
 
 : T3 7 8 9 99 THROW ;

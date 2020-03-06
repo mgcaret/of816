@@ -77,3 +77,5 @@ hex
 t{ $memtop @ 0= -> false }t
 
 t{ 123 u.0 -> }t \ expect: "123 OK"
+
+t{ .version -> }t \ expect: /OF816/

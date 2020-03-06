@@ -142,6 +142,9 @@ def run_suite(suite, outfile = nil)
                     @coverage[word.downcase] += 1 unless colons[word.downcase]
                 end
             end
+            if line =~ /\\.*\s+covers:\s*(\S+)\s*$/
+              @coverage[$1.downcase] += 1
+            end
             if prevline =~ /expect:\s*\"(.+)\"\s*$/
                 unless line.chomp == $1
                     STDERR.puts prevline

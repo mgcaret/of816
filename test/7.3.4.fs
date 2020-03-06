@@ -11,6 +11,7 @@ t{ bl word test count swap 0> -> 4 true }t
 
 testing 7.3.4.2 Console input
 
+\ covers: \
 t{ \ -> supercalafrag }t   \ since 't{' is a nop this should be fine
 t{ ' key?   0= -> false }t
 t{ ' key    0= -> false }t

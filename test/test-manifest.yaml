@@ -61,6 +61,30 @@
   load:
     - tester.fs
     - 7.3.9.fs
+- name: 7.5.1 Automatic stack display
+  load:
+    - tester.fs
+    - 7.5.1.fs
+- name: 7.5.3 Dictionary
+  load:
+    - tester.fs
+    - 7.5.3.fs
+- name: 5.3.4.3 Get local arguments
+  load:
+    - tester.fs
+    - 5.3.4.3.fs
+- name: 5.3.7.1 Peek/poke
+  load:
+    - tester.fs
+    - 5.3.7.1.fs
+- name: 5.3.7.2 Device-register access
+  load:
+    - tester.fs
+    - 5.3.7.2.fs
+- name: 5.3.7.4 System-information
+  load:
+    - tester.fs
+    - 5.3.7.4.fs
 - name: OF816 Words
   load:
     - tester.fs
