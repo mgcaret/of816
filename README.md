@@ -14,6 +14,11 @@ Among its many features are:
     * New ports require the implementation of a handful of routines.
     * Simple instantiation of one or more Forths in a system.
   * 32-bit cells.
+  * ROM-able.
+    * The core system does not write outside of data space, except to the 65816
+      direct page and stack.  
+    * System variables are provisioned at the start of data space when the sytem
+      is initialized.
   * Optional [FCode](https://www.openfirmware.info/Forth/FCode) support 
     (less Device Tree and Package functions).
   * [ANS Forth](http://lars.nocrew.org/dpans/dpans.htm)
