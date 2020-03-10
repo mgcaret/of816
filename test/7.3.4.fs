@@ -1,5 +1,7 @@
 testing 7.3.4.1 Text input
+hex
 
+\ test comment words
 t{ 1 -> 1 }t ( t{ 1 -> 2 }t ) t{ 2 -> 2 }t
 t{ 1 -> 1 }t \ t{ 1 -> 2 }t
 
@@ -9,10 +11,28 @@ t{ parse-word test swap 0> -> 4 true }t
 t{ source 0> swap 0> -> true true }t
 t{ bl word test count swap 0> -> 4 true }t
 
+\ IEEE 1275-1994 number input
+
+\ first make sure >number (ANS word) works
+t{ 0 s>d s" 123" >number nip -> 123 0 0 }t
+t{ 0 s>d s" 123?456" >number nip -> 123 0 4 }t
+
+t{ 1,234,567 -> 1234567 }t
+t{ 1.234.567 -> 1234567 }t
+t{ 1234567. -> 1234567 s>d }t
+t{ -1234567. -> -1234567 s>d }t
+
+\ Things that should fail
+t{ s" 123," ' eval catch >r clear r> -> -d }t
+t{ s" ,123" ' eval catch >r clear r> -> -d }t
+t{ s" .123" ' eval catch >r clear r> -> -d }t
+
 testing 7.3.4.2 Console input
 
 \ covers: \
 t{ \ -> supercalafrag }t   \ since 't{' is a nop this should be fine
+
+\ hard to test stuff
 t{ ' key?   0= -> false }t
 t{ ' key    0= -> false }t
 t{ ' expect 0= -> false }t

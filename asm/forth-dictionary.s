@@ -1308,25 +1308,6 @@ dword     COMPILECOMMA,"COMPILE,",F_IMMED
           bra   COMMA::code
 eword
 
-; H: Compilation: ( n -- )
-; H: Execution: ( -- n )
-dword     LITERAL,"LITERAL",F_IMMED
-          jsr   _1parm
-          .if no_fast_lits
-          ldy   #.loword(_LIT)
-          lda   #.hiword(_LIT)
-          jsr   _ccellay          ; compile _LIT
-          bra   COMMA::code       ; compile actual number
-          .else
-          lda   STACKBASE+2,x
-          beq   COMMA::code       ; compile fast literal
-          ldy   #.loword(_LIT)
-          lda   #.hiword(_LIT)
-          jsr   _ccellay          ; compile _LIT
-          bra   COMMA::code       ; compile actual number
-          .endif
-eword
-
 ; H: ( char -- ) Compile char into dictionary.
 dword     CCOMMA,"C,"
           jsr   _popay
@@ -1346,6 +1327,44 @@ eword
 ; H: ( q -- ) Compile cell q into dictionary.
 dword     LCOMMA,"L,"
           bra COMMA::code
+eword
+
+; H: Compilation: ( n -- )
+; H: Execution: ( -- n )
+dword     LITERAL,"LITERAL",F_IMMED
+          jsr   _1parm
+          .if no_fast_lits
+          ldy   #.loword(_LIT)
+          lda   #.hiword(_LIT)
+          jsr   _ccellay          ; compile _LIT
+          bra   COMMA::code       ; compile actual number
+          .else
+          lda   STACKBASE+2,x
+          beq   COMMA::code       ; compile fast literal
+          ldy   #.loword(_LIT)
+          lda   #.hiword(_LIT)
+          jsr   _ccellay          ; compile _LIT
+          bra   COMMA::code       ; compile actual number
+          .endif
+eword
+
+dword     TWOLITERAL,"2LITERAL",F_IMMED
+          ENTER
+do2lit:   .dword SWAP
+          .dword LITERAL
+          .dword LITERAL
+          EXIT
+eword
+
+; do LITERAL or 2LITERAL
+hword     XLITERAL,"XLITERAL"
+          ENTER
+          .dword TWO
+          .dword EQUAL
+          .dword _IFFALSE
+          .dword TWOLITERAL::do2lit ; true branch
+          .dword LITERAL
+          EXIT
 eword
 
 ; H: ( u -- u ) Align u (no-op in this implementation).
@@ -4585,8 +4604,7 @@ dword     GNUMBER,">NUMBER"
           stz   XR+2
 digit:    lda   XR                  ; see if no more chars left
           beq   done
-          ldy   XR+2
-          lda   [WR],y
+          lda   [WR]
           and   #$FF                ; enforce char from 16-bit load
           cmp   #'.'                ; IEEE 1275-1994 requires these to be ignored
           beq   ignore              ; when embedded in the number
@@ -4612,7 +4630,8 @@ digit:    lda   XR                  ; see if no more chars left
           jsr   _pushay             ; ( -- n ud1h*basel ud1l base )
           jsr   _umult              ; ( -- n ud1h*basel ud1l*basel ud1l*baseh )
           jsr   _dplus              ; ( -- ud2 )
-next:     dec   XR
+next:     jsr   _incwr
+          dec   XR
           inc   XR+2
           bra   digit
 done:     ldy   WR
@@ -6604,8 +6623,8 @@ bad:      sty   STACKBASE+0,x
           NEXT
 eword
 
-; H: ( addr len -- true | n false ) Attmept to convert string to number.
-dword     dNUMBER,"$NUMBER"
+; H: ( addr len -- 0 | n 1 | d 2 ) Attmept to convert string to number.
+hword     dgNUM,"$>NUM"
           ENTER
           .dword OVER
           .dword CFETCH
@@ -6624,17 +6643,42 @@ dword     dNUMBER,"$NUMBER"
           .dword StoD             ; ( 0 -- ud )
           .dword TWORtoP          ; ( ud -- ud c-addr u )
           .dword GNUMBER          ; ( ud c-addr u -- ud' c-addr' u' ) u' = 0 if no unconverted
-          .dword _IF              ; ( ud' c-addr' u' -- ud' c-addr' )
-          .dword okay
-          .dword THREEDROP        ; ( ud' c-addr' -- )
+          .dword QDUP             ; ( ud' c-addr' u' -- ud' c-addr' u' | ud' c-addr' u' u' )
+          .dword _IF
+          .dword okay             ; branch taken: ( ... ud c-addr' )
+          .dword ONE              ; ( ud' c-addr' u' - ud' c-addr' u' 1 )
+          .dword EQUAL            ; ( ud' c-addr' u' 1 -- ud' c-addr' f )
+          .dword _IF              ; ( ud' c-addr' f -- ud' c-addr' )
+          .dword notok
+          .dword CFETCH           ; ( ud' c-addr' -- ud' c )
+          ONLIT '.'               ; ( ud' c -- ud' c '.' )
+          .dword EQUAL            ; ( ud' c '.' -- ud' f )
+          .dword _IFFALSE         ; ( ud' f -- ud' )
+          .dword dokay            ; if true
+          .dword ZERO             ; ( ud' -- ud' 0 ) p/h for THREEDROP
+notok:    .dword THREEDROP        ; ( ud' c-addr' -- )
           .dword RDROP            ; lose negative
-          .dword TRUE             ; ( -- tf )
+          .dword ZERO             ; ( -- 0 )
           EXIT
 okay:     .dword DROP             ; ( ud' c-addr' -- ud' )
           .dword DtoS             ; ( ud' -- n )
           .dword RtoP
           .dword QNEGATE
-          .dword FALSE            ; ( n -- n ff )
+          .dword ONE              ; ( n -- n 1 )
+          EXIT
+dokay:    .dword RtoP             ; ( ud' -- ud' f )
+          .dword _IF              ; ( ud' f -- ud' )
+          .dword :+
+          .dword DNEGATE          ; ( ud' -- d )
+:         .dword TWO              ; ( d -- d 2 )
+          EXIT
+eword
+
+; H: ( addr len -- true | n false ) Attmept to convert string to number.
+dword     dNUMBER,"$NUMBER"
+          ENTER
+          .dword dgNUM
+          .dword ZEROQ
           EXIT
 eword
 
@@ -6668,20 +6712,25 @@ chkimm:   .dword IMMEDQ           ; compiling, immediate? (leaves xt on stack)
 exec:     .dword EXECUTE
           JUMP  loop
 trynum:   .dword TWODUP           ; ( c-addr u -- c-addr u c-addr u )
-          .dword dNUMBER          ; ( c-addr u c-addr u -- c-addr u num false | c-addr u true )
-          .dword _IF
-          .dword goodnum          ; false = good number
+          .dword dgNUM            ; ( c-addr u c-addr u -- c-addr u 0 | c-addr u n 1 | c-addr u d 2 )
+          .dword QDUP
+          .dword _IFFALSE
+          .dword isnum            ; nonzero = is number
           .dword SPACE
           .dword TYPE
           ONLIT  '?'
           .dword EMIT
-          NLIT  -13
+          ONLIT  -13
           .dword THROW
-goodnum:  .dword NIPTWO
+isnum:    .dword XNPtoR
+          .dword NIPTWO
+          .dword XNRtoP
           .dword _SMART
-          .dword loop             ; if interpreting
-          .dword LITERAL
-          JUMP  loop
+          .dword inum
+          .dword XLITERAL
+          .dword _SKIP
+inum:     .dword DROP
+          JUMP loop
 conly:    .dword _SMART
           .dword trytemp          ; if interpreting, try temporary def
           JUMP chkimm             ; otherwise check immediacy
@@ -6689,7 +6738,7 @@ trytemp:  .dword TEMPDQ           ; has flag for starting temp def
           .dword _IFFALSE
           .dword dotemp           ; true, so start temporary def
           .dword DROP             ; otherwise bad state, drop XT
-          NLIT -14                ; and throw exception
+          ONLIT -14                ; and throw exception
           .dword THROW
 null:     .dword DROP
 done:     EXIT
@@ -6782,20 +6831,23 @@ dword     EVAL,"EVAL"
           bra   EVALUATE::code
 eword
 
-; ( [number< >] n ) Parse number, compile as literal if compiling.
+; ( [number< >] n ) Parse number in input stream, compile as literal if compiling.
 hword     nNUM,"#NUM"
           ENTER
           .dword PARSE_WORD
           .dword DUP
           .dword _IF
           .dword empty
-          .dword dNUMBER
-          .dword _IFFALSE
+          .dword dgNUM
+          .dword DUP
+          .dword _IF
           .dword bad
           .dword _SMART
           .dword interp
-          .dword LITERAL
-interp:   EXIT
+          .dword XLITERAL
+          .dword _SKIP
+interp:   .dword DROP
+          EXIT
 empty:    .dword TWODROP
 bad:      ONLIT -24
           .dword THROW
