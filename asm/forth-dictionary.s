@@ -4566,6 +4566,11 @@ eword
 
 ; H: ( ud1 addr1 u1 -- ud2 addr2 u2 ) Convert text to number.
 ; note: only converts positive numbers!
+; Direct page use:
+; YR = current BASE
+; XR = length left to go (initially u1), only 64K string supported
+; XR + 2 = number of chars processed so far
+; WR = pointer to current char
 dword     GNUMBER,">NUMBER"
           jsr   _4parm
           ldy   #SV_BASE+2
@@ -4577,16 +4582,19 @@ dword     GNUMBER,">NUMBER"
           sta   YR
           jsr   _popxr              ; u1 (length)
           jsr   _popwr              ; c-addr1 ( stack is now just d )
+          stz   XR+2
 digit:    lda   XR                  ; see if no more chars left
-          ora   XR+2
           beq   done
           lda   [WR]
-          and   #$FF                ; enforce char
+          and   #$FF                ; enforce char from 16-bit load
+          cmp   #'.'                ; IEEE 1275-1994 requires these to be ignored
+          beq   ignore              ; when embedded in the number
+          cmp   #','
+          beq   ignore
           jsr   _c_to_d             ; convert to digit
           bcc   done                ; if out of range, can't use it
           cmp   YR                  ; check against base
           bcs   done                ; if >=, can't use it
-          .if 1
           jsr   _pusha              ; ( -- ud1l ud1h n )
           jsr   _swap               ; ( -- ud1l n ud1h )
           ldy   YR
@@ -4603,31 +4611,22 @@ digit:    lda   XR                  ; see if no more chars left
           jsr   _pushay             ; ( -- n ud1h*basel ud1l base )
           jsr   _umult              ; ( -- n ud1h*basel ud1l*basel ud1l*baseh )
           jsr   _dplus              ; ( -- ud2 )
-          .else
-          pha                       ; save converted digit
-          lda   YR
-          sta   STACKBASE+0,x       ; replace high cell of ud with base
-          stz   STACKBASE+2,x       ; base should never be > 65535!
-          jsr   _umult              ; multiply ud cells together
-          pla                       ; get digit back
-          clc
-          adc   STACKBASE+4,x       ; low order word of low order cell
-          sta   STACKBASE+4,x
-          lda   STACKBASE+6,x       ; high order word of low order cell
-          adc   #$00
-          sta   STACKBASE+6,x
-          stz   STACKBASE+0,x       ; zero the high word
-          stz   STACKBASE+2,x
-          .endif
-          jsr   _decxr
-          jsr   _incwr
+next:     jsr   _incwr
+          dec   XR
+          inc   XR+2
           bra   digit
 done:     ldy   WR
           lda   WR+2
           jsr   _pushay
           ldy   XR
-          lda   XR+2
+          lda   #$0000
           PUSHNEXT
+ignore:   lda   XR+2
+          beq   done                ; can't be the first
+          lda   XR
+          dec   a
+          beq   done                ; nor the last
+          bra   next
 eword
 
 ; H: ( str len char -- r-str r-len l-str l-len ) Parse string for char, returning
