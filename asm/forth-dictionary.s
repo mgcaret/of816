@@ -4585,7 +4585,8 @@ dword     GNUMBER,">NUMBER"
           stz   XR+2
 digit:    lda   XR                  ; see if no more chars left
           beq   done
-          lda   [WR]
+          ldy   XR+2
+          lda   [WR],y
           and   #$FF                ; enforce char from 16-bit load
           cmp   #'.'                ; IEEE 1275-1994 requires these to be ignored
           beq   ignore              ; when embedded in the number
@@ -4611,8 +4612,7 @@ digit:    lda   XR                  ; see if no more chars left
           jsr   _pushay             ; ( -- n ud1h*basel ud1l base )
           jsr   _umult              ; ( -- n ud1h*basel ud1l*basel ud1l*baseh )
           jsr   _dplus              ; ( -- ud2 )
-next:     jsr   _incwr
-          dec   XR
+next:     dec   XR
           inc   XR+2
           bra   digit
 done:     ldy   WR
