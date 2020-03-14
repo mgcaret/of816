@@ -9,6 +9,23 @@ testing 7.3.5.2 Numeric input
 
 hex
 
+\ IEEE 1275-1994 number input
+
+\ first make sure >number (ANS word) works
+t{ 0 s>d s" 123" >number nip -> 123 0 0 }t
+t{ 0 s>d s" 123?456" >number nip -> 123 0 4 }t
+
+t{ 1,234,567 -> 1234567 }t
+t{ 1.234.567 -> 1234567 }t
+t{ 1234567. -> 1234567 s>d }t
+t{ -1234567. -> -1234567 s>d }t
+
+\ Things that should fail
+t{ s" 123," ' eval catch >r clear r> -> -d }t
+t{ s" ,123" ' eval catch >r clear r> -> -d }t
+t{ s" .123" ' eval catch >r clear r> -> -d }t
+
+
 t{ s" 123" $number -> 123 false }t
 t{ s" $xyz" $number -> true }t
 
