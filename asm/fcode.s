@@ -273,7 +273,7 @@
           FCIMM FERROR            ; 0xFC explicitly FERROR
           .dword VERSION1
           FCIMM FERROR            ; obsolete 4-byte-id
-          .dword FCEND            ; 0xFF
+          FCIMM FCEND            ; 0xFF
 .endproc
 
 .proc     fcrom2
