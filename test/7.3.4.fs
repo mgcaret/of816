@@ -61,8 +61,10 @@ t{ ' exit? 0= -> false }t
 
 testing 7.3.4.7 String literals
 
+\ covers: "
 t{ " test" swap 0> -> 4 true }t
 t{ s" test" swap 0> -> 4 true }t
+\ covers: "
 t{ " test"(41)" swap 0> -> 5 true }t
 t{  s" testA" drop " test"(41)" comp -> 0 }t
 

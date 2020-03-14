@@ -69,6 +69,14 @@
   load:
     - tester.fs
     - 7.5.3.fs
+- name: 5.3.2 Forth FCode Functions
+  load:
+    - tester.fs
+    - 5.3.2.fs
+- name: 5.3.3 FCode implementation functions
+  load:
+    - tester.fs
+    - 5.3.3.fs
 - name: 5.3.4.3 Get local arguments
   load:
     - tester.fs
@@ -85,6 +93,11 @@
   load:
     - tester.fs
     - 5.3.7.4.fs
+- name: 5.3.7.6 Start and end
+  load:
+    - tester.fs
+    - 5.3.7.6.fs
+    
 - name: OF816 Words
   load:
     - tester.fs
