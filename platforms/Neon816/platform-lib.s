@@ -67,7 +67,8 @@ dword     PS2K_FETCH,"PS2K@"
 eword
 
 dword     PS2KEY,"PS2KEY"
-          jsr   ps2_keyin
+:         jsr   ps2_keyin
+          bcc   :-
           jsr   _pusha
           NEXT
 eword
