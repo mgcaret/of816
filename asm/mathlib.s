@@ -251,10 +251,10 @@ l2:       dec   XR                  ; next bit
 ; ( d n -- ud u )
 .proc     _dnabs
           lda   STACKBASE+2,x     ; take absolute value of n1
-          bpl   :+
+          bpl   :+                ; if needed
           jsr   _negate
 :         lda   STACKBASE+6,x     ; take absolute value of d
-          bpl   :+
+          bpl   :+                ; if needed
 dtneg:    inx
           inx
           inx
@@ -298,26 +298,29 @@ overflow: pla                     ; carry is set, pla does not affect it
 .endproc
 _tucknegate = _smdivrem::tneg
 
+; ( d1 n1 -- n2 n3 )
+; Divide dividend d1 by divisor n1, giving the floored quotient n3 and the remainder n2.
+; Input and output stack arguments are signed.
 .proc     _fmdivmod
-          stz   WR
-          lda   STACKBASE+2,x
+          lda   STACKBASE+2,x     ; high word of n1
+          pha                     ; save divisor sign
           bpl   :+
-          dec   WR
-          jsr   _dnabs
-:         lda   STACKBASE+6,x
+          jsr   _negate           ; negate both if n1 was negative
+          jsr   _dtucknegate
+:         lda   STACKBASE+6,x     ; highest word of d1
           bpl   :+
-          lda   STACKBASE+0,x
+          lda   STACKBASE+0,x     ; it's negative, add n1 to high cell of d1
           clc
           adc   STACKBASE+4,x
           sta   STACKBASE+4,x
           lda   STACKBASE+2,x
           adc   STACKBASE+6,x
           sta   STACKBASE+6,x
-:         jsr   _umdivmod
-          bcs   :+
-          bit   WR
-          bpl   :+
-          jsr   _tucknegate       ; clears carry
+:         jsr   _umdivmod         ; UM/MOD
+          pla                     ; get divisor sign back (carry unaffected)
+          bcs   :+                ; error
+          bpl   :+                ; if n1 was positive
+          jsr   _tucknegate       ; if it was, negate the result (clears carry)
 :         rts
 .endproc
 
