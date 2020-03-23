@@ -250,6 +250,7 @@ NUM_SYSVARS .set 0
     __dstart = 0
   .endif
   .define l_dword __dstart        ; last defined word
+  .out .sprintf("Start of dictionary: %s",c_dict)
 .endmacro
 
 .macro dhead link,dname,fname
@@ -328,9 +329,7 @@ NUM_SYSVARS .set 0
 .endmacro
 
 .macro dchain dname
-  .ifdef l_dword
-    .undefine l_dword
-  .endif
+  .undefine l_dword
   .define l_dword dname
 .endmacro
 
@@ -356,6 +355,7 @@ NUM_SYSVARS .set 0
 .endmacro
 
 .macro dend
+  .out .sprintf("End of dictiomnary: %s",c_dict)
   .ident(.sprintf("LAST_%s",c_dict)) = l_dword
   .undef c_dict
   .undef l_dword
