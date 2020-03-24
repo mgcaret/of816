@@ -24,55 +24,53 @@ KEYMODS   = PLATF_DP              ; keyboard modifiers, 16 bits
 dstart "neon816"
 dchain H_FORTH                    ; Make branch off the word FORTH
 
+; H: ( byte -- ) write byte to PS/2 keyboard port.
 dword     PS2K_STORE,"PS2K!"
           jsr   _popay
           tya
-          sep   #SHORT_A
-          .a8
-          sta   f:PS2Kio
-:         lda   f:PS2Kstat
-          bit   #$08
-          bne   :-
-          rep   #SHORT_A
-          .a16
+          jsr   ps2k_write
           NEXT
 eword
 
+; H: ( -- f ) f is true if data waiting at PS/2 keyboard port.
 dword     PS2K_QUERY,"PS2K?"
+          jsr   ps2k_ready
           ldy   #$0000
-          sep   #SHORT_A
-          .a8
-          lda   f:PS2Kstat
-          ror
-          rep   #SHORT_A
-          .a16
           bcc   :+
           dey
 :         tya
           PUSHNEXT
 eword
 
+; H: ( -- byte ) read byte from PS/2 keyboard port.
 dword     PS2K_FETCH,"PS2K@"
-          sep   #SHORT_A
-          .a8
-:         lda   f:PS2Kstat
-          ror
-          bcc   :-
-          lda   f:PS2Kio
-          rep   #SHORT_A
-          .a16
-          and   #$00FF
+          jsr   ps2k_read
           jsr   _pusha
           NEXT
 eword
 
+; H: ( -- c ) wait for keypress on PS/2 port, c is the character typed.
 dword     PS2KEY,"PS2KEY"
-:         jsr   ps2_keyin
-          bcc   :-
+          jsr   ps2_keyin
           jsr   _pusha
           NEXT
 eword
 
+; H: ( -- code f ) read raw keycode from PS/2 port.
+; H: code is keycode, either xx or E0xx, f is true if break.
+dword     PS2RAW,"PS2RAW"
+          jsr   ps2_readcode
+          php
+          jsr   _pusha
+          ldy   #$00
+          plp
+          bcc   :+
+          dey
+:         tya
+          PUSHNEXT
+eword
+
+; H: ( byte -- ) write byte to PS/2 mouse port.
 dword     PS2M_STORE,"PS2M!"
           jsr   _popay
           tya
@@ -87,6 +85,7 @@ dword     PS2M_STORE,"PS2M!"
           NEXT
 eword
 
+; H: ( -- f ) f is true if data waiting at PS/2 mouse port.
 dword     PS2M_QUERY,"PS2M?"
           ldy   #$0000
           sep   #SHORT_A
@@ -101,6 +100,7 @@ dword     PS2M_QUERY,"PS2M?"
           PUSHNEXT
 eword
 
+; H: ( -- byte ) read byte from PS/2 keyboard port.
 dword     PS2M_FETCH,"PS2M@"
           sep   #SHORT_A
           .a8
@@ -115,6 +115,7 @@ dword     PS2M_FETCH,"PS2M@"
           NEXT
 eword
 
+; H: ( -- ) send reset command to PS/2 keyboard
 dword     dKBDRESET,"$KBDRESET"
           ENTER
           ONLIT $FF
@@ -122,6 +123,7 @@ dword     dKBDRESET,"$KBDRESET"
           EXIT
 eword
 
+; H: ( day hour minutes seconds ms us -- ) set RTC
 ; this probably isn't fast enough to reliably set micro and milliseconds
 dword     SETRTC,"SETRTC"
           ENTER
@@ -140,6 +142,7 @@ dword     SETRTC,"SETRTC"
           EXIT
 eword
 
+; H: ( -- day hour minutes seconds ms us ) get RTC
 dword     GETRTC,"GETRTC"
           ENTER
           ONLIT  RTCday
@@ -169,6 +172,7 @@ nosep:
           .a16
 .endproc
 
+; H: ( -- ) start I2C2 communication.
 dword     I2C2START,"I2C2START"
           jsr   I2C2_busy_wait
           .a8
@@ -179,6 +183,7 @@ dword     I2C2START,"I2C2START"
           NEXT
 eword
 
+; H: ( -- ) stop I2C2 communication.
 dword     I2C2STOP,"I2C2STOP"
           jsr   I2C2_busy_wait
           .a8
@@ -189,6 +194,7 @@ dword     I2C2STOP,"I2C2STOP"
           NEXT
 eword
 
+; H: ( byte -- ) write byte to I2C2.
 dword     I2C2_STORE,"I2C2!"
           jsr   _popay
           jsr   I2C2_busy_wait
@@ -202,6 +208,7 @@ dword     I2C2_STORE,"I2C2!"
           NEXT
 eword
 
+; H: ( -- byte ) receive byte from I2C2, send ack.
 dword     I2C2_FETCH_ACK,"I2C2@+"
           jsr   I2C2_busy_wait
           .a8
@@ -216,7 +223,8 @@ dofetch:  sta   f:I2C2ctrl
           NEXT
 eword
 
-dword     I2C2_FETCH,"I2C2@+"
+; H: ( -- byte ) receive byte from I2C2, do not send ack.
+dword     I2C2_FETCH,"I2C2@"
           jsr   I2C2_busy_wait
           .a8
           lda   #$04
@@ -224,6 +232,7 @@ dword     I2C2_FETCH,"I2C2@+"
           .a16
 eword
 
+; H: ( offset byte -- ) write byte to VDC at offset
 dword     VDC_C_STORE,"VDCC!"
           jsr   _popay            ; pop offset
           phy                     ; save low word
@@ -241,6 +250,7 @@ dword     VDC_C_STORE,"VDCC!"
           NEXT
 eword
 
+; H: ( offset -- byte ) read byte from VDC at offset
 dword     VDC_C_FETCH,"VDCC@"
           jsr   _popay            ; pop offet
           phx                     ; save SP
@@ -257,6 +267,7 @@ dword     VDC_C_FETCH,"VDCC@"
           NEXT
 eword
 
+; H: ( offset word -- ) write word to VDC at offset
 dword     VDC_STORE,"VDC!"
           jsr   _popay            ; again! again! again!
           phy
@@ -363,6 +374,7 @@ dword     VIDSTOP,"VIDSTOP"
           EXIT
 eword
 
+; H: ( -- ) dump display EDID data, first 256 bytes.
 dword     DUMPEDID,"DUMPEDID"
 dump_size = $0100
           ENTER
@@ -398,6 +410,7 @@ dump_size = $0100
           EXIT
 eword
 
+; H: ( -- ) initialize SPI2.
 dword     SPI2INIT,"SPI2INIT"
           sep   #SHORT_A
           .a8
@@ -411,6 +424,7 @@ dword     SPI2INIT,"SPI2INIT"
           NEXT
 eword
 
+; H: ( -- ) start SPI2 communication.
 dword     SPI2START,"SPI2START"
           sep   #SHORT_A
           .a8
@@ -421,6 +435,7 @@ dword     SPI2START,"SPI2START"
           NEXT
 eword
 
+; H: ( -- ) stop SPI2 communication.
 dword     SPI2STOP,"SPI2STOP"
           sep   #SHORT_A
           .a8
@@ -445,6 +460,7 @@ nosep:
           .a16
 .endproc
 
+; H: ( byte -- ) write byte to SPI2.
 dword     SPI2_STORE,"SPI2!"
           jsr   _popay
           jsr   SPI2_busy_wait
@@ -456,6 +472,7 @@ dword     SPI2_STORE,"SPI2!"
           NEXT
 eword
 
+; H: ( -- byte ) fetch byte from SPI2.
 dword     SPI2_FETCH,"SPI2@"
           jsr   SPI2_busy_wait
           .a8
@@ -527,6 +544,7 @@ table:    .addr _sf_pre_init
 
 .proc     _sf_post_init
           plx
+          stz   KEYMODS
           ; Here we make a vocabulary definition for the neon816 dictionary
           ; that we defined at the beginning of this file.
           ENTER
@@ -662,6 +680,13 @@ list:
           rts
 .endproc
 
+.proc     ps2k_command
+          jsr   ps2k_write
+          jsr   ps2k_read
+          cmp   #$00FA
+          rts
+.endproc
+
 ; Keyboard translate tables
 ; unshifted and shifted codes
 ; if high bit set, jump to special handler routine
@@ -767,13 +792,13 @@ list:
           .byte $00,$00           ; none
           .byte $00,$00           ; none
           ; $58
-          .byte $00,$00           ; none
           .byte $84,$84           ; caps lock
           .byte $82,$82           ; right shift
           .byte $0D,$0D           ; enter
           .byte ']','}'
           .byte $00,$00           ; none
           .byte '\','|'
+          .byte $00,$00           ; none
           .byte $00,$00           ; none
           ; $60
           .byte $00,$00           ; none
@@ -977,7 +1002,7 @@ list:
           .addr bk_lshift-1       ; $80
           .addr bk_rshift-1       ; $82
           .addr bk_caps-1         ; $84
-          .addr bk_lctrl-1        ; $88
+          .addr bk_lctrl-1        ; $86
           .addr bk_rctrl-1        ; $88
 .endproc
 
@@ -992,17 +1017,19 @@ list:
 .endproc
 
 .proc     mk_caps
-          lda   #%0000000000000001
-          jsr   makemod
+          lda   KEYMODS
+          eor   #%1
+          sta   KEYMODS
           ; fall-through to ps2_setLEDs
 .endproc
 
 .proc     ps2_setleds
           lda   #$ED              ; set LEDs command
-          jsr   ps2k_write
+          jsr   ps2k_command
           lda   KEYMODS
-          jsr   ps2k_write
-          bra   nokey
+          and   #%111
+          jsr   ps2k_command
+          rts
 .endproc
 
 .proc     mk_lctrl
@@ -1017,12 +1044,6 @@ list:
 
 .proc     makemod
           tsb   KEYMODS
-          ; fall through to nokey
-.endproc 
-
-.proc     nokey
-          lda   #$0000
-          clc
           rts
 .endproc
 
@@ -1037,9 +1058,7 @@ list:
 .endproc
 
 .proc     bk_caps
-          lda   #%0000000000000001
-          jsr   breakmod
-          bra   ps2_setleds
+          rts
 .endproc
 
 .proc     bk_lctrl
@@ -1054,116 +1073,124 @@ list:
 
 .proc     breakmod
           trb   KEYMODS
-          bra   nokey
+          rts
 .endproc
 
-; expects a 'make' code, either 00xx or E0xx
-.proc     ps2_keydn
-          lda   #%1100000000000000 ; shift keys
-          bit   KEYMODS
-          php                     ; save result (Z=1 if no shift)
-          ora   #$0000            ; if high bit is set we will treat as $E0
-          php
+; Read a code from the keyboard, return carry set if it was 'break' and clear
+; if it was 'make'
+.proc     ps2_readcode
+          phy                     ; save Y
+          ldy   #$0000            ; flag for break
+          phy                     ; space for extended code byte
+:         jsr   ps2k_read
+          cmp   #$E1              ; pause/break annoyance
+          beq   pausebrk
+          cmp   #$E0              ; extended code?
+          bne   :+
+          xba
+          sta   1,s               ; yes, put in upper byte on stack
+          bra   :-                ; back to read
+:         cmp   #$F0              ; break code?
+          bne   :+
+          iny                     ; yes, flag
+          bra   :--               ; back to read
+:         ora   1,s               ; if none of those, put in lower byte
+          sta   1,s               ; inefficient but it works
+          pla                     ; and get it off the stack
+done:     cpy   #$01              ; set carry if break
+          ply                     ; restore Y
+          rts
+pausebrk: pla
+          ldy   #7
+:         jsr   ps2k_read         ; drop 7 bytes
+          dey
+          bne   :-
+          lda   #$E000            ; bogus scan code
+          bra   done
+.endproc
+
+; get code from translate table for key code in A, return in A
+; destroys y, returns 0000 if there is no translation
+.proc     ps2_keytran
+          pha
           and   #$00FF
           asl
           tay
-          lda   #$0000            ; anticipate failure of cpy
-          plp
-          bmi   :+
-          cpy   .sizeof(mktab)/2
-          bcs   :++               ; bad value
-          lda   mktab,y
-          bra   :++
-:         cpy   .sizeof(ektab)/2
-          bcs   :+                ; bad value
-          lda   ektab,y
-:         plp
-          beq   :+                ; unshifted
-          xba
-:         and   #$00FF
-          cmp   #$0080
-          bcs   special
-          pha
-          lda   KEYMODS
-          ror                     ; caps lock into carry
           pla
-          bcc   nocaps            ; if no caps lock
-          cmp   #'a'
-          bcc   nocaps
-          cmp   #'z'+1
-          bcs   nocaps
-          and   #$DF              ; make caps
-nocaps:   pha                     ; save on stack
-          lda   #%0000000011000000 ; ctrl keys
-          bit   KEYMODS
-          beq   :+                ; if no ctrl
+          and   #$FF00
+          cmp   #$E000
+          beq   ext
+          cpy   #.sizeof(mktab)
+          bcs   bad
+          lda   mktab,y
+          bra   done
+ext:      cpy   #.sizeof(ektab)
+          bcs   bad
+          lda   ektab,y
+          bra   done
+bad:      lda   #$0000
+done:     cmp   #$0001
+          rts
+.endproc
+
+; take translated code in A, apply keyboard modifiers, and return result in A
+; if special, return carry set
+.proc     ps2_keymod
+          pha                     ; work with it on stack
+          lda   KEYMODS
+          and   #%1100000000000000 ; shift keys
+          beq   :+
           lda   1,s
-          and   #%0000000000011111 ; make ctrl
+          xba
+          sta   1,s
+:         lda   1,s
+          and   #$0080
+          bne   :++               ; shortcut special
+          lda   KEYMODS
+          ror                     ; caps into carry
+          bcc   :+
+          lda   1,s
+          and   #$00FF
+          cmp   #'a'
+          bcc   :+
+          cmp   #'z'+1
+          bcs   :+
+          and   #$DF
+          sta   1,s
+:         lda   KEYMODS
+          and   #%0000000011000000 ; ctrl keys
+          beq   :+
+          lda   1,s
+          and   #%11111           ; make ctrl char
           sta   1,s
 :         pla
-          cmp   #$01              ; set carry if >= 1
-          rts
-special:  and   #$7f
-          tay
-          lda   kmktbl,y
-          pha
-          rts
-.endproc
-
-; for the break we only care about modifiers, we aren't keeping track of anything else
-; so we also ignore shifted values
-; expects a 'make'-like code, either 00xx or E0xx
-.proc     ps2_keyup
-          ora   #$0000
-          php
           and   #$00FF
-          asl
-          tay
-          plp
-          bmi   :+
-          cpy   .sizeof(mktab)/2
-          bcs   :++
-          lda   mktab,y
-          bra   :++
-:         cpy   .sizeof(ektab)/2
-          bcs   :+
-          lda   ektab,y
-:         and   #$00FF
           cmp   #$0080
-          bcs   special
-          lda   #$0000
-          clc
-          rts
-special:  and   #$7f
-          tay
-          lda   kbktbl,y
-          pha
           rts
 .endproc
 
 ; Wait for a valid key, when we get one, decode and return
 .proc     ps2_keyin
-:         jsr   ps2k_read
-          cmp   #$F0
-          beq   break
-          cmp   #$FE
-          beq   extended
-          cmp   #$AA              ; diags passed
-          beq   :-
-          cmp   #$FC              ; diags failed
-          beq   :-                ; prob shouldn't do this
-          cmp   #$FA              ; ACK
-          beq   :-
-          jmp   ps2_keydn         ; see if we can decode it
-break:    jsr   ps2k_read
-          bra   ps2_keyup
-extended: jsr   ps2k_read
-          cmp   #$F0
-          beq   :+                ; extended break
-          ora   #$E000
-          jmp   ps2_keydn
-:         jsr   ps2k_read
-          ora   #$E000
-          bra   ps2_keyup
+:         php
+:         plp
+          jsr   ps2_readcode
+          php
+          jsr   ps2_keytran
+          bcc   :-                ; carry is clear if no value for key
+          jsr   ps2_keymod
+          bcs   special
+          plp
+          bcs   :--               ; break code, wait for another
+          rts
+special:  and   #$007F
+          tay
+          lda   kmktbl,y
+          plp
+          bcc   :+                ; if make
+          lda   kbktbl,y
+:         jsr   :+
+          bra   :---              ; for special, we go back to waiting
+:         pha                     ; do RTS trick
+          rts
 .endproc
 
