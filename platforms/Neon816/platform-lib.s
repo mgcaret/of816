@@ -124,41 +124,93 @@ dword     dKBDRESET,"$KBDRESET"
 eword
 
 ; H: ( day hour minutes seconds ms us -- ) set RTC
-; this probably isn't fast enough to reliably set micro and milliseconds
+; The registers must be set starting with the microseconds and ending with the day
+; when the day is written the clock registers are copied to the internal registers
 dword     SETRTC,"SETRTC"
-          ENTER
-          ONLIT  RTCus
-          .dword WSTORE
-          ONLIT  RTCms
-          .dword WSTORE
-          ONLIT  RTCsec
-          .dword CSTORE
-          ONLIT  RTCmin
-          .dword CSTORE
-          ONLIT  RTChour
-          .dword CSTORE
-          ONLIT  RTCday
-          .dword WSTORE
-          EXIT
+          txa
+          clc
+          adc   #20
+          cmp   STK_TOP
+          bcc   :+
+          jmp   _stku_err
+:         lda   STACKBASE+0,x
+          sta   RTCus
+          lda   STACKBASE+4,x
+          sta   RTCms
+          sep   #SHORT_A
+          .a8
+          lda   STACKBASE+8,x
+          sta   RTCsec
+          lda   STACKBASE+12,x
+          sta   RTCmin
+          lda   STACKBASE+16,x
+          sta   RTChour
+          rep   #SHORT_A
+          .a16
+          lda   STACKBASE+20,x
+          sta   RTCday
+          txa
+          clc
+          adc   #24
+          tax
+          NEXT
 eword
 
 ; H: ( -- day hour minutes seconds ms us ) get RTC
+; The registers must be read starting with the microseconds to copy the internal
+; registers to the clock registers.
 dword     GETRTC,"GETRTC"
-          ENTER
-          ONLIT  RTCday
-          .dword WFETCH
-          ONLIT  RTChour
-          .dword CFETCH
-          ONLIT  RTCmin
-          .dword CFETCH
-          ONLIT  RTCsec
-          .dword CFETCH
-          ONLIT  RTCms
-          .dword WFETCH
-          ONLIT  RTCus
-          .dword WFETCH
-          EXIT
+          lda   #$0000
+          tay
+          jsr   _pushay
+          jsr   _pushay
+          jsr   _pushay
+          jsr   _pushay
+          jsr   _pushay
+          jsr   _pushay
+          lda   RTCus
+          sta   STACKBASE+0,x
+          lda   RTCms
+          sta   STACKBASE+4,x
+          sep   #SHORT_A
+          .a8
+          lda   RTCsec
+          sta   STACKBASE+8,x
+          lda   RTCmin
+          sta   STACKBASE+12,x
+          lda   RTChour
+          sta   STACKBASE+16,x
+          rep   #SHORT_A
+          .a16
+          lda   RTCday
+          sta   STACKBASE+20,x
+          NEXT
 eword
+
+.proc     _getms
+          lda   RTCus             ; latch clock registers
+          lda   RTCms             ; get ms
+          rts
+.endproc
+
+; waits for up to 511 ms (ms timer is 0-999)
+.proc     _mswait
+          and   #$1FF
+          beq   :++
+          pha
+          jsr   _getms
+          and   #$1FF
+          pha
+:         jsr   _getms
+          sec                     ; should we worry about 1 ms?
+          sbc   1,s
+          and   #$1FF
+          cmp   3,s
+          bcc   :-
+          pla
+          pla
+:         rts
+.endproc
 
 ; NOTE: sets short accumulator and leaves it that way on exit!
 .proc     I2C2_busy_wait
@@ -555,8 +607,6 @@ table:    .addr _sf_pre_init
           .dword drXT           ; last word defined in the neon816 dictionary
           .dword rBODY
           .dword STORE
-          .dword GETRTC         ; start the clock
-          .dword CLEAR
           CODE
           jmp   _sf_success
 .endproc
