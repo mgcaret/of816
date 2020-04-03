@@ -12,6 +12,7 @@ KEYMODS   = PLATF_DP              ; keyboard modifiers, 16 bits
                                   ;   b2  = scroll lock (reserved)
                                   ;   b1  = num lock (reserved)
                                   ;   b0  = caps lock
+PS2DEVS   = KEYMODS+2             ; b15=ran b1=mouse, b0=keyboard
 
 ; Neon816 dictionary, a bit of a different approach than the other ports
 ; This will get set up by the post init function of the system interface
@@ -35,7 +36,7 @@ eword
 ; H: ( -- f ) f is true if data waiting at PS/2 keyboard port.
 dword     PS2K_QUERY,"PS2K?"
           jsr   ps2k_ready
-          ldy   #$0000
+ret:      ldy   #$0000
           bcc   :+
           dey
 :         tya
@@ -58,7 +59,7 @@ eword
 
 ; H: ( -- code f ) read raw keycode from PS/2 port.
 ; H: code is keycode, either xx or E0xx, f is true if break.
-dword     PS2RAW,"PS2RAW"
+dword     PS2KRAW,"PS2KRAW"
           jsr   ps2_readcode
           php
           jsr   _pusha
@@ -74,53 +75,94 @@ eword
 dword     PS2M_STORE,"PS2M!"
           jsr   _popay
           tya
-          sep   #SHORT_A
-          .a8
-          sta   f:PS2Mio
-:         lda   f:PS2Mstat
-          bit   #$08
-          bne   :-
-          rep   #SHORT_A
-          .a16
+          jsr   ps2m_write
           NEXT
 eword
 
 ; H: ( -- f ) f is true if data waiting at PS/2 mouse port.
 dword     PS2M_QUERY,"PS2M?"
-          ldy   #$0000
-          sep   #SHORT_A
-          .a8
-          lda   f:PS2Mstat
-          ror
-          rep   #SHORT_A
-          .a16
-          bcc   :+
-          dey
-:         tya
-          PUSHNEXT
+          jsr   ps2m_ready
+          bra   PS2K_QUERY::ret
 eword
 
 ; H: ( -- byte ) read byte from PS/2 keyboard port.
 dword     PS2M_FETCH,"PS2M@"
-          sep   #SHORT_A
-          .a8
-:         lda   f:PS2Mstat
-          ror
-          bcc   :-
-          lda   f:PS2Mio
-          rep   #SHORT_A
-          .a16
-          and   #$00FF
+          jsr   ps2m_read
           jsr   _pusha
           NEXT
 eword
 
-; H: ( -- ) send reset command to PS/2 keyboard
-dword     dKBDRESET,"$KBDRESET"
-          ENTER
-          ONLIT $FF
-          .dword PS2K_STORE
-          EXIT
+; H: ( -- xmov ymov buttons ) read mouse relative movement
+; expects mouse to be in remote mode
+dword     PS2MRAW,"PS2MRAW"
+          lda   #$0000
+          tay
+          jsr   _pushay           ; 8 X movement
+          jsr   _pushay           ; 4 Y movement
+          jsr   _pushay           ; 0 buttons
+          lda   #$00EB            ; "read data"
+          jsr   ps2m_command
+          bne   :++               ; not what we expected, return zeros
+          jsr   ps2m_read         ; buttons, sign bits, overflow bits, etc.
+          tay                     ; we need it a few times
+          and   #$000F            ; buttons and "always 1" bit
+          sta   STACKBASE+0
+          jsr   ps2m_read         ; X movement
+          sta   STACKBASE+8
+          jsr   ps2m_read         ; Y movement
+          sta   STACKBASE+4
+          tya
+          and   #%00010000        ; X sign bit
+          beq   :+
+          lda   #$FFFF
+          sta   STACKBASE+9,x
+          sta   STACKBASE+10,x
+:         tya
+          and   #%00100000        ; Y sign bit
+          beq   :+
+          lda   #$FFFF
+          sta   STACKBASE+5,x
+          sta   STACKBASE+6,x
+:         NEXT
+eword
+
+; detect PS/2 devices, return:
+; b0=kbd present, b1=mouse present, b7 = always 1
+hword     dPS2DET,"$PS2DET"
+          ldy   PS2DEVS           ; you can't hotplug PS/2
+          bne   done              ; so shortcut if we've done this already
+          lda   #$8000            ; bit that is always set so we know we did it already
+          pha
+          ldy   #$00FF            ; PS/2 reset command
+          tya
+          jsr   ps2k_write        ; reset keyboard
+          tya
+          jsr   ps2m_write        ; reset mouse
+          stz   KEYMODS           ; we reset that sucka
+          lda   #500              ; wait some time for devices to reset
+          jsr   _mswait
+          lda   #500
+          jsr   _mswait
+          jsr   ps2k_ready        ; see if keyboard is ready
+          bcs   :+
+          lda   #250              ; give KB just a little more time
+          jsr   _mswait
+          jsr   ps2k_ready        ; and check again
+:         bcc   :+                ; if not ready, do not flag it
+          lda   #%1               ; otherwise, set the bit
+          ora   1,s
+          sta   1,s
+:         jsr   ps2m_ready        ; now check on the mouse
+          bcc   :+                ; if not there, we are done
+          lda   #$F0              ; remote mode - turn off streaming
+          jsr   ps2m_command
+          lda   #%10              ; and flag present
+          ora   1,s
+          sta   1,s
+:         ply
+          sty   PS2DEVS
+done:     lda   #$0000
+          PUSHNEXT
 eword
 
 ; H: ( day hour minutes seconds ms us -- ) set RTC
@@ -590,13 +632,27 @@ table:    .addr _sf_pre_init
           rep   #SHORT_A
           .a16
           ; EOC
+          stz   KEYMODS
+          stz   PS2DEVS
           plx
           jmp   _sf_success
 .endproc
 
+
+.scope    pStrings
+  .proc   keyboard
+          .byte "keyboard"
+  .endproc
+  .proc   mouse
+          .byte "mouse"
+  .endproc
+  .proc   present
+          .byte " present",$0d,$0a
+  .endproc
+.endscope
+
 .proc     _sf_post_init
           plx
-          stz   KEYMODS
           ; Here we make a vocabulary definition for the neon816 dictionary
           ; that we defined at the beginning of this file.
           ENTER
@@ -607,7 +663,29 @@ table:    .addr _sf_pre_init
           .dword drXT           ; last word defined in the neon816 dictionary
           .dword rBODY
           .dword STORE
-          CODE
+          .dword dPS2DET
+          .dword ONE
+          .dword LAND
+          .dword _IF
+          .dword :+
+          ONLIT ::pStrings::keyboard
+          ONLIT .sizeof(::pStrings::keyboard)
+          .dword TYPE
+		      ONLIT ::pStrings::present
+          ONLIT .sizeof(::pStrings::present)
+          .dword TYPE
+:         .dword dPS2DET
+          .dword TWO
+          .dword LAND
+          .dword _IF
+          .dword :+
+          ONLIT ::pStrings::mouse
+          ONLIT .sizeof(::pStrings::mouse)
+          .dword TYPE
+		      ONLIT ::pStrings::present
+          ONLIT .sizeof(::pStrings::present)
+          .dword TYPE
+:         CODE
           jmp   _sf_success
 .endproc
 
@@ -733,6 +811,55 @@ list:
 .proc     ps2k_command
           jsr   ps2k_write
           jsr   ps2k_read
+          cmp   #$00FA
+          rts
+.endproc
+
+; return carry set if data waiting at PS/2 mouse port, clear otherwise
+; destroys A
+.proc     ps2m_ready
+          sep   #SHORT_A
+          .a8
+          lda   f:PS2Mstat
+          ror
+          rep   #SHORT_A
+          .a16
+          rts
+.endproc
+
+; read data from PS/2 mouse port, blocking
+; returns byte in A
+.proc     ps2m_read
+          sep   #SHORT_A
+          .a8
+:         lda   f:PS2Mstat
+          ror
+          bcc   :-
+          lda   f:PS2Mio
+          rep   #SHORT_A
+          .a16
+          and   #$00FF
+          rts
+.endproc
+
+; write data byte in A to PS/2 mouse port
+.proc     ps2m_write
+          sep   #SHORT_A
+          .a8
+          sta   f:PS2Mio
+:         lda   f:PS2Mstat
+          bit   #$08
+          bne   :-
+          rep   #SHORT_A
+          .a16
+          rts
+.endproc
+
+.proc     ps2m_command
+          jsr   ps2m_write
+          lda   #10
+          jsr   _mswait
+          jsr   ps2m_read
           cmp   #$00FA
           rts
 .endproc
