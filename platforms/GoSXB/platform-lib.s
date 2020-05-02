@@ -185,7 +185,7 @@ wait:     phx                   ; note 8-bit mode!
           txa
           sta   f:VIA2+VIA::ORB ; strobe FT245RL WR low
           lda   VIA2+VIA::IRA   ; get output byte back (we don't really need it)
-	      xba
+          xba
           lda   #$00
           sta   f:VIA2+VIA::DDRA  ; switch DDR A back to input
           xba
@@ -223,7 +223,8 @@ wait:     phx                   ; note 8-bit mode!
           .i8
           lda   #$00
           sta   f:VIA2+VIA::DDRA  ; Ensure VIA2 DDR A is set up for input
-:         lda   f:VIA2+VIA::IRB   ; wait for FT245RL to have data & be ready
+:         wdm   $10               ; cause emulator to sleep if no data ready
+          lda   f:VIA2+VIA::IRB   ; wait for FT245RL to have data & be ready
           bit   #%00000010      ; b1 = TUSB_RXFB
           bne   :-
           lda   f:VIA2+VIA::IRB
@@ -261,10 +262,17 @@ wait:     phx                   ; note 8-bit mode!
           jmp   _sf_success
 .if include_fcode
 list:
+          .dword romfs
           .dword 0
 .endif
 
 .endproc
+
+.if include_fcode
+.proc romfs
+  PLATFORM_INCBIN "fcode/romfs.fc"
+.endproc
+.endif
 
 ; SXB really can't do this when ROM is banked out.  Maybe restart Forth instead?
 .proc     _sf_reset_all

@@ -13,5 +13,7 @@ romfs
 *.hex
 of816-neon.bin
 platforms/GoSXB/rom
+platforms/GoSXB/romfs
+platforms/GoSXB/romfs_files
 cov.yml
 
