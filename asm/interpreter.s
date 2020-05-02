@@ -495,9 +495,7 @@ docmp:    cmp   STK_TOP
 pushv2:   ldy   #$02
           lda   [WR],y            ; high word
           pha                     ; save for now
-          dey
-          dey
-          lda   [WR],y            ; low word
+          lda   [WR]              ; low word
           tay
           pla
           PUSHNEXT
@@ -516,13 +514,11 @@ pushv2:   ldy   #$02
           and   #$FF
           adc   #$00
           sta   WR+2
-          ldy   #$00
-          lda   [WR],y            ; low word
+          lda   [WR]              ; low word
           clc
           adc   STACKBASE+0,x
           sta   STACKBASE+0,x
-          iny
-          iny
+          ldy   #$02
           lda   [WR],y            ; low word
           adc   STACKBASE+0,x
           sta   STACKBASE+0,x
@@ -590,9 +586,7 @@ pushv2:   ldy   #$02
           sep   #SHORT_A
           pha                     ; bank byte on stack
           rep   #SHORT_A
-          dey
-          dey
-          lda   [WR],y            ; low word
+          lda   [WR]              ; low word
           pha                     ; address on stack
           rtl                     ; really a jump
 .endproc
@@ -614,9 +608,7 @@ pushv2:   ldy   #$02
           sep   #SHORT_A
           pha                     ; bank byte on stack
           rep   #SHORT_A
-          dey
-          dey
-          lda   [WR],y            ; low word
+          lda   [WR]              ; low word
           pha                     ; RTS address on stack
           jsr   _popay
           rts                     ; really a jump
@@ -744,9 +736,7 @@ done:     rts
           ldy   #$02
           lda   [WR],y
           pha
-          dey
-          dey
-          lda   [WR],y
+          lda   [WR]
           tay
           pla
           rts
@@ -757,10 +747,8 @@ done:     rts
           phy
           ldy   #$02
           sta   [WR],y
-          dey
-          dey
           pla
-          sta   [WR],y
+          sta   [WR]
           rts
 .endproc
 

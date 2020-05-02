@@ -1709,9 +1709,7 @@ hword     RPICK,"RPICK"
           ldy   #$02
           lda   [WR],y
           pha
-          dey
-          dey
-          lda   [WR],y
+          lda   [WR]
           tay
           pla
           NEXT
