@@ -4746,16 +4746,14 @@ eword
 
 ; ( c-addr u wid -- xt ) Search wordlist wid for word.
 hword     dWLSEARCH,"$WLSEARCH"
-          jsr   _popwr
+          jsr   _popwr            ; wid -> WR
           ldy   #$02
-          lda   [WR],y
-          sta   YR+2
-          dey
-          dey
-          lda   [WR],y
+          lda   [WR],y            ; LAST of wordlist at wid, high word
+          sta   YR+2              ; to YR
+          lda   [WR]              ; now low word
           sta   YR
-          jsr   _popxr
-          jsr   _popwr
+          jsr   _popxr            ; u -> XR
+          jsr   _popwr            ; c-addr -> WR
           jsr   _search_unsmudged
           PUSHNEXT
 eword
@@ -4767,14 +4765,14 @@ dword     SEARCH_WORDLIST,"SEARCH-WORDLIST"
 hword     SEARCH_WORDLIST,"SEARCH-WORDLIST"
 .endif
           ENTER
-          .dword dWLSEARCH
-          .dword DUP
-          .dword _IF
-          .dword notfound
-          .dword IMMEDQ
-          ONLIT 1
-          .dword LOR
-          .dword NEGATE
+          .dword dWLSEARCH        ; ( c-addr u wid -- 0 | xt )
+          .dword DUP              ; ( 0 | xt -- 0 0 | xt  xt )
+          .dword _IF              ; ( 0 0 | xt  xt - 0 | xt )
+          .dword notfound         ; ( 0 ) if taken
+          .dword IMMEDQ           ; ( xt -- xt f )
+          .dword ONE              ; ( xt f -- xt f 1 )
+          .dword LOR              ; ( ... xt 1/-1 )
+          .dword NEGATE           ; ( ... xt -1/1 )
 notfound: EXIT
 eword
 
@@ -6575,22 +6573,22 @@ dword     BACKSLASH,"\",F_IMMED
           .dword SOURCEID
           .dword _IF
           .dword term             ; faster
-          ONLIT 0                 ; something to drop...
+          .dword ZERO
 lp:       .dword DROP
           .dword INQ
           .dword _IF
-          .dword done
+          .dword done             ; whole enchilada has been eaten
           .dword GETCH
           .dword DUP
           ONLIT c_cr
           .dword EQUAL
           .dword _IFFALSE
-          .dword ddone            ; if true (= CR)
+          .dword ddone            ; taken if = CR
           .dword DUP
           ONLIT c_lf
           .dword EQUAL
           .dword _IF
-          .dword lp               ; if false (<> LF)
+          .dword lp               ; taken if <> LF
 ddone:    .dword DROP
 done:     EXIT
 term:     .dword NIN
@@ -6831,7 +6829,7 @@ eword
 dword     EVALUATE,"EVALUATE"
           ENTER
           .dword SAVEINPUT
-          .dword XNPtoR            ; throw it all on the return stack
+          .dword XNPtoR           ; throw it all on the return stack
           .dword PtoR             ; along with the count
           ONLIT -1
           .dword dSOURCEID        ; standard requires source-id to be -1 during EVALUATE

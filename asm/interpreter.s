@@ -915,17 +915,16 @@ good:     sec
           rts
 .endproc
 
-
 ; search dictionary for word at WR, length in XR, start of search (header) at YR
 ; if found, AY=XT and carry set, otherwise
 ; AY=0 and carry clear
-; preserves WR, XR, and YR
+; preserves WR, XR; YR points at the header of the last word considered
 .proc     _search
 olp:      lda   YR
           ora   YR+2
           beq   notfnd
           ldy   #$04                ; offset of length
-          lda   [YR],y              ; get name length
+          lda   [YR],y              ; get name length (we pull in two bytes)
           and   #$7F                ; mask in significant bits
           cmp   XR                  ; compare to supplied
           bne   snext               ; not the right word
@@ -939,12 +938,14 @@ olp:      lda   YR
           .a8
           ldx   XR                  ; get length to match
           ldy   #$05                ; offset of name
-clp:      lda   [WR]
-          jsr   _cupper8            ; upper case
-          cmp   [YR],y              ; compare char
+clp:      lda   [WR]                ; char in the word we are searching for
+          jsr   _cupper8            ; upper case it
+          cmp   [YR],y              ; compare to char in definition
           bne   xsnext              ; no match
-          iny                       ; move to next char
-          jsr   _incwr
+          iny                       ; move to next char of name in def
+          rep   #SHORT_A
+          jsr   _incwr              ; move to next char of word we are searching for
+          sep   #SHORT_A
           dex                       ; if X hit zero, matched it all
           bne   clp                 ; if it didn't, keep going
           rep   #SHORT_A            ; match!
@@ -963,6 +964,7 @@ clp:      lda   [WR]
           sec
           rts
 xsnext:   rep   #SHORT_A
+          .a16                      ; good habit
           plx
           pla
           sta   WR
