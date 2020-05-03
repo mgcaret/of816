@@ -1,0 +1,7 @@
+also romfs
+." ROMfs bootstrap by M.G." cr
+s" message.fs" ?romfs-run
+s" board.fs" ?romfs-run
+s" OF/base.fs" ?romfs-run
+previous
+

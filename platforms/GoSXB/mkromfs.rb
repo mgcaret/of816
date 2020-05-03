@@ -44,7 +44,11 @@ abort("Too many files (>15)") if ARGV.count > 255
 new_romfs
 
 ARGV.each do |name|
-  add_file_header(name, File.size(name))
+  if File.file?(name)
+    add_file_header(name, File.size(name))
+  else
+    puts "skipping #{name} - not a regular file"
+  end
 end
 
 @offset_map.each_pair do |name, offset|

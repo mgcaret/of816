@@ -6,7 +6,7 @@ if [ -r fcode/romfs.fs ]; then
 fi
 if [ -d romfs_files ]; then
   cd romfs_files
-  ../mkromfs.rb ../romfs *
+  ../mkromfs.rb ../romfs * */**
   cd ..
 fi
 ca65 -I ../../inc GoSXB.s -l GoSXB.lst
