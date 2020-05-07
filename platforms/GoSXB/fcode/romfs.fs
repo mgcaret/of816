@@ -142,7 +142,7 @@ external
 : ?romfs-run ( addr u -- ... )
   romfs-lookup
   dup if
-    over c@ 8 = if
+    over 1+ c@ 8 = if
       \ is probably FCode
       drop 1 1 byte-load
     else
