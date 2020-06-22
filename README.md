@@ -10,7 +10,12 @@ potential (and groundwork has been done) for it to become one.
 
 Among its many features are:
   * Mostly platform-independent.  OF816 can be ported easily to new systems.
-    * Ports currently exist for the W65C816SXB, Neon816, and the Apple IIgs.
+    * Ports currently exist for the following platforms:
+      * [WDC W65C816SXB](https://wdc65xx.com/Single-Board-Computers/w65c816sxb/).
+      * [Neon816](https://hackaday.io/project/164325-neon816).
+      * [Apple IIgs](https://en.wikipedia.org/wiki/Apple_IIGS).
+      * [C256 Foenix](https://c256foenix.com) via [this fork](https://github.com/aniou/of816).
+      * GoSXB - an unreleased emulator designed for OF816 development.
     * New ports require the implementation of a handful of routines.
     * Simple instantiation of one or more Forths in a system.
   * 32-bit cells.

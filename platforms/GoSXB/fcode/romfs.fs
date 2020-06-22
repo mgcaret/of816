@@ -140,6 +140,7 @@ external
 \ See if file exists, if so, eval as text or load as FCode depending on first
 \ byte
 : ?romfs-run ( addr u -- ... )
+  ." Trying " 2dup type cr
   romfs-lookup
   dup if
     over 1+ c@ 8 = if
