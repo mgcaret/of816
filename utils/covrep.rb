@@ -6,8 +6,9 @@ def usage
 Usage: #{$0} index-file|-
 
     Reads index file (- for stdin) and produces a test coverage
-    report.  The index file must have been merged with test
-    coverage data or all words will be reporteed as uncovered.
+    report for non-headerless words.  The index file must have
+    been merged with test coverage data or all words will be
+    reported as uncovered.
 EOF
     exit 1
 end
@@ -25,6 +26,7 @@ covered = []
 uncovered = []
 
 index.each_pair do |name, props|
+    next if props['headerless']
     if props["tests"] && props["tests"] > 0
         covered << name
     else

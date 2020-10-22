@@ -34,15 +34,15 @@ input.lines.each do |line|
         # nothing
     when /^\s*;\s+H:\s*(.+)/
         help << $1
-    when /^\s*dword(q?)\s+(.+)/
-        label, name, flags = CSV.parse_line($2)
+    when /^\s*([dh])word(q?)\s+(.+)/
+        label, name, flags = CSV.parse_line($3)
         name.upcase!
-        name.tr!("'", '"') if $1 == 'q'
-        output[name] ||= {"label" => label}
-        output[name].merge!({"help" => help}) unless help.empty?
+        name.tr!("'", '"') if $2 == 'q'
+        output[name] ||= {'label' => label, 'headerless' => ($1 == 'h')}
+        output[name].merge!({'help' => help}) unless help.empty?
         if flags
             fl = flags.split(/[|\+]/)
-            output[name].merge!({"flags" => fl}) unless fl.empty?
+            output[name].merge!({'flags' => fl}) unless fl.empty?
         end
         output[name].merge!({"tests" => coverage[name.downcase]}) if coverage[name.downcase]
     when /^\s*eword/

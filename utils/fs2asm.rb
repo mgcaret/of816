@@ -55,7 +55,9 @@
 #
 # Words may be changed to headerless and back to normal with HEADERS and HEADERLESS.
  
-# Unsupported features:
+# Unsupported items:
+#
+# Setting flags on words.
 #
 # RECURSE $HEX( TO and END-CODE
 # quotations: [: and ;]
@@ -476,6 +478,14 @@ def f_literal
   emit_line('', 'ONLIT', @stack.pop)
 end
 
+def f_2literal
+  abort('LITERAL outside of definition') unless @in_colon
+  n2 = @stack.pop
+  n1 = @stack.pop
+  emit_line('', 'ONLIT', n1)
+  emit_line('', 'ONLIT', n2)  
+end
+
 def f_postpone
   abort('POSTPONE outside of definition') unless @in_colon
   w = parse_word.upcase
@@ -600,6 +610,7 @@ end
   'CONTROL' => method(:f_control),
   '[COMPILE]' => method(:f_ccompile),
   'LITERAL' => method(:f_literal),
+  '2LITERAL' => method(:f_2literal),
   'POSTPONE' => method(:f_postpone),
   'COMPILE' => method(:f_compile),
   'H#' => method(:f_hnum),

@@ -7,7 +7,8 @@ def usage
 Usage: #{$0} index-file|- [dictionary-title]
 
     reads index file (- for stdin) and produces markdown-
-    formatted output for documentation purposes.
+    formatted output documenting non-headerless words for the
+    indexed dictionary.
 
     if dictionary-title is specified, it is used as the top
     level heading instead of the file name.
@@ -33,6 +34,7 @@ puts
 
 index.keys.sort.each do |word|
     word_info = index[word]
+    next if word_info['headerless']
     cword = word.gsub(/^(#+)$/) { "\\#{$1}" } # let '#' display properly
     cword.gsub!(/^([<>])/) { "\\#{$1}" }
     puts "## #{cword}"
