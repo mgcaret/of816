@@ -74,3 +74,10 @@ Uncovered words: 110
 Coverage: 72%
 ```
 
+## fs2asm.rb
+
+Convert Forth source code to assembly language equivalent.
+
+Please read the comments at the beginning of the program for usage.
+
+

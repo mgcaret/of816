@@ -9,7 +9,7 @@ Usage: #{$0} dictionary-source-file coverage-file
     reads dictionary-source-file and produces YAML output
     with all visible words and their help text, flags, etc.
 
-    if coverage-file is specified, merge coverage data
+    if coverage-file is specified, merge test coverage data
 EOF
     exit 1
 end
@@ -35,10 +35,10 @@ input.lines.each do |line|
     when /^\s*;\s+H:\s*(.+)/
         help << $1
     when /^\s*dword(q?)\s+(.+)/
-        _label, name, flags = CSV.parse_line($2)
+        label, name, flags = CSV.parse_line($2)
         name.upcase!
         name.tr!("'", '"') if $1 == 'q'
-        output[name] ||= {}
+        output[name] ||= {"label" => label}
         output[name].merge!({"help" => help}) unless help.empty?
         if flags
             fl = flags.split(/[|\+]/)

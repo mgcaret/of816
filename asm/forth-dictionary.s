@@ -5821,13 +5821,13 @@ eword
 csmm:     jmp   _CONTROL_MM::code
 .endproc
 
-; H: ( -- ) alter execution semantics of most recently-created definition to
+; H: ( -- ) alter execution semantics of most recently-CREATEd definition to
 ; H: perform the execution semantics of the code following DOES>.
 dword     DOES,"DOES>",F_IMMED|F_CONLY
           ENTER
           .dword SEMIS
           .dword _COMP_LIT
-          jsl f:_does               ; better be 4 bytes!
+          jsl f:_does               ; better be 4 bytes! (hint: it is)
           .dword _COMP_LIT
           ENTER                     ; not really, now
           .dword _COMP_LIT

@@ -328,6 +328,16 @@ NUM_SYSVARS .set 0
   .charmap $27,$27 ; unmap
 .endmacro
 
+.macro hwordq dname,fname,flags
+  .charmap $27,$22 ; temporarily map single quote to double quote
+  .ifblank flags
+    hword dname,fname
+  .else
+    hword dname,fname,flags
+  .endif
+  .charmap $27,$27 ; unmap
+.endmacro
+
 .macro dchain dname
   .undefine l_dword
   .define l_dword dname
