@@ -1303,8 +1303,8 @@ dword     COMMA,","
 eword
 
 ; H: ( xt -- ) Compile xt into the dictionary.
-; immediacy called out in IEEE 1275-1994
-dword     COMPILECOMMA,"COMPILE,",F_IMMED
+; immediacy called out in IEEE 1275-1994, but that conflicts with standards and usage
+dword     COMPILECOMMA,"COMPILE,"
           bra   COMMA::code
 eword
 
@@ -6509,7 +6509,6 @@ dword     WORDLIST,"WORDLIST"
           ENTER
           ONLIT H_FORTH           ; root of all dictionaries
           .dword dCREATE_WL
-          .dword 0
           EXIT
 eword
 
