@@ -3,5 +3,6 @@ also romfs
 s" message.fs" ?romfs-run
 s" board.fs" ?romfs-run
 s" of.fs" ?romfs-run
-previous
+
+forth only definitions
 
