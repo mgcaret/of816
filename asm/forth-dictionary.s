@@ -5911,11 +5911,20 @@ dword     dTWOVALUE,"$2VALUE"
 eword
 
 ; H: ( n [name< >] -- ) Create a definition that pushes n on the stack,
-; H:  n can be changed with TO.
+; H: n can be changed with TO.
 dword     VALUE,"VALUE"
           ENTER
           .dword PARSE_WORD
           .dword dVALUE
+          EXIT
+eword
+
+; H: ( n1 n2 [name< >] -- ) Create a definition that pushes n1 and n2 on the stack,
+; H: n1 and n2 can be changed with TO.
+dword     TWOVALUE,"2VALUE"
+          ENTER
+          .dword PARSE_WORD
+          .dword dTWOVALUE
           EXIT
 eword
 
@@ -6002,10 +6011,24 @@ dword     ALIAS,"ALIAS"
           NEXT
 eword
 
-; ( n xt -- ) change the first cell of the body of xt to n
-hword     _TO,"_TO"
+; H: ( n xt | n1 n2 xt -- ) change the first cell or two of the body of xt
+; H: if xt is a 2VALUE, change the first two cells of the body
+; H: if xt is any other created word, change the first cell of the body
+dword     _TO,"(TO)"
           ENTER
+          .dword DUP
+          .dword INCR
+          .dword FETCH
+          ONLIT (_push2value << 8) | opJSL
+          .dword EQUAL
+          .dword _IF
+          .dword just1
           .dword rBODY
+          .dword TUCK
+          .dword STORE
+          .dword CELLPLUS
+          .dword _SKIP
+just1:    .dword rBODY
           .dword STORE
           EXIT
 eword
