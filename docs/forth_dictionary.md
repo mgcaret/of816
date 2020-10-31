@@ -1,6 +1,6 @@
 # Forth Dictionary
 
-Updated: 2020-01-22 17:56:07 -0800
+Updated: 2020-10-31 15:02:22 -0700
 
 ## !
 
@@ -139,6 +139,12 @@ _( addr u xt -- )_ Create a DEFER definition for string with xt as its initial b
 ## (SEE)
 
 _( xt -- )_ Attempt to decompile the word at xt.
+
+## (TO)
+
+_( n xt | n1 n2 xt -- )_ change the first cell or two of the body of xt
+if xt is a 2VALUE, change the first two cells of the body
+if xt is any other created word, change the first cell of the body
 
 ## (U.)
 
@@ -357,6 +363,10 @@ _( x1 x2 -- )_
 
 _( x1 x2 -- x1 x2 x1 x2 )_
 
+## 2LITERAL
+
+- Immediate.
+
 ## 2OVER
 
 _( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2 )_
@@ -380,6 +390,11 @@ _( n1 n2 -- d1 d2 )_ Convert two numbers to double-numbers.
 ## 2SWAP
 
 _( x1 x2 x3 x4 -- x3 x4 x1 x2 )_
+
+## 2VALUE
+
+_( n1 n2 [name< >] -- )_ Create a definition that pushes n1 and n2 on the stack,
+n1 and n2 can be changed with TO.
 
 ## 3
 
@@ -641,7 +656,7 @@ _( -- <bel> )_
 
 ## BETWEEN
 
-_( n1|u1 n2|u2 n3|u3 -- f )_ f =  true if n2|u2 <= n1|u1 <= n3|u3, false otherwise
+_( n1 n2 n3 -- f )_ f =  true if n2<=n1<=n3, false otherwise
 
 ## BINARY
 
@@ -791,8 +806,6 @@ Better to use POSTPONE in most cases.
 
 ## COMPILE,
 
-- Immediate.
-
 _( xt -- )_ Compile xt into the dictionary.
 
 ## CONSTANT
@@ -801,7 +814,8 @@ _( n [name< >] -- )_ alias of VALUE, OF816 doesn't have true constants
 
 ## CONTEXT
 
-_( -- wid )_ Return first wordlist in search order.
+_( -- addr )_ Return address of cell with first wid in the search order.
+if search order is empty, sets the search order to contain the CURRENT word list.
 
 ## CONTROL
 
@@ -902,7 +916,7 @@ Execution: _( limit start -- )_ Start DO loop.
 - Immediate.
 - Compile-only.
 
-_( -- )_ alter execution semantics of most recently-created definition to
+_( -- )_ alter execution semantics of most recently-CREATEd definition to
 perform the execution semantics of the code following DOES>.
 
 ## DROP
