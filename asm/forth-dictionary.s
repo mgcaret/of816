@@ -36,7 +36,7 @@ dword     SET_ORDER,"SET-ORDER"
           .dword _IF
           .dword empty
           .dword DUP              ; ( ... widn ... wid1 n n' )
-          ONLIT 0                 ; ( ... widn ... wid1 n n' 1 )
+          ONLIT 0                 ; ( ... widn ... wid1 n n' 0 )
           .dword SLT              ; ( ... widn ... wid1 n f )
           .dword _IF              ; ( ... widn ... wid1 n )
           .dword dolist
@@ -128,26 +128,31 @@ hword     dCURRENT,"$CURRENT"
 eword
 
 .if max_search_order > 0
-; H: ( -- wid ) Return first wordlist in search order.
+; H: ( -- addr ) Return address of cell with first wid in the search order.
+; H: if search order is empty, sets the search order to contain the CURRENT word list.
 dword     CONTEXT,"CONTEXT"
 .else
 hword     CONTEXT,"CONTEXT"
 .endif
-          ENTER
 .if max_search_order > 0
-          .dword dORDER
-          .dword FETCH
-          .dword QDUP
-          .dword _IF
-          .dword empty
-          .dword DECR
-          .dword WLNUM
-          .dword FETCH
+          ENTER
+          .dword dORDER           ; ( - addr )
+          .dword DUP              ; ( .. addr addr )
+          .dword FETCH            ; ( .. addr u )
+          .dword SCELLMULT        ; ( .. addr u' )
+          .dword QDUP             ; ( .. addr u' u' | addr u' )
+          .dword _IF              ; ( .. addr u' | addr  )
+          .dword empty            ; false branch ( .. addr )
+          .dword PLUS             ; ( addr u' - addr' )
+          EXIT
+empty:    .dword CELLPLUS         ; ( addr - addr' )
+          .dword GET_CURRENT      ; ( .. addr' wid )
+          .dword TOP_OF_ORDER     ; ( .. addr' )
+          EXIT
+.else
+          .dword dCURRENT
           EXIT
 .endif
-empty:    .dword dCURRENT
-          .dword FETCH
-          EXIT
 eword
 
 .if max_search_order > 0
@@ -254,6 +259,7 @@ eword
 dword     SEAL,"SEAL"
           ENTER
           .dword CONTEXT
+          .dword FETCH
           .dword ONE
           .dword SET_ORDER
           EXIT
@@ -305,6 +311,7 @@ eword
 dword     DEFINITIONS,"DEFINITIONS"
           ENTER
           .dword CONTEXT
+          .dword FETCH
           .dword SET_CURRENT
           EXIT
 eword
@@ -5625,6 +5632,7 @@ eword
 dword     WORDS,"WORDS"
           ENTER
           .dword CONTEXT
+          .dword FETCH
           .dword FETCH
 lp:       .dword DUP              ; ( h -- h h )
           .dword _IF              ; ( h h -- h ) 
