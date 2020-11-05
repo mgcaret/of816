@@ -31,7 +31,7 @@ t{ 1 >r@ r> -> 1 1 }t
 \ Dictionary management
 t{ s" dm1" $create -> }t
 t{ last ' dm1 >link = -> true }t
-t{ ' dm1 >name s" DM1" s= -> true }t
+t{ ' dm1 >name s" dm1" s= -> true }t
 
 \ Temporary string buffer & allocated strings
 \ and $2value for the heck of it
