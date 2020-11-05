@@ -88,7 +88,7 @@ nextbank: stz   DHERE             ; move dictionary pointer to next bank
           bcs   done
           lda   [WR],y
           and   #$7F              ; normalize
-          jsr   _cupper           ; and convert to upper case
+          ; jsr   _cupper           ; and convert to upper case
           jsr   _cbytea
           iny
           bne   :-

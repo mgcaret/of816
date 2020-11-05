@@ -913,7 +913,7 @@ olp:      lda   YR
           beq   notfnd
           ldy   #$04                ; offset of length
           lda   [YR],y              ; get name length (we pull in two bytes)
-          and   #$7F                ; mask in significant bits
+          and   #NAMEMSK            ; mask in significant bits
           cmp   XR                  ; compare to supplied
           bne   snext               ; not the right word
           ; its the right length, compare name
@@ -928,8 +928,12 @@ olp:      lda   YR
           ldy   #$05                ; offset of name
 clp:      lda   [WR]                ; char in the word we are searching for
           jsr   _cupper8            ; upper case it
-          cmp   [YR],y              ; compare to char in definition
+          pha                       ; save on stack
+          lda   [YR],y              ; compare to char in definition
+          jsr   _cupper8            ; upper case it, too
+          cmp   1,s                 ; compare to saved
           bne   xsnext              ; no match
+          pla                       ; drop char saved on stack
           iny                       ; move to next char of name in def
           rep   #SHORT_A
           jsr   _incwr              ; move to next char of word we are searching for
@@ -951,7 +955,8 @@ clp:      lda   [WR]                ; char in the word we are searching for
           adc   #$00                ; AY=XT
           sec
           rts
-xsnext:   rep   #SHORT_A
+xsnext:   pla                       ; drop char saved on stack
+          rep   #SHORT_A
           .a16                      ; good habit
           plx
           pla
