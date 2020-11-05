@@ -367,7 +367,7 @@ NUM_SYSVARS .set 0
 .endmacro
 
 .macro dend
-  .out .sprintf("End of dictiomnary: %s",c_dict)
+  .out .sprintf("End of dictionary: %s",c_dict)
   .ident(.sprintf("LAST_%s",c_dict)) = l_dword
   .undef c_dict
   .undef l_dword
