@@ -230,7 +230,9 @@ NUM_SYSVARS .set 0
 ; 1     Flags
 ;       b7 - Immediate
 ;       b6 - Compile-only
-;       b0 - Smudge
+;       b5 - Protected
+;       b4 - Starts temporary definition in interpretation state
+;       b3 - Smudged (not findable in dictionary searches)
 ; Code  (scope <name>)
 
 .define F_IMMED %10000000         ; immediate
