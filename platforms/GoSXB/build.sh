@@ -5,6 +5,8 @@ if [ -r fcode/romfs.fs ]; then
   toke fcode/romfs.fs
 fi
 if [ -d romfs_files ]; then
+  ../../ofw/build.sh
+  cp ../../ofw/out/of-blob.fs romfs_files/of.fs
   cd romfs_files
   ../mkromfs.rb ../romfs * */**
   cd ..

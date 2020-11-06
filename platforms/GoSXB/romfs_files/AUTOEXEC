@@ -1,8 +1,10 @@
-also romfs
+also romfs also forth definitions
+\ : #include ascii < parse 2drop ascii > parse 2dup type cr included ;
+: #include parse-word swap 1+ swap 2- dup 0 u<= if 2drop exit then
+  2dup type cr included ;
 ." ROMfs bootstrap by M.G." cr
 s" message.fs" ?romfs-run
 s" board.fs" ?romfs-run
 s" of.fs" ?romfs-run
-
 forth only definitions
 
