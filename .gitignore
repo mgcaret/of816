@@ -16,6 +16,6 @@ platforms/GoSXB/rom
 platforms/GoSXB/romfs
 platforms/GoSXB/romfs_files/OF
 cov.yml
-of/out
+ofw/out
 platforms/GoSXB/romfs_files/bench
 platforms/GoSXB/romfs_files/of.fs
