@@ -44,7 +44,7 @@ true value encode-first?
 \ : prune ( name len -- )  last (prune) ;
 \ OF816: just smudge it, hopefully properties don't change that often
 : prune ( name len -- ) 
-  get-current search-wordlist 0= if ." no prune!" cr exit then
+  get-current search-wordlist 0= if exit then
   dup c@ (f_prot) (f_smudg) or and if
     drop \ protected or smudged already
   else
