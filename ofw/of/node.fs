@@ -319,6 +319,10 @@ defer find-node
 
 \ fixed for OF816
 : (.print-alias) ( lfa -- )
+    \ Don't print smudged alias
+    dup lfa>xt c@ (f_smudg) and IF
+      drop EXIT
+    THEN
     dup lfa>name
     \ Don't print name property
     2dup s" name" string=ci IF 2drop drop

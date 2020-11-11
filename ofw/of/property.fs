@@ -43,11 +43,12 @@ true value encode-first?
 \  >r @ r> ! EXIT THEN @ REPEAT 2drop ELSE r> drop THEN ;
 \ : prune ( name len -- )  last (prune) ;
 \ OF816: just smudge it, hopefully properties don't change that often
-: prune ( name len -- ) context @ search-wordlist 0= if exit then
-  dup c@ 20 and if
-    drop \ protected
+: prune ( name len -- ) 
+  get-current search-wordlist 0= if ." no prune!" cr exit then
+  dup c@ (f_prot) (f_smudg) or and if
+    drop \ protected or smudged already
   else
-    dup c@ 8 or swap c!
+    dup c@ (f_smudg) or swap c!
   then
 ;
 
@@ -136,6 +137,10 @@ true value encode-first?
 ;
 
 : .property ( lfa -- )
+  \ Don't print smudged alias
+  dup lfa>xt c@ (f_smudg) and IF
+    drop EXIT
+  THEN
   dup cr indent @ 0 ?do space loop
   lfa>name 2dup type nip
   indent-prop swap -

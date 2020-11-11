@@ -8,6 +8,15 @@ true value of-verbose?
 
 db" OF base"
 
+\ OF816 constants, these should follow macros.include
+binary
+10000000 constant (f_immed)
+01000000 constant (f_conly)
+00100000 constant (f_prot)
+00010000 constant (f_tempd)
+00001000 constant (f_smudg)
+hex
+
 \ Reverse engineer the leading JSLs for these words
 
 : (function) ;
@@ -24,6 +33,7 @@ alias (alias) (function)
 \ ALIAS will have 5C in the low byte, and we maybe need to fix that...
 \ in SLOF most of these are only used by the debug.fs
 \ except the ones needed to support instance values
+\ so most of these should be removed since no plans to implement debug.fs
 ' (function) 1+ @        \ ( <colon> )
 ' (function) 1+ /n + @ \ ( ... <semicolon> )
 ' (defer) 1+ @           \ ( ... <defer> )
