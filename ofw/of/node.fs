@@ -317,15 +317,17 @@ defer find-node
 : .alias ( alias-name len -- )
     find-alias dup IF type ELSE ." no alias available" THEN ;
 
+\ fixed for OF816
 : (.print-alias) ( lfa -- )
-    dup >name
+    dup lfa>name
     \ Don't print name property
     2dup s" name" string=ci IF 2drop drop
-    ELSE cr type space ." : " execute type
+    ELSE cr type space ." : " lfa>xt execute type
     THEN ;
 
+\ fixed for OF816
 : (.list-alias) ( phandle -- )
-    node>properties @ cell+ @ BEGIN dup WHILE dup (.print-alias) @ REPEAT drop ;
+    node>properties @ @ BEGIN dup WHILE dup (.print-alias) @ REPEAT drop ;
 
 : list-alias ( -- )
     s" /aliases" find-node dup IF (.list-alias) THEN ;
