@@ -4,7 +4,7 @@ also romfs also forth definitions
   2dup type cr included ;
 ." ROMfs bootstrap by M.G." cr
 s" message.fs" ?romfs-run
-s" board.fs" ?romfs-run
 s" of.fs" ?romfs-run
+s" board.fs" ?romfs-run
 forth only definitions
 

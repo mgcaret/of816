@@ -60,18 +60,28 @@ constant <colon>
 
 : 2variable create 2 cells allot ;
 
+/n constant cell
+
 : cell- /n - ;
 
 \ Dictionary helpers 
 : lfa>name cell+ dup 1+ swap c@ 7f and ;
 : lfa>xt lfa>name + ;
 : xt>lfa begin 1- dup c@ 80 and until cell- ;
-
+alias xt>name >name
 
 : 4drop 2drop 2drop ;
 
+: isdigit ( char -- true | false )
+   30 39 between
+;
+
+: //  dup >r 1- + r> / ; \ division, round up
+
 : c@+ ( adr -- c adr' )  dup c@ swap char+ ;
+: 2c@ ( adr -- c1 c2 )  c@+ c@ ;
 : 4c@ ( adr -- c1 c2 c3 c4 )  c@+ c@+ c@+ c@ ;
+: 8c@ ( adr -- c1 c2 c3 c4 c5 c6 c7 c8 )  c@+ c@+ c@+ c@+ c@+ c@+ c@+ c@ ;
 
 \ clever hack
 defer voc-find
@@ -115,5 +125,78 @@ CREATE $catpad 400 allot
 : strdup ( str len -- dupstr len ) here over allot swap 2dup 2>r move 2r> ;
 
 : findchar left-parse-string nip nip swap if true else drop false then ;
+
+: find-substr ( basestr-ptr basestr-len substr-ptr substr-len -- pos )
+  \ if substr-len == 0 ?
+  dup 0 = IF
+    \ return 0
+    2drop 2drop 0 exit THEN
+  \ if substr-len <= basestr-len ?
+  dup 3 pick <= IF
+    \ run J from 0 to "basestr-len"-"substr-len" and I from 0 to "substr-len"-1
+    2 pick over - 1+ 0 DO dup 0 DO
+      \ substr-ptr[i] == basestr-ptr[j+i] ?
+      over i + c@ 4 pick j + i + c@ = IF
+        \ (I+1) == substr-len ?
+        dup i 1+ = IF
+          \ return J
+          2drop 2drop j unloop unloop exit THEN
+      ELSE leave THEN
+    LOOP LOOP
+  THEN
+  \ if there is no match then exit with basestr-len as return value
+  2drop nip
+;
+
+: find-isubstr ( basestr-ptr basestr-len substr-ptr substr-len -- pos )
+  \ if substr-len == 0 ?
+  dup 0 = IF
+    \ return 0
+    2drop 2drop 0 exit THEN
+  \ if substr-len <= basestr-len ?
+  dup 3 pick <= IF
+    \ run J from 0 to "basestr-len"-"substr-len" and I from 0 to "substr-len"-1
+    2 pick over - 1+ 0 DO dup 0 DO
+      \ substr-ptr[i] == basestr-ptr[j+i] ?
+      over i + c@ lcc 4 pick j + i + c@ lcc = IF
+        \ (I+1) == substr-len ?
+        dup i 1+ = IF
+          \ return J
+          2drop 2drop j unloop unloop exit THEN
+      ELSE leave THEN
+    LOOP LOOP
+  THEN
+  \ if there is no match then exit with basestr-len as return value
+  2drop nip
+;
+
+\ The following get the SLOF file system drivers to quick & dirty compile
+\ no guarantees they work...
+
+: #split ( x #bits -- lo hi )  2dup rshift dup >r swap lshift xor r> ;
+
+\ Fake xlspit for 32-bit Forth
+: xlsplit 0 ;
+
+\ bxjoin but fail if high 4 bytes are not 0
+: bxjoin bljoin bljoin abort" cannot bxjoin" bljoin ;
+
+\ lxjoin but fail if high cell is not 0
+: lxjoin abort" cannot lxjoin" ;
+
+: x! 0 swap 2! ;
+: x@ 2@ swap abort" x@ high cell not 0" ;
+
+\ of816 is always little-endian
+alias l@-le l@
+alias w@-le w@
+alias l!-le l!
+alias w!-le w!
+alias x@-le x@
+
+\ TPM ROFLOL
+: tpm-gpt-set-lba1 ;
+: tpm-gpt-add-entry ;
+
 
 #include <of/preprocessor.fs>

@@ -28,6 +28,7 @@ finish-device
 new-device
 #include "packages/deblocker.fs"
 finish-device
+# endif
 
 new-device
 #include "packages/disk-label.fs"
@@ -37,6 +38,7 @@ new-device
 #include "packages/fat-files.fs"
 finish-device
 
+#if 0
 new-device
 #include "packages/rom-files.fs"
 finish-device
