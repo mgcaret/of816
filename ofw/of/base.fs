@@ -195,8 +195,8 @@ alias w!-le w!
 alias x@-le x@
 
 \ TPM ROFLOL
-: tpm-gpt-set-lba1 ;
-: tpm-gpt-add-entry ;
+: tpm-gpt-set-lba1 2drop ;
+: tpm-gpt-add-entry 2drop ;
 
 
 #include <of/preprocessor.fs>
