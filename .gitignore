@@ -19,3 +19,5 @@ cov.yml
 ofw/out
 platforms/GoSXB/romfs_files/bench
 platforms/GoSXB/romfs_files/of.fs
+compactflash.img
+
