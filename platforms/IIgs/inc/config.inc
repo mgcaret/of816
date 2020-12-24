@@ -1,17 +1,15 @@
+; Apple IIgs Configuration File
+
+; This platform uses it...
 PLATFORM_INCLUDE "platform-config.inc"
 
 ; *** options ***
 
 ; Set this to a nonzero value if any code will run out of bank 0.  If not set, then
 ; numeric literals <= $0000FFFF will use the "fast literal" mode, getting on the
-; stack faster and using less memory.  This should be set in the platform-specific
-; config, and will only be set here if the platform config does not set it.
-.if .defined(platform_fast_lits)
-  .out "platform_fast_lits set by platform config or cmdline"
-  .define no_fast_lits 0
-.else
-  .define no_fast_lits 1
-.endif
+; stack faster and using less memory.
+; We run out of bank 0 on the IIgs, so this is set
+.define no_fast_lits 1
 
 ; Set this to the size of the terminal input buffer.  This will be dynamically allocated
 ; when the system starts.  If command line history is enabled, several of these may be

@@ -1,4 +1,4 @@
-; Should we inclide the romloader in $SXB-ROMLDR
+; Should we include the romloader in $SXB-ROMLDR
 .define romloader_as_word 0
 
 ; Should we instead put it in the FCode to install at startup?
