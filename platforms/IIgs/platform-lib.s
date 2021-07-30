@@ -2,7 +2,7 @@
 
 cpu_clk   = 2800000 ; nominally
 
-PLATFORM_INCLUDE "platform-include.inc"
+.include "platform-include.inc"
 
 .proc     _scrn_tab
           .addr $400

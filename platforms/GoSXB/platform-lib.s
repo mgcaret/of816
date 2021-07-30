@@ -270,7 +270,7 @@ list:
 
 .if include_fcode
 .proc romfs
-  PLATFORM_INCBIN "fcode/romfs.fc"
+  .incbin "fcode/romfs.fc"
 .endproc
 .endif
 

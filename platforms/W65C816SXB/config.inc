@@ -1,7 +1,7 @@
 ; Configuration for W65C816SXB Port
 
 ; the W65C816SXB port uses this
-PLATFORM_INCLUDE "platform-config.inc"
+.include "platform-config.inc"
 
 ; *** options ***
 

@@ -278,7 +278,7 @@ list:
   .endif
           .dword 0
   .if romloader_at_init
-romldr:   PLATFORM_INCBIN "fcode/romloader.fc"
+romldr:   .incbin"fcode/romloader.fc"
   .endif
 .endif
 

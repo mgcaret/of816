@@ -1,15 +1,14 @@
-; Apple IIgs Configuration File
+; Config file for Neon816 port
 
-; This platform uses it...
-PLATFORM_INCLUDE "platform-config.inc"
+;.include "platform-config.inc"
 
 ; *** options ***
 
 ; Set this to a nonzero value if any code will run out of bank 0.  If not set, then
 ; numeric literals <= $0000FFFF will use the "fast literal" mode, getting on the
 ; stack faster and using less memory.
-; We run out of bank 0 on the IIgs, so this is set
-.define no_fast_lits 1
+; Fast literals are enabled on the Neon816
+.define no_fast_lits 0
 
 ; Set this to the size of the terminal input buffer.  This will be dynamically allocated
 ; when the system starts.  If command line history is enabled, several of these may be

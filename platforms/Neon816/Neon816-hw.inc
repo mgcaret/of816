@@ -7,8 +7,8 @@
 ; -- 01: Bank
 ; - 09 FDC
 ; 10-1F Internal Bus Bridge
-; 20-27 Flash ROM
-; 28-3F Reserved for Flash
+; 20-21 Flash ROM
+; 22-2F Reserved for Flash
 ; 30-3F Reserved for Expansion Flash
 ; 40-47 Video RAM
 ; 48-7F Reserved for VRAM

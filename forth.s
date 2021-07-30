@@ -16,7 +16,9 @@
 .include "asm/compiler.s"         ; Compiler helpers
 .include "asm/mathlib.s"          ; Math library
 .include "asm/memmgr.s"           ; Memory (heap) management library
-PLATFORM_INCLUDE "platform-lib.s" ; Platform library
+.if .strlen(PLATFORM) > 0
+  .include "platform-lib.s" ; Platform library
+.endif
 .include "asm/env-dictionary.s"   ; Environmental queries dictionary
 .include "asm/forth-dictionary.s" ; Forth built-in dictionary
 

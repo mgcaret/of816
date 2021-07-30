@@ -1,21 +1,6 @@
 ; Macro library for OF816.  Contains macros for hand-compiled Forth code and common
 ; ops used within primitives.   Also contains macros for building dictionaries.
 
-; Config/build macros
-
-.macro PLATFORM_INCLUDE file
-  .if .strlen(PLATFORM) > 0
-    .out .sprintf("Including text platforms/%s/%s", PLATFORM, file)
-    .include .sprintf("platforms/%s/%s", PLATFORM, file)
-  .endif
-.endmacro
-
-.macro PLATFORM_INCBIN file
-  .if .strlen(PLATFORM) > 0
-    .out .sprintf("Including binary platforms/%s/%s", PLATFORM, file)
-    .incbin .sprintf("platforms/%s/%s", PLATFORM, file)
-  .endif
-.endmacro
 
 ; General macros & defs
 .define SHORT_A %00100000
