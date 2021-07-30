@@ -15,10 +15,10 @@
 ; Tunables
 SPLIT_THRESH = 8                  ; if block can be split and remainder have this many
                                   ; bytes + 6 bytes header, split it
-MIN_BRK     = $400                ; minimum break between DHERE and HIMEM in pages
+MIN_BRK     = $400                ; minimum break between DHERE and HIMEM in pages, 16 bit only
 
 ; Constants
-HDR_SIZE    = 6
+HDR_SIZE    = 6                   ; 16 bits only
 
 ; Allocate XR bytes, return carry set+pointer in AY if successful
 ; or carry clear+AY=0 if unsuccessful
@@ -54,9 +54,9 @@ grow:     jsr   _grow_heap
           adc   #.loword(HDR_SIZE)
           tay
           lda   WR+2
-          clc
-          adc   #.hiword(HDR_SIZE)
-          sec
+          bcc   :+
+          inc   a
+:         sec
           rts
 .endproc
 
@@ -86,10 +86,9 @@ grow:     jsr   _grow_heap
           clc
           adc   #.loword(HDR_SIZE)
           sta   YR
-          lda   YR+2
-          adc   #.hiword(HDR_SIZE)
-          sta   YR+2              ; ok now YR points to child block
-          ldy   #$04              ; first mark child block free
+          bcc   :+
+          inc   YR+2              ; ok now YR points to child block
+:         ldy   #$04              ; first mark child block free
           lda   #$0000            ; by zeroing its flags
           sta   [YR],y
           dey                     
@@ -284,16 +283,16 @@ none:     pla                     ; drop the block pointer
           sec
           sbc   #.loword(HDR_SIZE)
           sta   YR
-          lda   YR+2
-          sbc   #.hiword(HDR_SIZE)
-          sta   YR+2
-          lda   DHERE           ; now compare to DHERE+minimum break
+          bcs   :+
+          dec   YR+2
+:         lda   DHERE           ; now compare to DHERE+minimum break
           clc
           adc   #.loword(MIN_BRK)
           tay
           lda   DHERE+2
-          adc   #.hiword(MIN_BRK)
-          cmp   YR+2
+          bcc   :+
+          inc   a
+:         cmp   YR+2
           bne   :+
           tya
           cmp   YR

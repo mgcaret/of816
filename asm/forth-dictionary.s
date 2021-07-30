@@ -4135,13 +4135,12 @@ cont:     sta   [WR]
           sta   [WR],y
           lda   WR
           clc
-          adc   #.loword(3)
+          adc   #$0003            ; skip 3 more since we are dealing with words
           sta   WR
-          lda   WR+2
-          adc   #.hiword(3)
-          sta   WR+2
+          bcc   :+
+          inc   WR+2
           clc
-          rtl
+:         rtl
 eword
 
 ; H: ( addr len -- ) Perform LWFLIP on the cells in memory.
@@ -4708,8 +4707,9 @@ done:     tya
           adc   XR+2
           tay
           lda   WR+2
-          adc   #$0000
-          jsr   _pushay
+          bcc   :+
+          inc   a                   ; handle carry
+:         jsr   _pushay
           lda   XR                  ; len of str 2 = XR-(XR+2)
           sec
           sbc   XR+2
@@ -4899,11 +4899,12 @@ dword     rBODY,">BODY"
           jmp   _throway
 :         lda   WR
           clc
-          adc   #$05
+          adc   #$0005
           tay
           lda   WR+2
-          adc   #$00
-          PUSHNEXT
+          bcc   :+
+          inc   a
+:         PUSHNEXT
 eword
 
 ; H: ( a-addr -- xt ) return xt of word with body at a-addr, if unable throw exc. -31
@@ -7057,7 +7058,9 @@ lp:       ONLIT 0                 ; clear #LINE since we are at input prompt
 eword
 __doquit  = QUIT::code
 
-PLATFORM_INCLUDE "platform-words.s" ; Platform additional dictionary words
+.if .strlen(PLATFORM) > 0
+  .include "platform-words.s" ; Platform additional dictionary words
+.endif
 
 ; Leave these toward the top
 

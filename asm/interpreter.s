@@ -56,31 +56,68 @@
 .endif
 
 .proc     _next
-          inc   IP                ; inline fetch
-          bne   :+
+.if 1
+          ldy   #$0003            ; (3)/3
+          lda   [IP],y            ; (7)/2
+.if !no_fast_lits
+          bne   :++
+          jsr   _stackdecr
+          sta   STACKBASE+2,x
+          dey
+          dey
+          lda   [IP],y
+          sta   STACKBASE+0,x
+          lda   IP
+          clc
+          adc   #$0004
+          sta   IP
+          bcc  :+
           inc   IP+2
-:         lda   [IP]              ; low word
-          tay
-          inc   IP
-          bne   :+
-          inc   IP+2
-:         inc   IP
-          bne   :+
-          inc   IP+2
-:         lda   [IP]              ; high word
-          inc   IP
-          bne   :+
-          inc   IP+2
+:         bra   _next
+:
+.endif
+          xba                     ; (3)/1 xxHH -> HHxx
+          pha                     ; (4)/1 stack ...HHxx
+          phb                     ; (3)/1 stack ...HHxxxx
+          dey                     ; (2)/1
+          dey                     ; (2)/1
+          lda   [IP],y            ; (7)/2 MMLL
+          sta   1,s               ; (5)/2 stack ...HHMMLL
+          lda   IP                ; (4)/2
+          clc                     ; (2)/1
+          adc   #$0004            ; (3)/2
+          sta   IP                ; (4)/2
+          bcc  :+                 ; (2)/2
+          inc   IP+2              ; (6)/2
+:         rtl                     ; (6)/1 (63)/26         
+.else
+; old implementation
+          inc   IP                ; (6)/2 inline fetch
+          bne   :+                ; (2)/2
+          inc   IP+2              ; (6)/2
+:         lda   [IP]              ; (7)/2 low word
+          tay                     ; (2)/1
+          inc   IP                ; (6)/2
+          bne   :+                ; (2)/2
+          inc   IP+2              ; (6)/2
+:         inc   IP                ; (6)/2
+          bne   :+                ; (2)/2
+          inc   IP+2              ; (6)/2
+:         lda   [IP]              ; (7)/2 high word
+          inc   IP                ; (6)/2
+          bne   :+                ; (2)/2
+          inc   IP+2              ; (6)/2 = (72)/29+run=(82)
 :         
 .if !no_fast_lits
           ora   #$0000            ; faster than php+plp
           beq   fast_num
 .endif
-run:      sep   #SHORT_A
-          pha
-          rep   #SHORT_A
-          phy
-          rtl
+.endif
+run:      sep   #SHORT_A          ; (3)/1
+          pha                     ; (4)/1
+          rep   #SHORT_A          ; (3)/1
+          phy                     ; (4)/1
+          rtl                     ; (6)/1 = 20/5          
 fast_num: jsr   _pushay
           bra   _next
 .endproc
