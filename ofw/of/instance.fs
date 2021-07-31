@@ -16,7 +16,7 @@ db" OF instance support (c) IBM"
 
 0 VALUE my-self
 
-100 CONSTANT max-instance-size \ MAG: originally 400
+A0 CONSTANT max-instance-size \ MAG: originally 400
 
 STRUCT
    /n FIELD instance>node
