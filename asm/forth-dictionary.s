@@ -1138,8 +1138,7 @@ dword     STATEI,"[",F_IMMED|F_CONLY
 eword
 
 ; H: ( -- ) Enter compilation state.
-; immediacy called out in IEEE 1275-1994
-dword     STATEC,"]",F_IMMED
+dword     STATEC,"]"
           ENTER
           .dword STATE
           .dword ON
