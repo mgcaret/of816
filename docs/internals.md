@@ -8,6 +8,22 @@ processor.
 The system features 32-bit code and data cells, and implements a 32-bit virtual
 address space (truncated to 24-bit physical addresses).
 
+## Design Decisions
+
+The system is a direct-threaded virtual machine with a flat 32-bit address space.
+
+Indirect threading was rejected due to inefficiency.
+
+Subroutine threading, while possible, was rejected due to having to worry about bank
+boundaries, data bank register management, and other considerations with the segmented
+nature of the 65C816.  The direct-threaded VM works around all of that.
+
+While the 65C186 has a 24-bit address space, a 32-bit virtual address space makes sense
+with regards to the 32-bit cell size.  The virtual memory repeats itself for every value
+of the high byte in the current implementation.  The high byte may be used to store
+non-address data, but this may cause problems porting to other implementations with a real
+32-bit address space.
+
 ## Code Organization
 
 The main file ``forth.s`` is the sole source file that is directly given to the
@@ -94,7 +110,8 @@ is linked with the built ``forth.o`` as well as a linker configuration file.
 #### ``platform-config.inc``
 
 If the platform allows for additional configuration defines, these should be
-placed here.
+placed here and included from either an override config.inc or one of the following
+files.
 
 #### ``platform-lib.s``
 
@@ -108,8 +125,15 @@ dictionary.
 
 ## Forth Interpreter
 
-For reference on the basic construction and operation of a Forth interpreter,
-see _Threaded Interpretive Languages_ by R.G. Loeligern (Byte, 1981).
+For reference on the basic construction and operation of a Forth interpreter, see the
+following:
+
+_Threaded Interpretive Languages_ by R.G. Loeligern (Byte, 1981).
+
+_Thinking Forth_ by Leo Brodie (Punch Publishing, 2004).
+
+https://github.com/nornagon/jonesforth/blob/master/jonesforth.S
+
 
 ### System Registers
 
