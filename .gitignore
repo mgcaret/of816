@@ -12,6 +12,7 @@ romfs
 .DS_Store
 *.hex
 of816-neon.bin
+platforms/GoSXB/smallrom
 platforms/GoSXB/rom
 platforms/GoSXB/romfs
 platforms/GoSXB/romfs_files/OF
