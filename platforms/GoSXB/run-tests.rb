@@ -66,9 +66,10 @@ def run_suite(suite, outfile = nil)
     end
     colons = {}
     suite_text << "\nbye\n"
-    Open3.popen3('./gosxb-of816.sh') do |stdin, stdout, stderr, wait_thr|
+    Open3.popen3('./gosxb-of816.sh x') do |stdin, stdout, stderr, wait_thr|
+        puts "pipes open, pid #{wait_thr.pid}" if verbose
         until [stdout, stderr].find {|f| !f.eof}.nil?
-            readable, writable, errored = IO.select([stdout,stderr],[stdin],[],0)
+            readable, writable, errored = IO.select([stdout,stderr],[stdin],[],30)
             if writable.include?(stdin)
                 if line = suite_text.shift
                     puts ">> #{line}" if verbose
@@ -113,6 +114,7 @@ def run_suite(suite, outfile = nil)
             end
             break unless wait_thr.alive?
         end
+        # puts "until done"
         outfile.write(outbuf.string) if outfile
         prevline = ""
         outbuf.string.lines.each do |line|
