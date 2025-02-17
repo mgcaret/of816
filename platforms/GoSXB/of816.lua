@@ -1,5 +1,5 @@
 bus.attach(bus.device("main_ram"), 0, 24)
-bus.attach(bus.device("via2", emulator), 0x7FE0, 5)
+bus.attach(bus.device("via2"), 0x7FE0, 5)
 local srom, srombits = bus.device("rom", "smallrom")
 bus.attach(srom, 0x8000, srombits)
 local from, frombits = bus.device("rom", "forth")
