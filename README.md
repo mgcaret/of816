@@ -18,6 +18,8 @@ Among its many features are:
       * [Neon816](https://hackaday.io/project/164325-neon816).
       * [Apple IIgs](https://en.wikipedia.org/wiki/Apple_IIGS).
       * [C256 Foenix](https://c256foenix.com) via [this fork](https://github.com/aniou/of816).
+      * [X65-SBC](https://hackaday.io/project/194866-x65-sbc) via [this fork](https://github.com/jsyk/of816/tree/x65sbc).
+      * [py65_65816](https://github.com/tmr4/py65_65816) via [this fork](https://github.com/tmr4/of816/tree/master).
       * GoSXB - an unreleased emulator designed for OF816 development.
     * New ports require the implementation of a handful of routines.
     * Simple instantiation of one or more Forths in a system.
